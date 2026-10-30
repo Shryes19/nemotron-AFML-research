@@ -117,7 +117,7 @@ class TextEncoder:
             model_name,
             quantization_config=bnb_config,
             device_map=device if quantize else None,
-            dtype=torch.float16 if not quantize else None,
+            torch_dtype=torch.float16 if not quantize else None,
             trust_remote_code=True,
         )
 
@@ -163,11 +163,13 @@ class TextEncoder:
 
             outputs = self.model(**encoded)
 
-            # Mean pool over token dimension
-            attention_mask = encoded["attention_mask"]
-            token_embeddings = outputs.last_hidden_state          # (B, T, D)
-            mask_expanded = attention_mask.unsqueeze(-1).float()  # (B, T, 1)
-            emb = (token_embeddings * mask_expanded).sum(1) / mask_expanded.sum(1)
+            # NV-Embed-v2 returns embeddings already pooled by its latent-attention layer
+            tok = outputs["sentence_embeddings"]                  # (B, T, D) latent-attention output
+            if tok.dim() == 3:
+                m = encoded["attention_mask"].unsqueeze(-1).to(tok.dtype)
+                emb = (tok * m).sum(1) / m.sum(1)                 # masked mean -> (B, D)
+            else:
+                emb = tok
             emb = emb.float()                                     # ensure fp32
             emb = F.normalize(emb, p=2, dim=-1)                  # L2 normalise
             all_embeddings.append(emb.cpu())

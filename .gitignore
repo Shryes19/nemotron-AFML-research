@@ -59,3 +59,4 @@ secrets.yaml
 
 # HuggingFace cache
 ~/.cache/huggingface/
+.venv-enc/
