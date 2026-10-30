@@ -13,6 +13,7 @@ bitsandbytes>=0.43.0
 
 # ── Embeddings / retrieval ────────────────────────────────────────────────────
 sentence-transformers>=3.0.0
+einops>=0.7.0             # required by nvidia/NV-Embed-v2
 faiss-cpu>=1.8.0      # switch to faiss-gpu if CUDA available
 
 # ── SFT arm ───────────────────────────────────────────────────────────────────
