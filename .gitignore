@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Model weights & large files
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.h5
+checkpoints/
+models/
+
+# Data (raw buffers may be large — commit only small mock samples)
+data/raw/
+data/buffers/
+!data/buffers/mock_*.jsonl
+
+# Experiment outputs
+outputs/
+runs/
+logs/
+wandb/
+mlruns/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env files (never commit API keys)
+.env
+*.env
+secrets.yaml
+
+# HuggingFace cache
+~/.cache/huggingface/

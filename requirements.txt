@@ -1,0 +1,42 @@
+# ── Core ML ──────────────────────────────────────────────────────────────────
+torch>=2.3.0
+torchvision>=0.18.0
+
+# ── HuggingFace stack ─────────────────────────────────────────────────────────
+transformers>=4.43.0
+datasets>=2.20.0
+accelerate>=0.31.0
+peft>=0.11.0          # LoRA for SFT arm
+
+# ── Quantization (NF4 for Nemotron-Embed-8B on 12GB VRAM) ────────────────────
+bitsandbytes>=0.43.0
+
+# ── Embeddings / retrieval ────────────────────────────────────────────────────
+sentence-transformers>=3.0.0
+faiss-cpu>=1.8.0      # switch to faiss-gpu if CUDA available
+
+# ── SFT arm ───────────────────────────────────────────────────────────────────
+trl>=0.9.0            # SFTTrainer wrapper
+
+# ── Environments ──────────────────────────────────────────────────────────────
+# ALFWorld and ScienceWorld via AgentGym — install separately:
+#   pip install agentgym
+# WebShop — install separately:
+#   pip install webshop-env
+
+# ── RQ3 predictor ─────────────────────────────────────────────────────────────
+scikit-learn>=1.5.0
+lightgbm>=4.3.0
+
+# ── Evaluation ────────────────────────────────────────────────────────────────
+nltk>=3.8.0
+rouge-score>=0.1.2
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+numpy>=1.26.0
+pandas>=2.2.0
+tqdm>=4.66.0
+rich>=13.7.0           # nice terminal output
+jsonlines>=4.0.0       # buffer I/O
+pyyaml>=6.0.1
+python-dotenv>=1.0.0

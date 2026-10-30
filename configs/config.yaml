@@ -1,0 +1,81 @@
+# ── Global config for Team Nemotron RQ3 ──────────────────────────────────────
+# All paths are relative to repo root unless they start with /
+
+seed: 42
+
+# ── Encoder ───────────────────────────────────────────────────────────────────
+encoder:
+  # Primary: Nemotron-Embed-8B quantized to NF4 (~5-6GB VRAM on RTX 5070 12GB)
+  # Swap: set model_name to "BAAI/bge-large-en-v1.5" for fast CPU prototyping
+  model_name: "nvidia/NV-Embed-v2"   # Nemotron-Embed-8B
+  quantize: true                      # NF4 4-bit — set false if using smaller encoder
+  device: "cuda"
+  batch_size: 32
+  max_length: 512
+
+# ── JEPA predictor ────────────────────────────────────────────────────────────
+jepa:
+  predictor_type: "mlp"               # "mlp" | "transformer" — swap here
+  hidden_dim: 2048
+  num_layers: 2
+  dropout: 0.1
+  ema_decay: 0.996                    # V-JEPA style EMA for target encoder
+  loss: "mse"                         # "mse" | "cosine"
+
+# ── Training ──────────────────────────────────────────────────────────────────
+training:
+  epochs: 20
+  probe_epochs: 1                     # for ex-ante probe fidelity (Feature 1)
+  lr: 1e-4
+  weight_decay: 1e-4
+  held_out_frac: 0.1                  # fraction of buffer held out for eval
+  log_every: 5                        # log loss every N epochs
+
+# ── SFT arm ───────────────────────────────────────────────────────────────────
+sft:
+  model_name: "Qwen/Qwen2.5-1.5B-Instruct"
+  lora_rank: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  epochs: 3
+  lr: 2e-4
+  max_seq_len: 512
+
+# ── RAG arm ───────────────────────────────────────────────────────────────────
+rag:
+  generator_model: "Qwen/Qwen2.5-7B-Instruct"
+  retriever_model: "nvidia/NV-Embed-v2"
+  top_k_stage1: 50                    # top-50 by obs similarity
+  top_k_stage2: 5                     # re-rank by action similarity, return 5
+
+# ── Data budgets ──────────────────────────────────────────────────────────────
+data:
+  budgets: [32, 64, 128, 256, 512, 1024]
+  collection_policy:                  # mixed policy for data collection
+    expert: 0.50
+    random: 0.30
+    llm: 0.20
+
+# ── Environments ──────────────────────────────────────────────────────────────
+environments:
+  - name: alfworld
+    hidden_state: false               # never pass hidden state — Saanvi's fix
+    agentgym: true
+  - name: scienceworld
+    hidden_state: false
+    agentgym: true
+  - name: webshop
+    hidden_state: false
+    agentgym: true
+  - name: bytesized32
+    hidden_state: false
+    json_states: true                 # ground-truth JSON available
+
+# ── Evaluation ────────────────────────────────────────────────────────────────
+evaluation:
+  decision_utility:
+    k_candidates: 5                   # K candidate actions per branched state
+    scorer_model: "Qwen/Qwen2.5-7B-Instruct"
+  fidelity:
+    judge_model: "google/gemma-3-27b-it"   # LM-as-judge
+    scale: [1, 10]
