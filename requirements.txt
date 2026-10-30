@@ -29,7 +29,7 @@ scikit-learn>=1.5.0
 lightgbm>=4.3.0
 
 # ── Evaluation ────────────────────────────────────────────────────────────────
-nltk>=3.8.0
+# nltk>=3.8.0       # not available for Python 3.14 yet — install manually when needed
 rouge-score>=0.1.2
 
 # ── Utilities ─────────────────────────────────────────────────────────────────
