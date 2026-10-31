@@ -30,10 +30,15 @@ None of these runs used the admissible-action input (added later); the
 Unseen games, 3 held-out game pairs (seeds 42/43/44), separate action input,
 2,000 steps, one validation game held out (so 9 training games).
 
-| Folder | Admissible-action input | Action-choice control |
-|---|---|---|
-| `alfworld_games` | **on** (current default) | yes (`text_overlap`) |
-| `alfworld_games_noadm` | off | no (run before the control existed) |
+| Folder | Admissible-action input | Training target | Loss |
+|---|---|---|---|
+| `alfworld_games` | on | projection + EMA (original) | MSE |
+| `alfworld_games_noadm` | off | projection + EMA | MSE |
+| `alfworld_games_frozen` | on | **frozen NV-Embed vectors** (current default) | MSE |
+| `alfworld_games_frozen_l1` | on | frozen NV-Embed vectors | L1 |
+
+All four use the separate action input; all but `alfworld_games_noadm`
+include the no-learning `text_overlap` control in the action-choice test.
 
 Headline numbers (n = 1024, from `alfworld_games`):
 
@@ -52,6 +57,29 @@ Headline numbers (n = 1024, from `alfworld_games`):
 On hidden-information actions the no-learning control already scores 91%, so
 that row mostly measures word overlap, not learned dynamics.
 
+## Ablation: how the predictor is trained
+
+Does the design follow published JEPA world models? We compared our original
+target (a learned projection + EMA copy on top of the frozen encoder) with
+predicting the frozen encoder's vectors directly (DINO-WM style) and with
+V-JEPA 2-AC's L1 loss. Unseen games, mean of 3 pairs:
+
+| | Projection + EMA, MSE | Frozen, MSE | Frozen, L1 |
+|---|---|---|---|
+| Decode, n = 32 | 9.2% | **11.5%** | 8.1% |
+| Decode, n = 1024 | **40.7%** | 40.4% | 39.2% |
+| Failed actions decoded, n = 64 | 74.5% | **89.1%** | 55.6% |
+| Choose action (predictable), n = 64 | 81.6% | **86.9%** | 79.2% |
+| Choose action (predictable), n = 1024 | **98.7%** | 98.5% | 96.2% |
+| Open-set (predictable), n = 1024 | **57.5%** | 54.8% | 54.0% |
+
+Frozen + MSE is as good overall and better at small budgets, cannot collapse,
+and matches DINO-WM, so it became the default (`jepa.target_mode: frozen`).
+L1 was worse. The main findings (even with the lookup on exact text in unseen
+games, clearly better on predictable actions, capped by the buffer) hold in
+all three, so they come from ALFWorld and the decode step, not this choice.
+The training runs in `jepa/` used the original projection + EMA design.
+
 ## Probe fidelity (`probe/`)
 
 `alfworld_games`: Feature 1 per game (n = 32, 1 epoch, 3 seeds), computed with
@@ -61,7 +89,7 @@ team settles the probe definition.
 ## Reproduce
 
 On Siddhant's machine in `.venv-enc` (defaults: separate action, admissible
-input, 2,000 steps):
+input, frozen targets, MSE, 2,000 steps):
 
 ```bash
 python scripts/train_jepa.py --buffer data/buffers/alfworld_games.jsonl --real-encoder
@@ -70,5 +98,5 @@ python scripts/diagnose_jepa.py --buffer data/buffers/alfworld_games.jsonl --rea
 python scripts/probe_fidelity.py --buffer data/buffers/alfworld_games.jsonl --real-encoder
 ```
 
-Older runs: add `--joint` (single text input), `--no-admissible`, or
-`--use-epochs --epochs 20`.
+Older runs: add `--target ema` (original projection + EMA), `--joint` (single
+text input), `--no-admissible`, or `--use-epochs --epochs 20`.
