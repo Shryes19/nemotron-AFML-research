@@ -99,7 +99,8 @@ def main():
 
     # Pick a test transition, predict its next obs, decode
     test_t   = val_ds.transitions[0]
-    ctx_text = f"Observation: {test_t['obs']}\nAction: {test_t['action']}"
+    from jepa.training.embed_cache import context_text
+    ctx_text = context_text(test_t)
     z_ctx    = encoder.encode([ctx_text]).to(args.device)
 
     with torch.no_grad():

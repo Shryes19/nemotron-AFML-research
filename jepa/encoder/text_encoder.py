@@ -201,10 +201,11 @@ class TextEncoder:
     def encode_transition(self, obs: str, action: str) -> torch.Tensor:
         """
         Encode a single (obs, action) pair as one string.
-        Format: "Observation: {obs}\nAction: {action}"
+        Format: "Action: {action}\nObservation: {obs}"  (action first so long
+        observations can't truncate it away — see embed_cache.context_text)
         Returns shape (1, hidden_dim).
         """
-        text = f"Observation: {obs}\nAction: {action}"
+        text = f"Action: {action}\nObservation: {obs}"
         return self.encode([text])  # (1, D)
 
     def encode_obs(self, obs: str) -> torch.Tensor:

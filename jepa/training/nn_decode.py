@@ -132,7 +132,8 @@ class NNDecoder:
 
         for action in candidate_actions:
             # Encode (obs_t, action) pair
-            context_text = f"Observation: {obs_t}\nAction: {action}"
+            from jepa.training.embed_cache import make_context
+            context_text = make_context(obs_t, action)   # same text format as training
             z_t = encoder.encode([context_text]).to(device)  # (1, D)
 
             # Predict next embedding

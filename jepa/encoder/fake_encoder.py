@@ -35,7 +35,7 @@ class FakeEncoder:
         return torch.stack(embs)
 
     def encode_transition(self, obs: str, action: str) -> torch.Tensor:
-        return self.encode([f"Observation: {obs}\nAction: {action}"])
+        return self.encode([f"Action: {action}\nObservation: {obs}"])
 
     def encode_obs(self, obs: str) -> torch.Tensor:
         return self.encode([obs])

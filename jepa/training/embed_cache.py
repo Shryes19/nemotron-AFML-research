@@ -20,8 +20,19 @@ import torch
 
 
 def context_text(t: Dict) -> str:
-    """The text the predictor sees as input: current observation + action."""
-    return f"Observation: {t['obs']}\nAction: {t['action']}"
+    """
+    The text the predictor sees as input: action + current observation.
+
+    The ACTION GOES FIRST on purpose. The encoder reads at most 512 tokens and
+    ALFWorld observations (goal, room, inventory, admissible-action list) can
+    run past 700 tokens; with the action last it would be cut off and the model
+    could not tell which action was taken.
+    """
+    return make_context(t["obs"], t["action"])
+
+
+def make_context(obs: str, action: str) -> str:
+    return f"Action: {action}\nObservation: {obs}"
 
 
 def _fingerprint(model_tag: str, transitions: List[Dict]) -> str:
