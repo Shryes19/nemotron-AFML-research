@@ -66,6 +66,21 @@ conda activate nemotron
 pip install -r requirements.txt
 ```
 
+### Encoder environment (NV-Embed-v2 / JEPA arm)
+
+NV-Embed-v2's custom model code only works with `transformers==4.42.4`, which
+clashes with the newer versions the SFT arm needs. So the JEPA/encoder work
+runs in its **own** environment with exact pinned versions:
+
+```bash
+python3 -m venv .venv-enc
+.venv-enc/bin/pip install -r requirements-encoder.txt
+
+# Real-encoder smoke test (GPU, ~6GB VRAM)
+.venv-enc/bin/python scripts/smoke_test_jepa.py \
+    --buffer data/buffers/mock_n64.jsonl --real-encoder --device cuda
+```
+
 ## Quick Start
 
 ```bash

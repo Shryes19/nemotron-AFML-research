@@ -135,17 +135,13 @@ class TextEncoder:
         except Exception:
             pass
 
-        # Only pass the args we actually need. `torch_dtype` works on both old
-        # (4.44) and new transformers; passing dtype=None to 4.44 leaks into the
-        # model constructor and breaks custom model classes.
-        load_kwargs = {"trust_remote_code": True}
-        if quantize:
-            load_kwargs["quantization_config"] = bnb_config
-            load_kwargs["device_map"] = device
-        else:
-            load_kwargs["torch_dtype"] = torch.float16
-
-        self.model = AutoModel.from_pretrained(model_name, **load_kwargs)
+        self.model = AutoModel.from_pretrained(
+            model_name,
+            quantization_config=bnb_config,
+            device_map=device if quantize else None,
+            torch_dtype=torch.float16 if not quantize else None,
+            trust_remote_code=True,
+        )
 
         if not quantize:
             self.model = self.model.to(device)
@@ -187,21 +183,15 @@ class TextEncoder:
                 return_tensors="pt",
             ).to(self.model.device)
 
-            outputs = self.model(
-                input_ids=encoded["input_ids"],
-                attention_mask=encoded["attention_mask"],
-            )
+            outputs = self.model(**encoded)
 
-            if isinstance(outputs, dict) and "sentence_embeddings" in outputs:
-                # NV-Embed-v2: model already pools (latent-attention pooling)
-                emb = outputs["sentence_embeddings"]               # (B, D)
+            # NV-Embed-v2 returns embeddings already pooled by its latent-attention layer
+            tok = outputs["sentence_embeddings"]                  # (B, T, D) latent-attention output
+            if tok.dim() == 3:
+                m = encoded["attention_mask"].unsqueeze(-1).to(tok.dtype)
+                emb = (tok * m).sum(1) / m.sum(1)                 # masked mean -> (B, D)
             else:
-                # Generic encoders (e.g. BGE): mean pool over tokens
-                attention_mask = encoded["attention_mask"]
-                token_embeddings = outputs.last_hidden_state       # (B, T, D)
-                mask_expanded = attention_mask.unsqueeze(-1).float()
-                emb = (token_embeddings * mask_expanded).sum(1) / mask_expanded.sum(1)
-
+                emb = tok
             emb = emb.float()                                     # ensure fp32
             emb = F.normalize(emb, p=2, dim=-1)                  # L2 normalise
             all_embeddings.append(emb.cpu())

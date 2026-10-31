@@ -3,24 +3,21 @@ torch>=2.3.0
 torchvision>=0.18.0
 
 # ── HuggingFace stack ─────────────────────────────────────────────────────────
-# Pinned together: NV-Embed-v2's custom code only works with transformers 4.44.x,
-# so every package that depends on transformers is pinned to the same era.
-transformers==4.44.2   # NV-Embed-v2 needs DynamicCache.from_legacy_cache (removed in 4.45+)
-huggingface-hub>=0.24.0,<1.0
-datasets==2.21.0
-accelerate>=0.33.0
-peft==0.12.0           # LoRA for SFT arm
+transformers>=4.43.0
+datasets>=2.20.0
+accelerate>=0.31.0
+peft>=0.11.0          # LoRA for SFT arm
 
 # ── Quantization (NF4 for Nemotron-Embed-8B on 12GB VRAM) ────────────────────
 bitsandbytes>=0.43.0
 
 # ── Embeddings / retrieval ────────────────────────────────────────────────────
-sentence-transformers==3.0.1
+sentence-transformers>=3.0.0
 einops>=0.7.0             # required by nvidia/NV-Embed-v2
 faiss-cpu>=1.8.0      # switch to faiss-gpu if CUDA available
 
 # ── SFT arm ───────────────────────────────────────────────────────────────────
-trl==0.10.1            # SFTTrainer wrapper (last version supporting transformers 4.44)
+trl>=0.9.0            # SFTTrainer wrapper
 
 # ── Environments ──────────────────────────────────────────────────────────────
 # ALFWorld and ScienceWorld via AgentGym — install separately:
