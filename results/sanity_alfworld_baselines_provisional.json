@@ -1,0 +1,38 @@
+{
+  "config": {
+    "env": "alfworld",
+    "train": "data/raw/alfworld_train.jsonl",
+    "heldout": "data/raw/alfworld_heldout.jsonl",
+    "budget": "data/budgets/alfworld_seed0_n1024_provisional.txt",
+    "n": 200,
+    "seed": 0,
+    "k": 3,
+    "out": "results/sanity_alfworld_baselines_provisional.json",
+    "baselines_only": true
+  },
+  "pool_size": 1024,
+  "heldout_size": 200,
+  "heldout_policies": {
+    "expert": 125,
+    "random": 75
+  },
+  "baselines": {
+    "copy_top1": {
+      "em": 0.285,
+      "ci95": [
+        0.225,
+        0.35
+      ],
+      "n": 200
+    },
+    "nothing_happens": {
+      "em": 0.125,
+      "ci95": [
+        0.085,
+        0.17
+      ],
+      "n": 200
+    }
+  },
+  "rule": "not evaluated (--baselines-only)"
+}

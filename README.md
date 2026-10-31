@@ -110,3 +110,10 @@ python scripts/gen_mock_data.py --n 64 --out data/buffers/mock_n64.jsonl
 # Smoke test JEPA pipeline end-to-end
 python scripts/smoke_test_jepa.py --buffer data/buffers/mock_n64.jsonl
 ```
+
+## Environment & data pipeline (ALFWorld, ScienceWorld)
+
+- Wrappers, collector, budgets, LLM client, buffer exporter: `wm/` | setup: `docs/SETUP_VM.md` | data + buffer format: `docs/SCHEMA.md`
+- Samples: `data/sample/` | budgets (transition ids, nested 32 -> 1024 per seed): `data/budgets/` (`*_provisional` = expert/random only until the LLM rows are collected)
+- Full data and the per-game ALFWorld buffer (`alfworld_games_buffer.jsonl`): team Drive folder, with SHA256SUMS
+- GPU-day runbook: `docs/GPU_DAY.md` | sanity-check rule: `docs/SANITY_CHECK.md`

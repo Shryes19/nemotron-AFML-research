@@ -60,3 +60,10 @@ secrets.yaml
 # HuggingFace cache
 ~/.cache/huggingface/
 .venv-enc/
+
+# Env/data pipeline (Saanvi)
+cache/
+data/upload/
+*.jsonl.gz
+results/*_predictions.jsonl
+.pytest_cache/
