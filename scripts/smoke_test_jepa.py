@@ -34,31 +34,7 @@ from jepa.training.train import JEPATrainer
 from jepa.training.nn_decode import NNDecoder
 
 
-# ── Tiny fake encoder for smoke testing ────────────────────────────────────────
-
-class FakeEncoder:
-    """
-    Replaces TextEncoder with a random projection.
-    Same interface as TextEncoder so the training loop is identical.
-    """
-    hidden_dim = 256
-
-    def encode(self, texts):
-        # Random but deterministic per text (hash-based)
-        embs = []
-        for t in texts:
-            seed = hash(t) % (2**31)
-            gen  = torch.Generator()
-            gen.manual_seed(seed)
-            emb  = torch.randn(self.hidden_dim, generator=gen)
-            embs.append(F.normalize(emb, p=2, dim=-1))
-        return torch.stack(embs)  # (N, D)
-
-    def encode_transition(self, obs, action):
-        return self.encode([f"Observation: {obs}\nAction: {action}"])
-
-    def encode_obs(self, obs):
-        return self.encode([obs])
+from jepa.encoder.fake_encoder import FakeEncoder  # shared stand-in encoder
 
 
 # ──────────────────────────────────────────────────────────────────────────────

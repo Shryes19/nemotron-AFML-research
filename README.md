@@ -81,6 +81,26 @@ python3 -m venv .venv-enc
     --buffer data/buffers/mock_n64.jsonl --real-encoder --device cuda
 ```
 
+### JEPA arm — Phase 1 scripts
+
+Both scripts encode the buffer once and cache the vectors in `outputs/cache/`,
+so re-runs skip the slow 8B encoder. Drop `--real-encoder` to test on CPU with a
+fake encoder.
+
+```bash
+# Train at every data budget (32 … 1024) → loss curves + checkpoints
+python scripts/train_jepa.py --buffer data/buffers/alfworld.jsonl --real-encoder
+#   outputs/jepa/alfworld/{results.json, loss_curves.png, budget_<n>.pt}
+
+# Ex-ante Feature 1: 1-epoch probe at n=32, one row per game (RQ3 unit)
+python scripts/probe_fidelity.py --buffer data/buffers/alfworld.jsonl --real-encoder
+#   outputs/probe/alfworld/probe_fidelity.csv
+```
+
+**Data needed:** each transition must have `obs`, `action`, `obs_next`, `env`,
+`game`. For a per-game probe score at n=32 a game needs **at least 36
+transitions (ideally ~100)**: 32 to train on, the rest to score on.
+
 ## Quick Start
 
 ```bash
