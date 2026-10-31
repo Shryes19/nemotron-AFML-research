@@ -50,3 +50,26 @@ Feature 2 = the five `rate_*` columns at n=32 (share of the 32 transitions carry
   `partial_obs` because the game exposes the full state. Use `--text-tags` when building the RQ3 feature
   matrix so every environment's Feature 2 is measured the same way (from text); the ground truth is for
   validating the text tagger.
+
+## Phase 2 pieces (already usable)
+
+```bash
+# Feature 4: environment statistics per game (n=32, mean of 5 draws)
+python scripts/env_stats.py --buffers data/buffers/alfworld_games.jsonl \
+    data/buffers/sciworld_train.jsonl.gz data/buffers/bytesized32_games.jsonl \
+    --out results/features/env_stats.csv
+
+# RQ3 feature matrix: one row per (env, game); Features 1 / 3 and the label are added as they land
+python scripts/build_feature_matrix.py --mix results/capability/capability_mix.csv \
+    --stats results/features/env_stats.csv \
+    [--probe results/jepa_phase1/probe_scores.csv] [--recall results/rag/recall_at5.csv] \
+    [--labels results/utility/labels.csv] --out results/features/feature_matrix.csv
+
+# GPU-hour accounting: wrap every costed step in every arm
+#   from capability.compute_log import track
+#   with track("jepa_train", arm="D", env="alfworld", game=g, n=256): ...
+python scripts/compute_table.py      # -> results/compute/cost_table.csv
+```
+
+Expected input formats for the optional files: CSV with columns `env, game, <value>` where value is
+`probe_fidelity`, `recall_at5` or `label`. A row with game `*` applies to every game of that env.
