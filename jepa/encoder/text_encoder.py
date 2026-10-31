@@ -170,10 +170,22 @@ class TextEncoder:
         if isinstance(texts, str):
             texts = [texts]
 
-        all_embeddings = []
+        # Process texts shortest-first so each batch holds texts of similar
+        # length: every batch is padded to its longest text, so mixing short
+        # and long texts wastes GPU time and memory. Results are put back in
+        # the original order at the end.
+        order = sorted(range(len(texts)), key=lambda i: len(texts[i]))
+        sorted_texts = [texts[i] for i in order]
 
-        for i in range(0, len(texts), self.batch_size):
-            batch = texts[i : i + self.batch_size]
+        all_embeddings = []
+        show_bar = len(texts) > self.batch_size
+        steps = range(0, len(sorted_texts), self.batch_size)
+        if show_bar:
+            from tqdm import tqdm
+            steps = tqdm(steps, desc="[Encoder] batches", unit="batch")
+
+        for i in steps:
+            batch = sorted_texts[i : i + self.batch_size]
 
             encoded = self.tokenizer(
                 batch,
@@ -196,7 +208,10 @@ class TextEncoder:
             emb = F.normalize(emb, p=2, dim=-1)                  # L2 normalise
             all_embeddings.append(emb.cpu())
 
-        return torch.cat(all_embeddings, dim=0)  # (N, D)
+        sorted_emb = torch.cat(all_embeddings, dim=0)            # (N, D), sorted order
+        out = torch.empty_like(sorted_emb)
+        out[torch.tensor(order)] = sorted_emb                    # back to input order
+        return out
 
     def encode_transition(self, obs: str, action: str) -> torch.Tensor:
         """

@@ -10,7 +10,7 @@ encoder:
   model_name: "nvidia/NV-Embed-v2"   # Nemotron-Embed-8B
   quantize: true                      # NF4 4-bit — set false if using smaller encoder
   device: "cuda"
-  batch_size: 32
+  batch_size: 16                      # 32 nearly filled 12GB on long ALFWorld observations
   max_length: 512
 
 # ── JEPA predictor ────────────────────────────────────────────────────────────
