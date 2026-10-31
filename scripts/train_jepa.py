@@ -70,7 +70,16 @@ def decode_metrics(trainer, train_items, z_next_train, val_items, z_ctx_val):
     reachable:     the true next-state text exists in the training buffer at all
                    (decode_exact can never be higher than this)
     decode_dist:   mean cosine distance to the chosen neighbour
+
+    Two "no learning" baselines, so decode_exact can be judged fairly:
+    base_majority: always answer the most common next state in the training
+                   buffer (e.g. "Nothing happens.")
+    base_action:   look up the action string in the training buffer and answer
+                   the next state most often seen after it; fall back to
+                   base_majority for unseen actions
     """
+    from collections import Counter, defaultdict
+
     index = trainer.project_targets(z_next_train)
     decoder = NNDecoder(train_items, index)
     texts, dists = decoder.decode_batch(trainer.predict(z_ctx_val))
@@ -78,10 +87,22 @@ def decode_metrics(trainer, train_items, z_next_train, val_items, z_ctx_val):
     seen = {t["obs_next"] for t in train_items}
     truth = [t["obs_next"] for t in val_items]
     n = len(truth)
+
+    majority = Counter(t["obs_next"] for t in train_items).most_common(1)[0][0]
+    by_action = defaultdict(Counter)
+    for t in train_items:
+        by_action[t["action"]][t["obs_next"]] += 1
+    action_guess = [
+        by_action[v["action"]].most_common(1)[0][0] if v["action"] in by_action else majority
+        for v in val_items
+    ]
+
     return {
         "decode_exact": sum(a == b for a, b in zip(texts, truth)) / n,
         "reachable": sum(t in seen for t in truth) / n,
         "decode_dist": sum(dists) / n,
+        "base_majority": sum(t == majority for t in truth) / n,
+        "base_action": sum(a == b for a, b in zip(action_guess, truth)) / n,
     }
 
 
@@ -230,11 +251,15 @@ def main():
     print("\n" + "=" * 64)
     print(f"  Summary (held-out set of {n_val}; random top-1 = {1 / n_val:.3f})")
     print("=" * 64)
-    print(f"  {'n':>5} {'cos_dist':>9} {'top1':>6} {'spread':>7} {'decode':>7} {'reach':>6}")
+    print(f"  {'n':>5} {'cos_dist':>9} {'top1':>6} {'spread':>7} {'decode':>7} {'reach':>6}"
+          f" {'b_major':>8} {'b_action':>9}")
     for b, r in results["budgets"].items():
         f_ = r["final"]
         print(f"  {b:>5} {f_['val_cos_dist']:>9.4f} {f_['val_top1']:>6.3f} "
-              f"{f_['target_spread']:>7.4f} {f_['decode_exact']:>7.3f} {f_['reachable']:>6.3f}")
+              f"{f_['target_spread']:>7.4f} {f_['decode_exact']:>7.3f} {f_['reachable']:>6.3f}"
+              f" {f_['base_majority']:>8.3f} {f_['base_action']:>9.3f}")
+    print("  decode = JEPA exact-match | reach = ceiling for decode | "
+          "b_major / b_action = no-learning baselines decode should beat")
     if results["skipped_budgets"]:
         print(f"  skipped (not enough data): {results['skipped_budgets']}")
 
