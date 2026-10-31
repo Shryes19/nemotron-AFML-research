@@ -35,8 +35,10 @@ def make_context(obs: str, action: str) -> str:
     return f"Action: {action}\nObservation: {obs}"
 
 
-def _fingerprint(model_tag: str, transitions: List[Dict]) -> str:
+def _fingerprint(model_tag: str, transitions: List[Dict], mode: str = "joint") -> str:
     h = hashlib.sha1(model_tag.encode("utf-8"))
+    if mode != "joint":                       # keep old cache names valid for joint
+        h.update(mode.encode("utf-8"))
     for t in transitions:
         h.update(context_text(t).encode("utf-8"))
         h.update(b"\x00")
@@ -49,27 +51,42 @@ def encode_buffer(
     encoder,
     transitions: List[Dict],
     cache_dir: Optional[str] = "outputs/cache",
+    mode: str = "joint",
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
+    Args:
+        mode: "joint"    — one vector for "action + observation" text      (N, D)
+              "separate" — observation and action encoded on their own and
+                           placed side by side [z_obs | z_action]          (N, 2D)
+                           so a short action isn't drowned out by a long
+                           observation.
     Returns:
-        z_ctx:  (N, D)  encoder(obs + action)   — predictor input
-        z_next: (N, D)  encoder(obs_next)       — what we try to predict
+        z_ctx:  predictor input, (N, D) or (N, 2D)
+        z_next: (N, D)  encoder(obs_next) — what we try to predict
     Row i of both tensors belongs to transitions[i].
     """
+    if mode not in ("joint", "separate"):
+        raise ValueError(f"mode must be 'joint' or 'separate', got {mode!r}")
     model_tag = getattr(encoder, "model_name", type(encoder).__name__)
     cache_path = None
 
     if cache_dir:
         safe_tag = model_tag.replace("/", "_")
-        fp = _fingerprint(model_tag, transitions)
-        cache_path = Path(cache_dir) / f"{safe_tag}_{len(transitions)}_{fp}.pt"
+        fp = _fingerprint(model_tag, transitions, mode)
+        tag = "" if mode == "joint" else f"_{mode}"
+        cache_path = Path(cache_dir) / f"{safe_tag}_{len(transitions)}{tag}_{fp}.pt"
         if cache_path.exists():
             data = torch.load(cache_path)
             print(f"[Cache] Loaded embeddings from {cache_path}")
             return data["z_ctx"], data["z_next"]
 
-    print(f"[Cache] Encoding {len(transitions)} transitions with {model_tag} ...")
-    z_ctx = encoder.encode([context_text(t) for t in transitions])
+    print(f"[Cache] Encoding {len(transitions)} transitions with {model_tag} ({mode}) ...")
+    if mode == "joint":
+        z_ctx = encoder.encode([context_text(t) for t in transitions])
+    else:
+        z_obs = encoder.encode([f"Observation: {t['obs']}" for t in transitions])
+        z_act = encoder.encode([f"Action: {t['action']}" for t in transitions])
+        z_ctx = torch.cat([z_obs, z_act], dim=1)
     z_next = encoder.encode([t["obs_next"] for t in transitions])
 
     if cache_path is not None:

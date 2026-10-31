@@ -161,7 +161,16 @@ def main():
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     p.add_argument("--out", default=None, help="output folder")
     p.add_argument("--seed", type=int, default=None)
+    p.add_argument("--holdout-games", type=int, default=0,
+                   help="test on K whole games the model never trains on (unseen-games test) "
+                        "instead of a random 10%% of transitions")
+    p.add_argument("--test-buffer", default=None,
+                   help="test on a separate JSONL file (e.g. Saanvi's task-disjoint held-out set)")
+    p.add_argument("--separate-action", action="store_true",
+                   help="encode observation and action separately so the action isn't drowned out")
     args = p.parse_args()
+    if args.holdout_games and args.test_buffer:
+        p.error("use either --holdout-games or --test-buffer, not both")
 
     cfg = load_config(args.config)
     jcfg, tcfg, dcfg, ecfg = (cfg.get(k, {}) for k in ("jepa", "training", "data", "encoder"))
@@ -171,6 +180,12 @@ def main():
     val_frac = args.val_frac if args.val_frac is not None else float(tcfg.get("held_out_frac", 0.1))
     seed = args.seed if args.seed is not None else int(cfg.get("seed", 42))
     suffix = f"_steps{args.steps}" if args.steps else ""
+    if args.holdout_games:
+        suffix += f"_unseen{args.holdout_games}"
+    if args.test_buffer:
+        suffix += f"_test-{Path(args.test_buffer).stem}"
+    if args.separate_action:
+        suffix += "_sepact"
     out_dir = Path(args.out or f"outputs/jepa/{Path(args.buffer).stem}{suffix}")
     out_dir.mkdir(parents=True, exist_ok=True)
     batch_size = 64
@@ -183,11 +198,37 @@ def main():
 
     # ── 1. Fixed held-out set + nested training pool ───────────────────────────
     items = TransitionDataset.from_jsonl(args.buffer).transitions
-    order = list(range(len(items)))
-    random.Random(seed).shuffle(order)
-    n_val = max(1, int(len(items) * val_frac))
-    val_idx, pool_idx = order[:n_val], order[n_val:]
-    print(f"[Split] held-out={n_val}  training pool={len(pool_idx)}")
+    rng = random.Random(seed)
+    held_games = []
+
+    if args.test_buffer:
+        # Separate test file: train pool = whole --buffer, test = whole test file
+        test_items = TransitionDataset.from_jsonl(args.test_buffer).transitions
+        pool_idx = list(range(len(items)))
+        rng.shuffle(pool_idx)
+        val_idx = list(range(len(items), len(items) + len(test_items)))
+        items = items + test_items
+        split_desc = f"test file {args.test_buffer}"
+    elif args.holdout_games:
+        # Unseen games: hold out every transition of K randomly chosen games
+        games = sorted({t.get("game", "unknown") for t in items})
+        if args.holdout_games >= len(games):
+            p.error(f"--holdout-games {args.holdout_games} but buffer only has {len(games)} games")
+        rng.shuffle(games)
+        held_games = sorted(games[: args.holdout_games])
+        val_idx = [i for i, t in enumerate(items) if t.get("game", "unknown") in held_games]
+        pool_idx = [i for i, t in enumerate(items) if t.get("game", "unknown") not in held_games]
+        rng.shuffle(pool_idx)
+        split_desc = f"unseen games {held_games}"
+    else:
+        order = list(range(len(items)))
+        rng.shuffle(order)
+        n_val_r = max(1, int(len(items) * val_frac))
+        val_idx, pool_idx = order[:n_val_r], order[n_val_r:]
+        split_desc = f"random {val_frac:.0%} of transitions (same games as training)"
+
+    n_val = len(val_idx)
+    print(f"[Split] held-out={n_val}  training pool={len(pool_idx)}  ({split_desc})")
 
     # ── 2. Encode everything once ──────────────────────────────────────────────
     encoder = load_encoder(
@@ -199,7 +240,8 @@ def main():
         max_length=int(ecfg.get("max_length", 512)),
     )
     t0 = time.time()
-    z_ctx, z_next = encode_buffer(encoder, items)
+    mode = "separate" if args.separate_action else "joint"
+    z_ctx, z_next = encode_buffer(encoder, items, mode=mode)
     print(f"[Encode] done in {time.time() - t0:.1f}s  dim={z_ctx.shape[1]}")
     z_ctx_val, z_next_val = z_ctx[val_idx], z_next[val_idx]
     val_items = [items[i] for i in val_idx]
@@ -210,6 +252,9 @@ def main():
         "encoder": getattr(encoder, "model_name", "unknown"),
         "n_transitions": len(items),
         "n_val": n_val,
+        "split": split_desc,
+        "held_out_games": held_games,
+        "input_mode": mode,
         "epochs": None if args.steps else epochs,
         "steps": args.steps,
         "seed": seed,
@@ -239,8 +284,9 @@ def main():
             hidden_dim=int(jcfg.get("hidden_dim", 2048)),
             num_layers=int(jcfg.get("num_layers", 2)),
             dropout=float(jcfg.get("dropout", 0.1)),
+            output_dim=z_next.shape[1],
         )
-        ema = EMATargetEncoder(embed_dim=z_ctx.shape[1], decay=float(jcfg.get("ema_decay", 0.996)))
+        ema = EMATargetEncoder(embed_dim=z_next.shape[1], decay=float(jcfg.get("ema_decay", 0.996)))
         trainer = JEPATrainer(None, predictor, ema, train_cfg, device=args.device)
 
         t0 = time.time()
@@ -266,6 +312,8 @@ def main():
 
     print("\n" + "=" * 64)
     print(f"  Summary (held-out set of {n_val}; random top-1 = {1 / n_val:.3f})")
+    print(f"  test set: {split_desc}")
+    print(f"  input:    {'observation and action encoded separately' if mode == 'separate' else 'one joint text'}")
     print("=" * 64)
     print(f"  {'n':>5} {'steps':>6} {'cos_dist':>9} {'top1':>6} {'spread':>7} {'decode':>7} {'reach':>6}"
           f" {'b_major':>8} {'b_action':>9}")

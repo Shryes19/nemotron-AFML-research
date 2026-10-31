@@ -141,7 +141,7 @@ class JEPATrainer:
                 z_ctx_b = z_ctx_train[idx].to(self.device)
                 z_next_b = z_next_train[idx].to(self.device)
 
-                z_pred = self.predictor(self.ema.online(z_ctx_b))
+                z_pred = self.predictor(self._online(z_ctx_b))
                 z_target = self.ema.target(z_next_b)        # stop-gradient
                 loss = F.mse_loss(z_pred, z_target)
 
@@ -186,6 +186,20 @@ class JEPATrainer:
         print(f"[JEPA Probe] probe_fidelity = {score:.4f}  (lower = better)")
         return score
 
+    def _online(self, z: torch.Tensor) -> torch.Tensor:
+        """
+        Online projection of the predictor input.
+
+        Joint input (N, D): project it.
+        Separate input (N, 2D) = [z_obs | z_action]: project each half with the
+        same online head and place them side by side again, so the action keeps
+        its own full-size slot instead of being a few words in a long text.
+        """
+        d = self.ema.online_proj.in_features
+        if z.shape[1] == d:
+            return self.ema.online(z)
+        return torch.cat([self.ema.online(part) for part in z.split(d, dim=1)], dim=1)
+
     # ──────────────────────────────────────────────────────────────────────────
     # Evaluation
     # ──────────────────────────────────────────────────────────────────────────
@@ -198,7 +212,7 @@ class JEPATrainer:
         out = []
         for i in range(0, len(z_ctx), batch_size):
             z = z_ctx[i : i + batch_size].to(self.device)
-            out.append(self.predictor(self.ema.online(z)).cpu())
+            out.append(self.predictor(self._online(z)).cpu())
         return torch.cat(out)
 
     @torch.no_grad()

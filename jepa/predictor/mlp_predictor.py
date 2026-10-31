@@ -46,10 +46,14 @@ class MLPPredictor(nn.Module):
         hidden_dim: int = 2048,
         num_layers: int = 2,
         dropout: float = 0.1,
+        output_dim: Optional[int] = None,
     ):
         super().__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
+        # output_dim differs from input_dim when obs and action are encoded
+        # separately and concatenated (input 2D, output D)
+        self.output_dim = output_dim or input_dim
 
         layers = []
         in_features = input_dim
@@ -63,7 +67,7 @@ class MLPPredictor(nn.Module):
             in_features = hidden_dim
 
         # Output projection back to embedding space
-        layers.append(nn.Linear(hidden_dim, input_dim))
+        layers.append(nn.Linear(hidden_dim, self.output_dim))
 
         self.net = nn.Sequential(*layers)
 
