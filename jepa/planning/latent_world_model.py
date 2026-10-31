@@ -49,8 +49,10 @@ class LatentWorldModel:
         admissible_feature: bool = True,
         buffer_items: Optional[List[Dict]] = None,
         device: str = "cuda",
+        target_mode: str = "ema",
     ):
         self.encoder = encoder
+        self.target_mode = target_mode
         self.predictor = predictor.to(device).eval()
         self.ema = ema.to(device).eval()
         self.input_mode = input_mode
@@ -86,7 +88,8 @@ class LatentWorldModel:
         if adm is None:
             adm = in_dim % out_dim != 0
         return cls(encoder, predictor, ema, input_mode=mode, admissible_feature=adm,
-                   buffer_items=buffer_items, device=device)
+                   buffer_items=buffer_items, device=device,
+                   target_mode=ckpt.get("target_mode", extra.get("target_mode", "ema")))
 
     def set_buffer(self, items: List[Dict]):
         """Index the buffer's next states (target-projected) for decode_topk."""
@@ -114,6 +117,8 @@ class LatentWorldModel:
         return z
 
     def _online(self, z: torch.Tensor) -> torch.Tensor:
+        if self.target_mode == "frozen":
+            return z
         d = self.ema.online_proj.in_features
         k = z.shape[1] // d
         parts = [self.ema.online(z[:, i * d:(i + 1) * d]) for i in range(k)]
@@ -123,6 +128,8 @@ class LatentWorldModel:
 
     @torch.no_grad()
     def _project_targets(self, raw: torch.Tensor) -> torch.Tensor:
+        if self.target_mode == "frozen":
+            return F.normalize(raw.float(), p=2, dim=-1)
         return self.ema.target(raw.to(self.device)).cpu()
 
     @torch.no_grad()

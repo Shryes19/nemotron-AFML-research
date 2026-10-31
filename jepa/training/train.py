@@ -70,9 +70,24 @@ class JEPATrainer:
         self.device = device
         self.config = config
         self.batch_size = int(config.get("batch_size", 64))
+        # target_mode "ema"    : learned online projection + EMA target projection
+        #                        on top of the frozen encoder (original design)
+        #             "frozen" : predict the frozen encoder's vectors DIRECTLY — no
+        #                        projection, no EMA (DINO-WM / V-JEPA 2-AC style: with
+        #                        a frozen encoder the targets are fixed, so there is
+        #                        nothing to collapse and no moving target)
+        self.target_mode = config.get("target_mode", "ema")
+        self.loss_name = config.get("loss", "mse")
+        if self.target_mode not in ("ema", "frozen"):
+            raise ValueError(f"target_mode must be 'ema' or 'frozen', got {self.target_mode!r}")
+        if self.loss_name not in ("mse", "l1"):
+            raise ValueError(f"loss must be 'mse' or 'l1', got {self.loss_name!r}")
 
+        params = list(predictor.parameters())
+        if self.target_mode == "ema":
+            params += list(ema.online_proj.parameters())
         self.optimizer = torch.optim.AdamW(
-            list(predictor.parameters()) + list(ema.online_proj.parameters()),
+            params,
             lr=float(config.get("lr", 1e-4)),
             weight_decay=float(config.get("weight_decay", 1e-4)),
         )
@@ -142,13 +157,14 @@ class JEPATrainer:
                 z_next_b = z_next_train[idx].to(self.device)
 
                 z_pred = self.predictor(self._online(z_ctx_b))
-                z_target = self.ema.target(z_next_b)        # stop-gradient
-                loss = F.mse_loss(z_pred, z_target)
+                z_target = self._target(z_next_b)           # stop-gradient
+                loss = (F.l1_loss if self.loss_name == "l1" else F.mse_loss)(z_pred, z_target)
 
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-                self.ema.update_ema()
+                if self.target_mode == "ema":
+                    self.ema.update_ema()
                 losses.append(loss.item())
 
             metrics = self.evaluate(z_ctx_val, z_next_val)
@@ -197,6 +213,8 @@ class JEPATrainer:
         Any columns after the last full D-sized block are hand-made features
         (jepa/training/features.py) and are passed through unprojected.
         """
+        if self.target_mode == "frozen":
+            return z                                    # frozen vectors go in as they are
         d = self.ema.online_proj.in_features
         k = z.shape[1] // d
         extra = z[:, k * d:]
@@ -206,6 +224,12 @@ class JEPATrainer:
         if extra.shape[1]:
             parts.append(extra)
         return torch.cat(parts, dim=1)
+
+    def _target(self, z_next: torch.Tensor) -> torch.Tensor:
+        """Training target for raw next-state vectors (no gradient)."""
+        if self.target_mode == "frozen":
+            return F.normalize(z_next, p=2, dim=-1)
+        return self.ema.target(z_next)
 
     # ──────────────────────────────────────────────────────────────────────────
     # Evaluation
@@ -228,7 +252,7 @@ class JEPATrainer:
         self.ema.eval()
         out = []
         for i in range(0, len(z_next), batch_size):
-            out.append(self.ema.target(z_next[i : i + batch_size].to(self.device)).cpu())
+            out.append(self._target(z_next[i : i + batch_size].to(self.device)).cpu())
         return torch.cat(out)
 
     @torch.no_grad()
@@ -263,6 +287,7 @@ class JEPATrainer:
 
     def save(self, path: str, extra: Optional[Dict] = None):
         ckpt = {
+            "target_mode": self.target_mode,
             "predictor": self.predictor.state_dict(),
             "ema_online": self.ema.online_proj.state_dict(),
             "ema_target": self.ema.target_proj.state_dict(),

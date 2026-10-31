@@ -25,7 +25,11 @@ jepa:
   num_layers: 2
   dropout: 0.1
   ema_decay: 0.996                    # V-JEPA style EMA for target encoder
-  loss: "mse"                         # "mse" | "cosine"
+  loss: "mse"                         # "mse" | "l1" (V-JEPA 2-AC uses L1)
+  target_mode: "ema"                  # "ema" = learned projection + EMA target (original)
+                                      # "frozen" = predict frozen NV-Embed vectors directly,
+                                      #   no projection/EMA (DINO-WM / V-JEPA 2-AC style);
+                                      #   ablation 2026-11-01 decides which stays default
 
 # ── Training ──────────────────────────────────────────────────────────────────
 training:

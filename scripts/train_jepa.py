@@ -169,6 +169,10 @@ def main():
                    help="test on a separate JSONL file (e.g. Saanvi's task-disjoint held-out set)")
     p.add_argument("--separate-action", action="store_true",
                    help="encode observation and action separately (default: jepa.input_mode in config)")
+    p.add_argument("--target", choices=["ema", "frozen"], default=None,
+                   help="ema = learned projection + EMA target (default: jepa.target_mode); "
+                        "frozen = predict the frozen encoder vectors directly (DINO-WM / V-JEPA 2-AC style)")
+    p.add_argument("--loss", choices=["mse", "l1"], default=None, help="default: jepa.loss")
     p.add_argument("--no-admissible", action="store_true",
                    help="leave out the 'is the action allowed' input (default: jepa.admissible_feature)")
     p.add_argument("--joint", action="store_true",
@@ -193,6 +197,8 @@ def main():
     if not args.joint and not args.separate_action:
         args.separate_action = jcfg.get("input_mode", "joint") == "separate"
     use_adm = bool(jcfg.get("admissible_feature", False)) and not args.no_admissible
+    target_mode = args.target or jcfg.get("target_mode", "ema")
+    loss_name = args.loss or jcfg.get("loss", "mse")
     val_frac = args.val_frac if args.val_frac is not None else float(tcfg.get("held_out_frac", 0.1))
     seed = args.seed if args.seed is not None else int(cfg.get("seed", 42))
     suffix = f"_steps{args.steps}" if args.steps else ""
@@ -204,6 +210,10 @@ def main():
         suffix += "_sepact"
     if use_adm:
         suffix += "_adm"
+    if target_mode != "ema":
+        suffix += f"_{target_mode}"
+    if loss_name != "mse":
+        suffix += f"_{loss_name}"
     out_dir = Path(args.out or f"outputs/jepa/{Path(args.buffer).stem}{suffix}")
     out_dir.mkdir(parents=True, exist_ok=True)
     batch_size = 64
@@ -281,6 +291,8 @@ def main():
         "held_out_games": held_games,
         "input_mode": mode,
         "admissible_feature": use_adm,
+        "target_mode": target_mode,
+        "loss": loss_name,
         "epochs": None if args.steps else epochs,
         "steps": args.steps,
         "seed": seed,
@@ -291,6 +303,8 @@ def main():
         "lr": float(tcfg.get("lr", 1e-4)),
         "weight_decay": float(tcfg.get("weight_decay", 1e-4)),
         "batch_size": batch_size,
+        "target_mode": target_mode,
+        "loss": loss_name,
     }
 
     for b in budgets:
@@ -332,7 +346,8 @@ def main():
                                  "steps_per_epoch": steps_per_epoch}
         trainer.save(str(out_dir / f"budget_{b}.pt"),
                      extra={"budget": b, "final": final, "input_mode": mode,
-                            "admissible_feature": use_adm, "buffer": args.buffer})
+                            "admissible_feature": use_adm, "buffer": args.buffer,
+                            "target_mode": target_mode, "loss": loss_name})
 
     # ── 4. Save + summarise ────────────────────────────────────────────────────
     with open(out_dir / "results.json", "w") as f:

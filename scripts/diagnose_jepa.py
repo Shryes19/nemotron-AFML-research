@@ -279,7 +279,9 @@ def run_budget(b, seed, z_ctx, base_ctx, z_next, items, pool_idx, val_idx, test_
     trainer = JEPATrainer(None, predictor, ema,
                           {"lr": float(tcfg.get("lr", 1e-4)),
                            "weight_decay": float(tcfg.get("weight_decay", 1e-4)),
-                           "batch_size": batch_size}, device=device)
+                           "batch_size": batch_size,
+                           "target_mode": jcfg.get("target_mode", "ema"),
+                           "loss": jcfg.get("loss", "mse")}, device=device)
     spe = math.ceil(b / batch_size)
     epochs = max(1, round(steps / spe))
     best = {"val": float("inf"), "step": 0, "state": None}
@@ -338,6 +340,10 @@ def main():
     p.add_argument("--steps", type=int, default=None, help="default: training.steps in config")
     p.add_argument("--candidates", type=int, default=5, help="K for the action-choice test")
     p.add_argument("--joint", action="store_true", help="old joint text input (skips the action-choice test)")
+    p.add_argument("--target", choices=["ema", "frozen"], default=None,
+                   help="ema = learned projection + EMA target (default: jepa.target_mode); "
+                        "frozen = predict the frozen encoder vectors directly (DINO-WM / V-JEPA 2-AC style)")
+    p.add_argument("--loss", choices=["mse", "l1"], default=None, help="default: jepa.loss")
     p.add_argument("--no-admissible", action="store_true", help="leave out the admissible-action input")
     p.add_argument("--early-stop-check", action="store_true",
                    help="also report early stopping on a validation game (slower)")
@@ -352,7 +358,12 @@ def main():
     steps = args.steps or int(tcfg.get("steps") or 2000)
     mode = "joint" if args.joint else jcfg.get("input_mode", "separate")
     use_adm = bool(jcfg.get("admissible_feature", False)) and not args.no_admissible
-    suffix = ("_joint" if mode == "joint" else "") + ("" if use_adm else "_noadm")
+    target_mode = args.target or jcfg.get("target_mode", "ema")
+    loss_name = args.loss or jcfg.get("loss", "mse")
+    suffix = (("_joint" if mode == "joint" else "") + ("" if use_adm else "_noadm")
+              + ("" if target_mode == "ema" else f"_{target_mode}") + ("" if loss_name == "mse" else f"_{loss_name}"))
+    cfg.setdefault("jepa", {})["target_mode"] = target_mode
+    cfg["jepa"]["loss"] = loss_name
     out_dir = Path(args.out or f"outputs/diagnose/{Path(args.buffer).stem}{suffix}")
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -368,6 +379,7 @@ def main():
         print(f"[Features] admissible-action input ON  (obs with a list: {cov['has_list']:.0%})")
         z_ctx = with_features(z_ctx, items)
     print(f"[Diag] {len(items)} transitions  input={mode}{' + admissible' if use_adm else ''}  "
+          f"target={target_mode}  loss={loss_name}  "
           f"steps={steps}  seeds={args.seeds}")
 
     runs, splits = defaultdict(list), {}
@@ -441,6 +453,7 @@ def main():
 
     with open(out_dir / "diagnostics.json", "w") as f:
         json.dump({"buffer": args.buffer, "input_mode": mode, "admissible_feature": use_adm,
+                   "target_mode": target_mode, "loss": loss_name,
                    "steps": steps, "seeds": args.seeds, "candidates": args.candidates,
                    "splits": {str(k): v for k, v in splits.items()},
                    "runs": {str(b): v for b, v in runs.items()}}, f, indent=2)
