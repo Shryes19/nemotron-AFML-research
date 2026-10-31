@@ -234,20 +234,30 @@ def action_choice(trainer, items, base_ctx, z_next, tr_idx, te_idx, use_adm, K, 
         text_row.setdefault(items[j]["obs_next"], j)
     raw = F.normalize(z_next.float(), dim=-1)
 
-    jepa_ok, look_ok, chance = [], [], []
+    # Control with NO learning: pick the action whose own text is most similar
+    # (frozen encoder) to the outcome text. If JEPA is not clearly above this,
+    # the test is mostly measuring word overlap ("go to cabinet 3" ->
+    # "You arrive at cabinet 3"), not learned dynamics.
+    raw_act = F.normalize(base_ctx[:, D:2 * D].float(), dim=-1)
+
+    def credit(scores):
+        best = max(scores)
+        tied = [c for c in range(len(scores)) if abs(scores[c] - best) < 1e-6]
+        return 1.0 / len(tied) if 0 in tied else 0.0                  # fair tie-break
+
+    jepa_ok, look_ok, ctrl_ok, chance = [], [], [], []
     pos = 0
     for n_, i in enumerate(te_idx):
         m = sizes[n_]
-        js = (pred[pos:pos + m] @ target[n_]).tolist()
-        jepa_ok.append(1.0 if max(range(m), key=lambda c: js[c]) == 0 else 0.0)
-        ls = [float(raw[text_row[lk.answer(owners[pos + c][1])]] @ raw[i]) for c in range(m)]
-        best = max(ls)
-        tied = [c for c in range(m) if abs(ls[c] - best) < 1e-6]
-        look_ok.append(1.0 / len(tied) if 0 in tied else 0.0)   # fair tie-break
+        jepa_ok.append(credit((pred[pos:pos + m] @ target[n_]).tolist()))
+        look_ok.append(credit([float(raw[text_row[lk.answer(owners[pos + c][1])]] @ raw[i])
+                               for c in range(m)]))
+        ctrl_ok.append(credit([float(raw_act[act_row[owners[pos + c][1]]] @ raw[i])
+                               for c in range(m)]))
         chance.append(1.0 / m)
         pos += m
 
-    per = {"jepa": jepa_ok, "lookup": look_ok, "chance": chance}
+    per = {"jepa": jepa_ok, "lookup": look_ok, "text_overlap": ctrl_ok, "chance": chance}
     overall = {k: float(mean(v)) for k, v in per.items()}
     return overall, group_means(per, [action_group(items[i]) for i in te_idx])
 
@@ -405,16 +415,20 @@ def main():
     if any("choice" in r for rs in runs.values() for r in rs):
         print(f"\n{line}\n  DIAGNOSTIC 3 — choosing the action, no decoding   "
               f"(actual action vs {args.candidates - 1} others from the same game)\n{line}")
-        print(f"  {'n':>5} {'group':<21} {'JEPA':>8} {'lookup':>8} {'chance':>8}")
+        print(f"  {'n':>5} {'group':<21} {'JEPA':>8} {'lookup':>8} {'overlap':>8} {'chance':>8}")
         for b in sorted(runs):
             cs = [r["choice"] for r in runs[b]]
-            print(f"  {b:>5} {'ALL':<21} {avg(cs,'jepa'):>8.3f} {avg(cs,'lookup'):>8.3f} {avg(cs,'chance'):>8.3f}")
+            print(f"  {b:>5} {'ALL':<21} {avg(cs,'jepa'):>8.3f} {avg(cs,'lookup'):>8.3f} "
+                  f"{avg(cs,'text_overlap'):>8.3f} {avg(cs,'chance'):>8.3f}")
             for g in GROUPS:
                 gs = [r["choice_groups"][g] for r in runs[b] if g in r["choice_groups"]]
                 if gs:
-                    print(f"  {'':>5} {g:<21} {avg(gs,'jepa'):>8.3f} {avg(gs,'lookup'):>8.3f} {avg(gs,'chance'):>8.3f}")
+                    print(f"  {'':>5} {g:<21} {avg(gs,'jepa'):>8.3f} {avg(gs,'lookup'):>8.3f} "
+                          f"{avg(gs,'text_overlap'):>8.3f} {avg(gs,'chance'):>8.3f}")
         print("  JEPA compares predicted consequences in embedding space (no buffer ceiling);")
         print("  the lookup compares its looked-up answer texts. Higher = better at telling actions apart.")
+        print("  overlap = NO-learning control: the action whose own text is most similar to the outcome.")
+        print("  JEPA must clearly beat 'overlap' for this test to show learned dynamics.")
 
     if args.early_stop_check:
         print(f"\n{line}\n  DIAGNOSTIC 4 — early stopping on a validation game\n{line}")
