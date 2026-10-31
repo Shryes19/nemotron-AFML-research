@@ -1,0 +1,48 @@
+{
+  "transitions": 26636,
+  "games": 32,
+  "per_tag": {
+    "object_state": {
+      "precision": 0.838,
+      "recall": 0.485,
+      "support": 2807
+    },
+    "containment_location": {
+      "precision": 0.744,
+      "recall": 0.724,
+      "support": 1646
+    },
+    "numeric_physical": {
+      "precision": 0.842,
+      "recall": 0.331,
+      "support": 2597
+    },
+    "action_failure": {
+      "precision": 1.0,
+      "recall": 0.971,
+      "support": 20086
+    }
+  },
+  "primary_agreement": 0.965,
+  "numeric_changes_visible_in_text": 979,
+  "numeric_changes_hidden_from_text": 1618,
+  "numeric_recall_on_visible": 0.878,
+  "ground_truth_primary_share": {
+    "action_failure": 0.754,
+    "none": 0.142,
+    "object_state": 0.053,
+    "containment_location": 0.037,
+    "numeric_physical": 0.014
+  },
+  "tag_by_wang_split": {
+    "action_failure|action_only": 17569,
+    "action_failure|env_driven": 2517,
+    "containment_location|action_only": 1144,
+    "containment_location|env_driven": 502,
+    "none|action_only": 3778,
+    "numeric_physical|action_only": 39,
+    "numeric_physical|env_driven": 2558,
+    "object_state|action_only": 1213,
+    "object_state|env_driven": 1594
+  }
+}

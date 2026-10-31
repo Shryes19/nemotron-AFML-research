@@ -1,0 +1,52 @@
+# Capability tagging + ByteSized32-SP (Phase 1, Siddanth)
+
+Everything here is pure Python stdlib, so it runs in either venv (`.venv` or `.venv-enc`).
+
+## Run it
+
+```bash
+# 1. tag the ALFWorld and ScienceWorld buffers (fills cap_tag / cap_tags)
+python scripts/tag_buffer.py --buffer data/buffers/alfworld_games.jsonl --out data/buffers/alfworld_games.tagged.jsonl
+python scripts/tag_buffer.py --buffer data/buffers/sciworld_train.jsonl.gz --out data/buffers/sciworld_train.tagged.jsonl
+
+# 2. set up ByteSized32-SP (31 games, 2,954 transitions, ground-truth tags from the JSON state)
+git clone --depth 1 https://github.com/cognitiveailab/GPT-simulator.git ../GPT-simulator
+mkdir -p data/raw/bytesized32 && unzip -o ../GPT-simulator/data/test.zip -d data/raw/bytesized32
+python scripts/setup_bytesized32.py --raw data/raw/bytesized32/test.jsonl --out data/buffers/bytesized32_games.jsonl
+
+# 3. Feature 2: capability mix vector per game (n=32, mean of 5 draws, plus n=all)
+python scripts/capability_mix.py --text-tags \
+    --buffers data/buffers/alfworld_games.tagged.jsonl data/buffers/sciworld_train.tagged.jsonl \
+              data/buffers/bytesized32_games.jsonl \
+    --out results/capability/capability_mix.csv
+
+# tests
+python tests/test_capability_tagger.py
+```
+
+## The five tags
+
+| tag | meaning | ALFWorld example |
+|---|---|---|
+| `object_state` | an object's own state changes | `close drawer 1` |
+| `containment_location` | the agent moves, or an object changes container / inventory | `go to shelf 1`, `take mug 2 from shelf 1` |
+| `numeric_physical` | a quantity or phase changes | ScienceWorld `use thermometer on gallium` |
+| `partial_obs` | the next observation shows things o_t gave no way to know | `go to shelf 1` -> "you see a mug 2" |
+| `action_failure` | the action is rejected or has no effect | "Nothing happens." |
+
+Tags are multi-label (`cap_tags`). `cap_tag` is one primary label by priority
+`action_failure > numeric_physical > object_state > containment_location > partial_obs > none`;
+`none` = nothing changes and nothing new is shown (`inventory`, `look` with nothing new).
+
+Feature 2 = the five `rate_*` columns at n=32 (share of the 32 transitions carrying each tag).
+
+## Design choices worth knowing
+
+- ALFWorld `heat` / `cool` are tagged `object_state`, not `numeric_physical`: ALFWorld stores them as
+  flags and never shows a temperature. So ALFWorld's numeric rate is 0 by construction.
+- Quantities that appear because the agent walked into a new room are `partial_obs` (revealed), not
+  `numeric_physical` (changed). Same for `look`/`examine` that only report a value.
+- ByteSized32 ground truth comes from the JSON state diff (`capability/bytesized32.py`). It has no
+  `partial_obs` because the game exposes the full state. Use `--text-tags` when building the RQ3 feature
+  matrix so every environment's Feature 2 is measured the same way (from text); the ground truth is for
+  validating the text tagger.
