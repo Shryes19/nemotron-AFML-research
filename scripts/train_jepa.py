@@ -48,6 +48,7 @@ from jepa.encoder.load import load_encoder
 from jepa.predictor.mlp_predictor import MLPPredictor, EMATargetEncoder
 from jepa.training.buffer import TransitionDataset
 from jepa.training.embed_cache import encode_buffer
+from jepa.training.features import coverage, with_features
 from jepa.training.nn_decode import NNDecoder
 from jepa.training.train import JEPATrainer
 
@@ -168,6 +169,8 @@ def main():
                    help="test on a separate JSONL file (e.g. Saanvi's task-disjoint held-out set)")
     p.add_argument("--separate-action", action="store_true",
                    help="encode observation and action separately (default: jepa.input_mode in config)")
+    p.add_argument("--no-admissible", action="store_true",
+                   help="leave out the 'is the action allowed' input (default: jepa.admissible_feature)")
     p.add_argument("--joint", action="store_true",
                    help="force the old single 'action + observation' text input")
     p.add_argument("--use-epochs", action="store_true",
@@ -189,6 +192,7 @@ def main():
         args.steps = int(tcfg["steps"])
     if not args.joint and not args.separate_action:
         args.separate_action = jcfg.get("input_mode", "joint") == "separate"
+    use_adm = bool(jcfg.get("admissible_feature", False)) and not args.no_admissible
     val_frac = args.val_frac if args.val_frac is not None else float(tcfg.get("held_out_frac", 0.1))
     seed = args.seed if args.seed is not None else int(cfg.get("seed", 42))
     suffix = f"_steps{args.steps}" if args.steps else ""
@@ -198,6 +202,8 @@ def main():
         suffix += f"_test-{Path(args.test_buffer).stem}"
     if args.separate_action:
         suffix += "_sepact"
+    if use_adm:
+        suffix += "_adm"
     out_dir = Path(args.out or f"outputs/jepa/{Path(args.buffer).stem}{suffix}")
     out_dir.mkdir(parents=True, exist_ok=True)
     batch_size = 64
@@ -254,6 +260,13 @@ def main():
     t0 = time.time()
     mode = "separate" if args.separate_action else "joint"
     z_ctx, z_next = encode_buffer(encoder, items, mode=mode)
+    if use_adm:
+        cov = coverage(items)
+        print(f"[Features] admissible-action input ON  (obs with a list: {cov['has_list']:.0%}, "
+              f"actions allowed: {cov['admissible_given_list']:.0%})")
+        if cov["has_list"] == 0:
+            print("[Features] WARNING: no [ADMISSIBLE] lists found — the feature will be all zeros")
+        z_ctx = with_features(z_ctx, items)
     print(f"[Encode] done in {time.time() - t0:.1f}s  dim={z_ctx.shape[1]}")
     z_ctx_val, z_next_val = z_ctx[val_idx], z_next[val_idx]
     val_items = [items[i] for i in val_idx]
@@ -267,6 +280,7 @@ def main():
         "split": split_desc,
         "held_out_games": held_games,
         "input_mode": mode,
+        "admissible_feature": use_adm,
         "epochs": None if args.steps else epochs,
         "steps": args.steps,
         "seed": seed,
@@ -316,7 +330,9 @@ def main():
         final["steps"] = b_epochs * steps_per_epoch
         results["budgets"][b] = {"final": final, "history": hist,
                                  "steps_per_epoch": steps_per_epoch}
-        trainer.save(str(out_dir / f"budget_{b}.pt"), extra={"budget": b, "final": final})
+        trainer.save(str(out_dir / f"budget_{b}.pt"),
+                     extra={"budget": b, "final": final, "input_mode": mode,
+                            "admissible_feature": use_adm, "buffer": args.buffer})
 
     # ── 4. Save + summarise ────────────────────────────────────────────────────
     with open(out_dir / "results.json", "w") as f:
@@ -325,7 +341,8 @@ def main():
     print("\n" + "=" * 64)
     print(f"  Summary (held-out set of {n_val}; random top-1 = {1 / n_val:.3f})")
     print(f"  test set: {split_desc}")
-    print(f"  input:    {'observation and action encoded separately' if mode == 'separate' else 'one joint text'}")
+    print(f"  input:    {'observation and action encoded separately' if mode == 'separate' else 'one joint text'}"
+          f"{' + admissible-action feature' if use_adm else ''}")
     print("=" * 64)
     print(f"  {'n':>5} {'steps':>6} {'cos_dist':>9} {'top1':>6} {'spread':>7} {'decode':>7} {'reach':>6}"
           f" {'b_major':>8} {'b_action':>9}")

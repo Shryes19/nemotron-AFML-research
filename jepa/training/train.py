@@ -194,11 +194,18 @@ class JEPATrainer:
         Separate input (N, 2D) = [z_obs | z_action]: project each half with the
         same online head and place them side by side again, so the action keeps
         its own full-size slot instead of being a few words in a long text.
+        Any columns after the last full D-sized block are hand-made features
+        (jepa/training/features.py) and are passed through unprojected.
         """
         d = self.ema.online_proj.in_features
-        if z.shape[1] == d:
+        k = z.shape[1] // d
+        extra = z[:, k * d:]
+        if k == 1 and extra.shape[1] == 0:
             return self.ema.online(z)
-        return torch.cat([self.ema.online(part) for part in z.split(d, dim=1)], dim=1)
+        parts = [self.ema.online(z[:, i * d:(i + 1) * d]) for i in range(k)]
+        if extra.shape[1]:
+            parts.append(extra)
+        return torch.cat(parts, dim=1)
 
     # ──────────────────────────────────────────────────────────────────────────
     # Evaluation

@@ -18,6 +18,9 @@ jepa:
   predictor_type: "mlp"               # "mlp" | "transformer" — swap here
   input_mode: "separate"              # "separate" = [z_obs | z_action] (better on ALFWorld,
                                       #   2026-10-31) | "joint" = one "action + obs" text
+  admissible_feature: true            # add "is the action in the [ADMISSIBLE] list" to the
+                                      #   input (jepa/training/features.py); fixes failed-action
+                                      #   predictions at small budgets
   hidden_dim: 2048
   num_layers: 2
   dropout: 0.1
@@ -29,6 +32,9 @@ training:
   epochs: 20                          # only used when steps is null
   steps: 2000                         # same number of training steps for EVERY budget;
                                       #   fixed epochs left small budgets under-trained
+                                      # NO early stopping: tested 2026-11-01 on unseen games,
+                                      #   stopping at the best validation-game checkpoint scored
+                                      #   WORSE than the full 2000 steps at every budget
   probe_epochs: 1                     # for ex-ante probe fidelity (Feature 1)
   lr: 1e-4
   weight_decay: 1e-4

@@ -84,6 +84,34 @@ class NNDecoder:
 
         return self.transitions[best_idx]["obs_next"], best_dist
 
+    def decode_topk(self, z_preds: torch.Tensor, k: int = 5):
+        """
+        The k nearest DISTINCT buffer next-states for each prediction.
+
+        Lets an LLM scorer read several candidate outcomes instead of one, which
+        helps when the single best match is a near-miss.
+
+        Returns: list (one per prediction) of [(obs_next_text, cosine_similarity), ...]
+        """
+        z = F.normalize(z_preds.float().cpu(), p=2, dim=-1)
+        if z.dim() == 1:
+            z = z.unsqueeze(0)
+        sims = z @ self.z_next_index.T                           # (B, N)
+        order = sims.argsort(dim=1, descending=True)
+        out = []
+        for b in range(len(z)):
+            seen, row = set(), []
+            for j in order[b].tolist():
+                txt = self.transitions[j]["obs_next"]
+                if txt in seen:
+                    continue
+                seen.add(txt)
+                row.append((txt, float(sims[b, j])))
+                if len(row) == k:
+                    break
+            out.append(row)
+        return out
+
     def decode_batch(
         self,
         z_preds: torch.Tensor,
@@ -127,7 +155,16 @@ class NNDecoder:
             (lower decode_dist = predictor was more confident about this transition).
 
         The predicted_obs_next strings are passed to the LLM scorer for value estimation.
+
+        DEPRECATED: this builds the old joint-text input only. Models trained
+        with the current defaults (separate action input + admissible feature)
+        need jepa.planning.latent_world_model.LatentWorldModel, which builds
+        inputs exactly as training did and also offers top-k decode and
+        decode-free action ranking.
         """
+        import warnings
+        warnings.warn("NNDecoder.score_candidate_actions is joint-input only; "
+                      "use jepa.planning.latent_world_model.LatentWorldModel", DeprecationWarning)
         results = []
 
         for action in candidate_actions:

@@ -35,6 +35,15 @@ def make_context(obs: str, action: str) -> str:
     return f"Action: {action}\nObservation: {obs}"
 
 
+# Text formats for "separate" mode — training and inference must use the same
+def obs_text(obs: str) -> str:
+    return f"Observation: {obs}"
+
+
+def action_text(action: str) -> str:
+    return f"Action: {action}"
+
+
 def _fingerprint(model_tag: str, transitions: List[Dict], mode: str = "joint") -> str:
     h = hashlib.sha1(model_tag.encode("utf-8"))
     if mode != "joint":                       # keep old cache names valid for joint
@@ -84,8 +93,8 @@ def encode_buffer(
     if mode == "joint":
         z_ctx = encoder.encode([context_text(t) for t in transitions])
     else:
-        z_obs = encoder.encode([f"Observation: {t['obs']}" for t in transitions])
-        z_act = encoder.encode([f"Action: {t['action']}" for t in transitions])
+        z_obs = encoder.encode([obs_text(t["obs"]) for t in transitions])
+        z_act = encoder.encode([action_text(t["action"]) for t in transitions])
         z_ctx = torch.cat([z_obs, z_act], dim=1)
     z_next = encoder.encode([t["obs_next"] for t in transitions])
 
