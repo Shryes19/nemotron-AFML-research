@@ -36,9 +36,12 @@ class NNDecoder:
 
     Args:
         buffer_transitions: The training buffer (list of transition dicts).
-        z_next_cache:       Pre-computed embeddings of obs_next for the buffer,
-                            shape (N, D).  Pass these from the training cache
-                            to avoid re-encoding.
+        z_next_cache:       Embeddings of obs_next for the buffer, shape (N, D),
+                            ALREADY PASSED THROUGH ema.target(...).  The
+                            predictor's output lives in the target-projected
+                            space, so indexing raw encoder embeddings here
+                            compares vectors from two different spaces and
+                            gives meaningless nearest neighbours.
     """
 
     def __init__(

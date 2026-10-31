@@ -112,9 +112,13 @@ def main():
     # ── Step 5: NN-decode ──────────────────────────────────────────────────────
     print(f"\n[5/6] Testing NN-decode ...")
 
-    # Build embedding cache for the full buffer (train+val combined)
+    # Build embedding cache for the full buffer (train+val combined).
+    # IMPORTANT: the predictor outputs vectors in the EMA *target-projected*
+    # space, so the decode index must live in that same space.
     all_transitions = train_ds.transitions + val_ds.transitions
-    z_next_cache    = encoder.encode([t["obs_next"] for t in all_transitions])
+    z_next_raw      = encoder.encode([t["obs_next"] for t in all_transitions])
+    with torch.no_grad():
+        z_next_cache = ema.target(z_next_raw.to(args.device)).cpu()
     decoder         = NNDecoder(all_transitions, z_next_cache)
 
     # Pick a test transition, predict its next obs, decode
