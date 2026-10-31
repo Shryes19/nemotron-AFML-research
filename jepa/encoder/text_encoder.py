@@ -97,6 +97,28 @@ class TextEncoder:
         # Apply monkey-patch for newer transformers compatibility
         _patch_nv_embed_model()
 
+        # Patch at the modeling_utils level: transformers>=4.47 calls
+        # model.all_tied_weights_keys.keys() expecting a dict; NVEmbedModel
+        # either has no attribute or returns a list.  Wrap it in a dict.
+        try:
+            import transformers.modeling_utils as _mu
+
+            _orig_get_total = _mu.get_total_byte_count
+
+            def _patched_get_total(model, *args, **kwargs):
+                if hasattr(model, "all_tied_weights_keys") and isinstance(
+                    model.all_tied_weights_keys, list
+                ):
+                    # Wrap list as dict so .keys() works
+                    model.all_tied_weights_keys = {k: k for k in model.all_tied_weights_keys}
+                elif not hasattr(model, "all_tied_weights_keys"):
+                    model.all_tied_weights_keys = {}
+                return _orig_get_total(model, *args, **kwargs)
+
+            _mu.get_total_byte_count = _patched_get_total
+        except Exception:
+            pass
+
         # Also patch at the quantizer level as a belt-and-suspenders fix
         try:
             from transformers.quantizers import base as _qbase
@@ -104,9 +126,9 @@ class TextEncoder:
 
             def _patched(model):
                 if not hasattr(model, "all_tied_weights_keys"):
-                    model.all_tied_weights_keys = (
-                        getattr(model, "_tied_weights_keys", None) or []
-                    )
+                    model.all_tied_weights_keys = {}
+                elif isinstance(model.all_tied_weights_keys, list):
+                    model.all_tied_weights_keys = {k: k for k in model.all_tied_weights_keys}
                 return _orig(model)
 
             _qbase.get_keys_to_not_convert = _patched
