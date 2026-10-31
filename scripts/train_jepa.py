@@ -34,6 +34,7 @@ Outputs (default folder: outputs/jepa/<buffer name>/)
 
 import argparse
 import json
+import math
 import random
 import sys
 import time
@@ -127,9 +128,11 @@ def plot_curves(results: dict, out_path: Path):
     for ax, (key, title, hint) in zip(axes.flat, panels):
         for b, r in results["budgets"].items():
             hist = r["history"][key]
-            ax.plot(range(1, len(hist) + 1), hist, marker=".", label=f"n={b}")
+            spe = r.get("steps_per_epoch", 1)
+            xs = [(i + 1) * spe for i in range(len(hist))]
+            ax.plot(xs, hist, marker="." if len(hist) <= 60 else None, label=f"n={b}")
         ax.set_title(f"{title}\n({hint})", fontsize=10)
-        ax.set_xlabel("epoch")
+        ax.set_xlabel("training steps")
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax.ticklabel_format(axis="y", useOffset=False, style="plain")
         if key == "target_spread":
@@ -150,6 +153,9 @@ def main():
     p.add_argument("--budgets", type=int, nargs="+", default=None,
                    help="data budgets (default: data.budgets in config)")
     p.add_argument("--epochs", type=int, default=None, help="default: training.epochs")
+    p.add_argument("--steps", type=int, default=None,
+                   help="give EVERY budget about this many training steps (overrides --epochs). "
+                        "Without it, small budgets get far fewer steps than large ones.")
     p.add_argument("--val-frac", type=float, default=None, help="default: training.held_out_frac")
     p.add_argument("--real-encoder", action="store_true", help="use NV-Embed-v2 (GPU)")
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
@@ -164,12 +170,15 @@ def main():
     epochs = args.epochs or int(tcfg.get("epochs", 20))
     val_frac = args.val_frac if args.val_frac is not None else float(tcfg.get("held_out_frac", 0.1))
     seed = args.seed if args.seed is not None else int(cfg.get("seed", 42))
-    out_dir = Path(args.out or f"outputs/jepa/{Path(args.buffer).stem}")
+    suffix = f"_steps{args.steps}" if args.steps else ""
+    out_dir = Path(args.out or f"outputs/jepa/{Path(args.buffer).stem}{suffix}")
     out_dir.mkdir(parents=True, exist_ok=True)
+    batch_size = 64
 
     print("=" * 64)
     print(f"  JEPA training  buffer={args.buffer}")
-    print(f"  budgets={budgets}  epochs={epochs}  device={args.device}")
+    sched = f"steps={args.steps} (same for every budget)" if args.steps else f"epochs={epochs}"
+    print(f"  budgets={budgets}  {sched}  device={args.device}")
     print("=" * 64)
 
     # ── 1. Fixed held-out set + nested training pool ───────────────────────────
@@ -201,7 +210,8 @@ def main():
         "encoder": getattr(encoder, "model_name", "unknown"),
         "n_transitions": len(items),
         "n_val": n_val,
-        "epochs": epochs,
+        "epochs": None if args.steps else epochs,
+        "steps": args.steps,
         "seed": seed,
         "budgets": {},
         "skipped_budgets": [],
@@ -209,7 +219,7 @@ def main():
     train_cfg = {
         "lr": float(tcfg.get("lr", 1e-4)),
         "weight_decay": float(tcfg.get("weight_decay", 1e-4)),
-        "batch_size": 64,
+        "batch_size": batch_size,
     }
 
     for b in budgets:
@@ -218,7 +228,10 @@ def main():
             results["skipped_budgets"].append(b)
             continue
 
-        print(f"\n[Budget n={b}] training {epochs} epochs ...")
+        steps_per_epoch = math.ceil(b / batch_size)
+        b_epochs = max(1, round(args.steps / steps_per_epoch)) if args.steps else epochs
+        print(f"\n[Budget n={b}] training {b_epochs} epochs "
+              f"({b_epochs * steps_per_epoch} steps) ...")
         torch.manual_seed(seed)
         tr_idx = pool_idx[:b]
         predictor = MLPPredictor(
@@ -233,7 +246,7 @@ def main():
         t0 = time.time()
         hist = trainer.train_on_embeddings(
             z_ctx[tr_idx], z_next[tr_idx], z_ctx_val, z_next_val,
-            epochs=epochs, log_every=max(1, epochs // 4),
+            epochs=b_epochs, log_every=max(1, b_epochs // 4),
         )
         train_items = [items[i] for i in tr_idx]
         dec = decode_metrics(trainer, train_items, z_next[tr_idx], val_items, z_ctx_val)
@@ -241,7 +254,10 @@ def main():
         final = {k: v[-1] for k, v in hist.items()}
         final.update(dec)
         final["seconds"] = round(time.time() - t0, 1)
-        results["budgets"][b] = {"final": final, "history": hist}
+        final["epochs"] = b_epochs
+        final["steps"] = b_epochs * steps_per_epoch
+        results["budgets"][b] = {"final": final, "history": hist,
+                                 "steps_per_epoch": steps_per_epoch}
         trainer.save(str(out_dir / f"budget_{b}.pt"), extra={"budget": b, "final": final})
 
     # ── 4. Save + summarise ────────────────────────────────────────────────────
@@ -251,11 +267,11 @@ def main():
     print("\n" + "=" * 64)
     print(f"  Summary (held-out set of {n_val}; random top-1 = {1 / n_val:.3f})")
     print("=" * 64)
-    print(f"  {'n':>5} {'cos_dist':>9} {'top1':>6} {'spread':>7} {'decode':>7} {'reach':>6}"
+    print(f"  {'n':>5} {'steps':>6} {'cos_dist':>9} {'top1':>6} {'spread':>7} {'decode':>7} {'reach':>6}"
           f" {'b_major':>8} {'b_action':>9}")
     for b, r in results["budgets"].items():
         f_ = r["final"]
-        print(f"  {b:>5} {f_['val_cos_dist']:>9.4f} {f_['val_top1']:>6.3f} "
+        print(f"  {b:>5} {f_['steps']:>6} {f_['val_cos_dist']:>9.4f} {f_['val_top1']:>6.3f} "
               f"{f_['target_spread']:>7.4f} {f_['decode_exact']:>7.3f} {f_['reachable']:>6.3f}"
               f" {f_['base_majority']:>8.3f} {f_['base_action']:>9.3f}")
     print("  decode = JEPA exact-match | reach = ceiling for decode | "
