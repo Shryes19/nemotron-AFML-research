@@ -167,16 +167,28 @@ def main():
     p.add_argument("--test-buffer", default=None,
                    help="test on a separate JSONL file (e.g. Saanvi's task-disjoint held-out set)")
     p.add_argument("--separate-action", action="store_true",
-                   help="encode observation and action separately so the action isn't drowned out")
+                   help="encode observation and action separately (default: jepa.input_mode in config)")
+    p.add_argument("--joint", action="store_true",
+                   help="force the old single 'action + observation' text input")
+    p.add_argument("--use-epochs", action="store_true",
+                   help="ignore training.steps in config and train for --epochs instead")
     args = p.parse_args()
     if args.holdout_games and args.test_buffer:
         p.error("use either --holdout-games or --test-buffer, not both")
+    if args.joint and args.separate_action:
+        p.error("use either --joint or --separate-action, not both")
 
     cfg = load_config(args.config)
     jcfg, tcfg, dcfg, ecfg = (cfg.get(k, {}) for k in ("jepa", "training", "data", "encoder"))
 
     budgets = sorted(args.budgets or dcfg.get("budgets", [32, 64, 128, 256, 512, 1024]))
     epochs = args.epochs or int(tcfg.get("epochs", 20))
+
+    # Defaults come from config; command-line flags override them.
+    if args.steps is None and not args.use_epochs and not args.epochs and tcfg.get("steps"):
+        args.steps = int(tcfg["steps"])
+    if not args.joint and not args.separate_action:
+        args.separate_action = jcfg.get("input_mode", "joint") == "separate"
     val_frac = args.val_frac if args.val_frac is not None else float(tcfg.get("held_out_frac", 0.1))
     seed = args.seed if args.seed is not None else int(cfg.get("seed", 42))
     suffix = f"_steps{args.steps}" if args.steps else ""
