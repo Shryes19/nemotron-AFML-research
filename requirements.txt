@@ -3,7 +3,7 @@ torch>=2.3.0
 torchvision>=0.18.0
 
 # ── HuggingFace stack ─────────────────────────────────────────────────────────
-transformers>=4.43.0
+transformers>=4.43.0,<=4.44.2  # NV-Embed-v2 needs DynamicCache.from_legacy_cache (removed in 4.45+)
 datasets>=2.20.0
 accelerate>=0.31.0
 peft>=0.11.0          # LoRA for SFT arm
