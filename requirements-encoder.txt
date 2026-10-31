@@ -66,4 +66,5 @@ tzdata==2026.6
 urllib3==2.8.0
 xxhash==4.0.2
 yarl==1.25.1
-matplotlib>=3.8          # loss_curves.png in scripts/train_jepa.py
+matplotlib==3.9.2         # loss_curves.png — last line of versions that keep numpy<2 (transformers 4.42 needs it)
+contourpy==1.3.0
