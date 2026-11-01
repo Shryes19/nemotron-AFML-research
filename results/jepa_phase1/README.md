@@ -80,11 +80,24 @@ games, clearly better on predictable actions, capped by the buffer) hold in
 all three, so they come from ALFWorld and the decode step, not this choice.
 The training runs in `jepa/` used the original projection + EMA design.
 
-## Probe fidelity (`probe/`)
+## Probe fidelity — Feature 1 (`probe_scores.csv`, `probe/`)
 
-`alfworld_games`: Feature 1 per game (n = 32, 1 epoch, 3 seeds), computed with
-the **old joint text input** and no admissible feature. To be rerun once the
-team settles the probe definition.
+`probe_scores.csv` is the Feature 1 file for the RQ3 matrix
+(`scripts/build_feature_matrix.py --probe`): one row per (env, game), columns
+`env, game, probe_fidelity, ...`. Current rows: 12 ALFWorld games, n = 32,
+1 epoch, 5 random draws per game, current arm model (separate action +
+admissible input, frozen targets, MSE). Run 1 Nov 2026. Game ids match the
+feature matrix in PR #3.
+
+`probe_fidelity` = mean held-out cosine distance (lower = the game is easier to
+predict). Range 0.770–0.791. Measured the way the capability report measures
+Feature 2 (between-game sd ÷ mean within-game sd over the 5 draws), the ratio
+is **0.8**: at 1 epoch the probe does **not** separate ALFWorld games. With 32
+transitions and batch 64, one epoch is a single training step, so this is a
+reason to settle the probe definition (`--probe-steps`) before Phase 2.
+
+`probe/alfworld_games/` holds the earlier run (old joint text input, no
+admissible feature, 3 draws), kept for reference.
 
 ## Reproduce
 
