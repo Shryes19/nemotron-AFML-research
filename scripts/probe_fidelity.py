@@ -134,10 +134,11 @@ def main():
     p.add_argument("--buffer", required=True)
     p.add_argument("--config", default="configs/config.yaml")
     p.add_argument("--n", type=int, default=32, help="training transitions per game")
-    p.add_argument("--probe-epochs", type=int, default=None, help="default: training.probe_epochs")
+    p.add_argument("--probe-epochs", type=int, default=None,
+                   help="train for this many epochs instead of the default step count")
     p.add_argument("--probe-steps", type=int, default=None,
-                   help="train for this many optimiser steps instead of --probe-epochs "
-                        "(1 epoch at n=32 is a single step; open team decision)")
+                   help="optimiser steps per probe (default: training.probe_steps = 50; "
+                        "1 epoch at n=32 is a single step and does not separate games)")
     p.add_argument("--seeds", type=int, default=5,
                    help="random 32-transition draws per game, averaged (5 = same as Feature 2)")
     p.add_argument("--scores-out", default=SCORES_CSV,
@@ -152,6 +153,10 @@ def main():
     cfg = load_config(args.config)
     jcfg, tcfg, ecfg = (cfg.get(k, {}) for k in ("jepa", "training", "encoder"))
     probe_epochs = args.probe_epochs or int(tcfg.get("probe_epochs", 1))
+    # Default schedule = training.probe_steps (50, agreed 2026-11-01);
+    # an explicit --probe-epochs overrides it.
+    if args.probe_steps is None and args.probe_epochs is None and tcfg.get("probe_steps"):
+        args.probe_steps = int(tcfg["probe_steps"])
     batch_size = 64
     # Same model as the JEPA arm (configs/config.yaml): input mode, admissible
     # feature, training target and loss — so Feature 1 probes the arm we report.

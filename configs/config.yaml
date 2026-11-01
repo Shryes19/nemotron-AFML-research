@@ -41,7 +41,10 @@ training:
                                       # NO early stopping: tested 2026-11-01 on unseen games,
                                       #   stopping at the best validation-game checkpoint scored
                                       #   WORSE than the full 2000 steps at every budget
-  probe_epochs: 1                     # for ex-ante probe fidelity (Feature 1)
+  probe_steps: 50                     # Feature 1 = 50 optimiser steps on n=32 (decided
+                                      #   2026-11-01: separates ALFWorld games, ratio 1.63,
+                                      #   stable ranking; 1 epoch = 1 step did not, 0.80)
+  probe_epochs: 1                     # only used if probe_steps is null or --probe-epochs is given
   lr: 1e-4
   weight_decay: 1e-4
   held_out_frac: 0.1                  # fraction of buffer held out for eval

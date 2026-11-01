@@ -84,17 +84,14 @@ The training runs in `jepa/` used the original projection + EMA design.
 
 `probe_scores.csv` is the Feature 1 file for the RQ3 matrix
 (`scripts/build_feature_matrix.py --probe`): one row per (env, game), columns
-`env, game, probe_fidelity, ...`. Current rows: 12 ALFWorld games, n = 32,
-1 epoch, 5 random draws per game, current arm model (separate action +
-admissible input, frozen targets, MSE). Run 1 Nov 2026. Game ids match the
-feature matrix in PR #3.
+`env, game, probe_fidelity, ...`. **Definition (agreed 1 Nov 2026): 50
+optimiser steps on n = 32, 5 random draws per game, current arm model**
+(separate action + admissible input, frozen targets, MSE). Current rows: 12
+ALFWorld games. Game ids match the feature matrix in PR #3.
 
 `probe_fidelity` = mean held-out cosine distance (lower = the game is easier to
-predict). Range 0.770–0.791. Measured the way the capability report measures
-Feature 2 (between-game sd ÷ mean within-game sd over the 5 draws), the ratio
-is **0.8**: at 1 epoch the probe does **not** separate ALFWorld games. With 32
-transitions and batch 64, one epoch is a single training step, so this is a
-reason to settle the probe definition (`--probe-steps`) before Phase 2.
+predict). `probe_scores_1epoch.csv` and `probe_scores_steps200.csv` are the
+alternatives compared below, kept for the record.
 
 ### Which probe schedule? (evidence for the team decision)
 
@@ -102,8 +99,8 @@ Same 12 games, same model, 5 draws each:
 
 | Schedule | Score range | Separation ratio | Rank agreement with 200 steps |
 |---|---|---|---|
-| 1 epoch (= 1 step at n = 32) | 0.770–0.791 | 0.80 | 0.34 |
-| **50 steps** (`probe_scores_steps50.csv`) | 0.139–0.228 | **1.63** | 0.93 |
+| 1 epoch (= 1 step at n = 32; `probe_scores_1epoch.csv`) | 0.770–0.791 | 0.80 | 0.34 |
+| **50 steps** (`probe_scores.csv`) | 0.139–0.228 | **1.63** | 0.93 |
 | 200 steps (`probe_scores_steps200.csv`) | 0.095–0.171 | 1.29 | — |
 
 Separation ratio = between-game sd ÷ mean within-game sd (as in the capability
@@ -115,8 +112,8 @@ With 50 steps the probe separates games (1.63) and its ranking is stable
 ordering is also sensible: pick-and-place and look-at tasks are easiest
 (≈0.11 at 200 steps), heat and cool tasks hardest (≈0.17). 200 steps
 separates less because the 32-example model starts to overfit and the draws
-spread out. **Proposal: Feature 1 = 50 steps.** `probe_scores.csv` stays the
-1-epoch version until the team agrees.
+spread out. **Decision: Feature 1 = 50 steps** (now `training.probe_steps` in
+the config and the default in `probe_fidelity.py`).
 
 `probe/alfworld_games/` holds the earlier run (old joint text input, no
 admissible feature, 3 draws), kept for reference.
