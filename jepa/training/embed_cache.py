@@ -90,13 +90,16 @@ def encode_buffer(
             return data["z_ctx"], data["z_next"]
 
     print(f"[Cache] Encoding {len(transitions)} transitions with {model_tag} ({mode}) ...")
-    if mode == "joint":
-        z_ctx = encoder.encode([context_text(t) for t in transitions])
-    else:
-        z_obs = encoder.encode([obs_text(t["obs"]) for t in transitions])
-        z_act = encoder.encode([action_text(t["action"]) for t in transitions])
-        z_ctx = torch.cat([z_obs, z_act], dim=1)
-    z_next = encoder.encode([t["obs_next"] for t in transitions])
+    from jepa.compute import env_label, track
+    with track("nv_embed_encode", arm="shared", env=env_label(transitions), game="*",
+               n=len(transitions), model=model_tag, mode=mode):
+        if mode == "joint":
+            z_ctx = encoder.encode([context_text(t) for t in transitions])
+        else:
+            z_obs = encoder.encode([obs_text(t["obs"]) for t in transitions])
+            z_act = encoder.encode([action_text(t["action"]) for t in transitions])
+            z_ctx = torch.cat([z_obs, z_act], dim=1)
+        z_next = encoder.encode([t["obs_next"] for t in transitions])
 
     if cache_path is not None:
         cache_path.parent.mkdir(parents=True, exist_ok=True)

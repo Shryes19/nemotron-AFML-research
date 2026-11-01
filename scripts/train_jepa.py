@@ -49,6 +49,7 @@ from jepa.predictor.mlp_predictor import MLPPredictor, EMATargetEncoder
 from jepa.training.buffer import TransitionDataset
 from jepa.training.embed_cache import encode_buffer
 from jepa.training.features import coverage, with_features
+from jepa.compute import env_label, track
 from jepa.training.nn_decode import NNDecoder
 from jepa.training.train import JEPATrainer
 
@@ -330,10 +331,12 @@ def main():
         trainer = JEPATrainer(None, predictor, ema, train_cfg, device=args.device)
 
         t0 = time.time()
-        hist = trainer.train_on_embeddings(
-            z_ctx[tr_idx], z_next[tr_idx], z_ctx_val, z_next_val,
-            epochs=b_epochs, log_every=max(1, b_epochs // 4),
-        )
+        with track("jepa_train", arm="D", env=env_label([items[i] for i in tr_idx]), game="*",
+                   n=b, steps=b_epochs * steps_per_epoch, target_mode=target_mode):
+            hist = trainer.train_on_embeddings(
+                z_ctx[tr_idx], z_next[tr_idx], z_ctx_val, z_next_val,
+                epochs=b_epochs, log_every=max(1, b_epochs // 4),
+            )
         train_items = [items[i] for i in tr_idx]
         dec = decode_metrics(trainer, train_items, z_next[tr_idx], val_items, z_ctx_val)
 
