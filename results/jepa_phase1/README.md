@@ -96,6 +96,28 @@ is **0.8**: at 1 epoch the probe does **not** separate ALFWorld games. With 32
 transitions and batch 64, one epoch is a single training step, so this is a
 reason to settle the probe definition (`--probe-steps`) before Phase 2.
 
+### Which probe schedule? (evidence for the team decision)
+
+Same 12 games, same model, 5 draws each:
+
+| Schedule | Score range | Separation ratio | Rank agreement with 200 steps |
+|---|---|---|---|
+| 1 epoch (= 1 step at n = 32) | 0.770–0.791 | 0.80 | 0.34 |
+| **50 steps** (`probe_scores_steps50.csv`) | 0.139–0.228 | **1.63** | 0.93 |
+| 200 steps (`probe_scores_steps200.csv`) | 0.095–0.171 | 1.29 | — |
+
+Separation ratio = between-game sd ÷ mean within-game sd (as in the capability
+report; its Feature 2 scored 1.0–2.2 within ALFWorld). Rank agreement =
+Spearman correlation of the game ranking.
+
+With 50 steps the probe separates games (1.63) and its ranking is stable
+(0.93 with 200 steps); the 1-epoch ranking is close to unrelated (0.34). The
+ordering is also sensible: pick-and-place and look-at tasks are easiest
+(≈0.11 at 200 steps), heat and cool tasks hardest (≈0.17). 200 steps
+separates less because the 32-example model starts to overfit and the draws
+spread out. **Proposal: Feature 1 = 50 steps.** `probe_scores.csv` stays the
+1-epoch version until the team agrees.
+
 `probe/alfworld_games/` holds the earlier run (old joint text input, no
 admissible feature, 3 draws), kept for reference.
 
