@@ -78,6 +78,15 @@ python -m wm.export_buffers --env alfworld --train data/raw/alfworld_games.jsonl
 
 Each game is played many times with the expert/random mix; `--dedupe` keeps only new `(task_id, o_t, a_t)` transitions. ALFWorld's expert is nearly deterministic per game, so `--expert-warmup 8` starts expert episodes with up to 8 random steps (recorded as `random`); the expert replans from there and reaches new states.
 
+**Per-game ScienceWorld buffer** (game = task type, all 22 task types with train ids, about 100 transitions each):
+
+```bash
+python -m wm.collect --env sciworld --split train --balance-by task_type --late-prefix --max-steps 80 --dedupe --tag games --target expert=1440,random=860 --seed 0 --max-episodes 5000 --out data/raw/sciworld_games.jsonl
+python -m wm.export_buffers --env sciworld --train data/raw/sciworld_games.jsonl --single data/buffers/sciworld_games.jsonl --game family
+```
+
+ScienceWorld's heating, melting and measuring steps come 30-60 steps into a task, so this mode uses episodes of up to 80 steps, records every new step (no per-episode cap), and lets random actions start anywhere along the expert's gold path (`--late-prefix`). `--balance-by task_type` always plays the task type with the fewest rows, cycling through its train variations. `game` is the task type (`--game family`), the agreed RQ3 unit for ScienceWorld.
+
 **Per-budget buffers** (+ the task-disjoint held-out set) from the main pool:
 
 ```bash

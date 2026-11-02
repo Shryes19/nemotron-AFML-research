@@ -75,6 +75,12 @@ class SciWorldEnv(TextEnv):
     def task_type(self) -> str:
         return self._task
 
+    def task_type_of(self, task_id: str) -> str:
+        return self.games[int(task_id.split("_")[-1])][0]
+
+    def gold_length(self) -> Optional[int]:
+        return len(self._gold)
+
     def goal(self) -> str:
         return self._goal
 

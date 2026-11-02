@@ -45,6 +45,14 @@ class TextEnv:
     def task_type(self) -> str:
         return ""
 
+    def task_type_of(self, task_id: str) -> str:
+        """Task type of a task id without resetting (used to balance collection)."""
+        return task_id
+
+    def gold_length(self) -> Optional[int]:
+        """Length of the expert's full plan for the current task, if known."""
+        return None
+
     def goal(self) -> str:
         return ""
 

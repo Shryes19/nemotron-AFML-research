@@ -28,10 +28,13 @@ def main(argv=None):
         r = env.replay(row["task_id"], row["action_prefix"])
         same = r.obs == row["o_t"] if env.exact_replay else canonical(r.obs) == canonical(row["o_t"])
         nxt = env.step(row["a_t"])
-        same_next = nxt.feedback == row["feedback_next"]
+        if env.exact_replay:
+            same_next = nxt.feedback == row["feedback_next"]
+        else:  # ScienceWorld lists objects in run-dependent order
+            same_next = sorted(nxt.feedback.split()) == sorted(row["feedback_next"].split())
         if not (same and same_next):
             bad += 1
-            print("MISMATCH", row["transition_id"], "o_t ok" if same else "o_t differs",
+            print("MISMATCH", row["transition_id"], row["task_type"], "o_t ok" if same else "o_t differs",
                   "| next ok" if same_next else "| next differs")
     print("%d/%d rows replayed correctly" % (min(args.n, len(rows)) - bad, min(args.n, len(rows))))
     if hasattr(env, "close"):

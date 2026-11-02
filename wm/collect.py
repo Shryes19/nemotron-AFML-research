@@ -15,6 +15,14 @@ Per-game buffers (many transitions from a few fixed games):
 
 --tasks always plays the game with the fewest rows so far; --dedupe never records the same
 (task_id, o_t, a_t) twice, so repeated episodes on one game add only new transitions.
+
+Per-task-type buffers (ScienceWorld: game = task type, long episodes):
+
+  python -m wm.collect --env sciworld --split train --balance-by task_type --late-prefix       --max-steps 80 --dedupe --tag games --target expert=1440,random=860 --max-episodes 5000       --out data/raw/sciworld_games.jsonl
+
+--balance-by task_type plays the task type with the fewest rows, cycling through its train
+variations; --late-prefix lets the expert hand over anywhere along its gold path (not only in
+the first 15 steps), so late steps such as heating and measuring are reached and recorded.
 """
 from __future__ import annotations
 
@@ -23,8 +31,8 @@ import json
 import os
 import random
 import time
-from collections import Counter
-from typing import Dict, List
+from collections import Counter, defaultdict
+from typing import Dict, List, Tuple
 
 from wm.envs.base import make_env
 from wm.policies import SKIP_ACTIONS, make_policy
@@ -47,6 +55,15 @@ def load_task_ids(env: str, split: str) -> List[str]:
     return [t for t in read("train") if t not in test]
 
 
+def pick_balanced(groups: Dict[str, List[str]], rows_per_group: Counter,
+                  cursor: Counter) -> Tuple[str, str]:
+    """Group with the fewest rows (ties by name), then its next task id round-robin."""
+    group = min(groups, key=lambda g: (rows_per_group[g], g))
+    task_id = groups[group][cursor[group] % len(groups[group])]
+    cursor[group] += 1
+    return group, task_id
+
+
 def parse_target(text: str) -> Dict[str, int]:
     out = {}
     for part in text.split(","):
@@ -56,18 +73,23 @@ def parse_target(text: str) -> Dict[str, int]:
 
 
 def run_episode(env, env_name, split, task_id, ep, driver, policies, rng, seed, need, max_rows=None,
-                seen=None, tag=None, expert_warmup=0):
+                seen=None, tag=None, expert_warmup=0, max_steps=MAX_EPISODE_STEPS, late_prefix=False):
     """Roll out one episode; return the rows it produced (only for policies still needed).
     If `seen` is a set, (task_id, o_t, a_t) already in it are not recorded again.
     expert_warmup > 0: expert-driven episodes start with U[0, expert_warmup] random steps, so a
-    replanning expert (ALFWorld) reaches new states on repeated plays of the same game."""
+    replanning expert (ALFWorld) reaches new states on repeated plays of the same game.
+    late_prefix: random/llm drivers take over at k ~ U[0, gold length] when the env knows it."""
     episode_id = "%s-%s-e%06d" % (env_name, tag or split, ep)
     r = env.reset(task_id)
-    k = MAX_EPISODE_STEPS if driver == "expert" else rng.randint(0, MAX_EXPERT_PREFIX)
+    gold = env.gold_length() if late_prefix else None
+    if driver == "expert":
+        k = max_steps
+    else:
+        k = rng.randint(0, gold if gold else MAX_EXPERT_PREFIX)
     m = rng.randint(*DRIVER_STEPS)
     warmup = rng.randint(0, expert_warmup) if driver == "expert" and expert_warmup else 0
     prefix, rows = [], []
-    for step in range(MAX_EPISODE_STEPS):
+    for step in range(max_steps):
         who = "random" if step < warmup else ("expert" if step < k else driver)
         if step >= k + m and driver != "expert":
             break
@@ -134,16 +156,24 @@ def main(argv=None):
     p.add_argument("--tag", default=None, help="episode id label instead of the split name")
     p.add_argument("--expert-warmup", type=int, default=0,
                    help="random steps (up to N) before the expert in expert episodes; ALFWorld only")
+    p.add_argument("--max-steps", type=int, default=MAX_EPISODE_STEPS, help="episode length cap")
+    p.add_argument("--late-prefix", action="store_true",
+                   help="drivers take over anywhere along the expert's gold path (ScienceWorld)")
+    p.add_argument("--balance-by", choices=["task_type"], default=None,
+                   help="balance rows across task types, cycling through each type's task ids")
     args = p.parse_args(argv)
 
     target = parse_target(args.target)
     have, last_ep = Counter(), -1
     per_task, seen = Counter(), (set() if args.dedupe else None)
+    per_type, type_episodes = Counter(), defaultdict(set)
     if os.path.exists(args.out):
         for row in read_jsonl(args.out):
             have[row["policy"].replace("_fallback", "")] += 1
             last_ep = max(last_ep, int(row["episode_id"].rsplit("e", 1)[1]))
             per_task[row["task_id"]] += 1
+            per_type[row["task_type"]] += 1
+            type_episodes[row["task_type"]].add(row["episode_id"])
             if seen is not None:
                 seen.add((row["task_id"], row["o_t"], row["a_t"]))
     need = {k: v - have[k] for k, v in target.items()}
@@ -162,6 +192,13 @@ def main(argv=None):
         if bad:
             raise SystemExit("not %s task ids: %s" % (args.split, bad[:3]))
         task_ids = chosen
+    groups, cursor = {}, Counter()
+    if args.balance_by:
+        for t in task_ids:
+            groups.setdefault(env.task_type_of(t), []).append(t)
+        # resume: continue each type's round-robin after the episodes already recorded
+        cursor.update({g: len(eps) for g, eps in type_episodes.items()})
+        print("balancing over %d task types" % len(groups), flush=True)
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
 
     t0 = time.time()
@@ -171,16 +208,19 @@ def main(argv=None):
             rng = random.Random("%d-%d" % (args.seed, ep))
             open_policies = [k for k, v in need.items() if v > 0]
             driver = rng.choices(open_policies, weights=[need[k] for k in open_policies])[0]
-            if args.tasks:
+            if args.balance_by:
+                _, task_id = pick_balanced(groups, per_type, cursor)
+            elif args.tasks:
                 task_id = min(task_ids, key=lambda t: (per_task[t], task_ids.index(t)))
             else:
                 task_id = task_ids[ep % len(task_ids)]
             rows = run_episode(env, args.env, args.split, task_id, ep, driver, policies, rng,
                                args.seed, need, args.max_rows_per_episode, seen, args.tag,
-                               args.expert_warmup)
+                               args.expert_warmup, args.max_steps, args.late_prefix)
             for row in rows:
                 f.write(json.dumps(row) + "\n")
                 per_task[task_id] += 1
+                per_type[row["task_type"]] += 1
             f.flush()
             print("ep %d %s driver=%s rows=%d need=%s (%.0fs)"
                   % (ep, task_id[:40], driver, len(rows), need, time.time() - t0), flush=True)
