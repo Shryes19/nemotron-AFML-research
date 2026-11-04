@@ -16,7 +16,8 @@ import os
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--log", default="results/compute/compute_log.jsonl")
+    ap.add_argument("--log", default=os.environ.get("COMPUTE_LOG", "results/compute/compute_log.jsonl"),
+                    help="defaults to $COMPUTE_LOG, the same file track() writes to")
     ap.add_argument("--out", default="results/compute/cost_table.csv")
     args = ap.parse_args()
     agg = collections.defaultdict(lambda: {"runs": 0, "wall_s": 0.0, "gpu_s": 0.0, "peak_mem_gb": 0.0})
