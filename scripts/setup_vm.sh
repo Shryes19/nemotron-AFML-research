@@ -24,11 +24,11 @@ cd "$W2W_DIR"
 VIRTUAL_ENV="$W2W_DIR/uv_alfworld" uv pip install alfworld==0.3.3
 VIRTUAL_ENV="$W2W_DIR/uv_alfworld" uv pip uninstall opencv-python || true
 VIRTUAL_ENV="$W2W_DIR/uv_alfworld" uv pip install -e AgentGym/agentenv-alfworld
-VIRTUAL_ENV="$W2W_DIR/uv_alfworld" uv pip install -e "$REPO_DIR"
+VIRTUAL_ENV="$W2W_DIR/uv_alfworld" uv pip install -e "$REPO_DIR[dev]"
 
 # ScienceWorld (mirrors uv_sciworld.sh; Java installed separately)
 [ -d uv_sciworld ] || uv venv uv_sciworld --python 3.8
 VIRTUAL_ENV="$W2W_DIR/uv_sciworld" uv pip install -e AgentGym/agentenv-sciworld
-VIRTUAL_ENV="$W2W_DIR/uv_sciworld" uv pip install -e "$REPO_DIR"
+VIRTUAL_ENV="$W2W_DIR/uv_sciworld" uv pip install -e "$REPO_DIR[dev]"
 
 echo "Setup done. Next: $W2W_DIR/uv_alfworld/bin/python scripts/fetch_data.py"

@@ -47,7 +47,8 @@ Only information the agent can see. No hidden initial state (unlike Word2World, 
 ```
 
 - **ALFWorld:** `[ROOM]` is the room description from reset (lists receptacles, never their contents). `[LOCATION]` and `[INVENTORY]` are tracked from feedback. `[ADMISSIBLE]` is the full admissible command list.
-- **ScienceWorld:** `[ROOM]` is the live `look` output, `[INVENTORY]` the live inventory. `[ADMISSIBLE]` lists action *templates* only, because the full valid action–object list has hundreds to thousands of entries; the full list is in the `admissible_actions` field.
+- **ScienceWorld:** `[ROOM]` is the live `look` output, `[INVENTORY]` the live inventory. `[ADMISSIBLE]` lists action *templates* only (e.g. `open OBJ`, `connect OBJ to OBJ`), **not concrete actions**, because the full valid action–object list has hundreds to thousands of entries; the full concrete list is in the `admissible_actions` field. Anything that checks "is this action in the [ADMISSIBLE] list" must treat ScienceWorld as having no usable list (the JEPA admissible feature does this, `jepa/training/features.py`).
+- **ALFWorld failed actions:** every `Nothing happens.` transition comes from the random policy's deliberately non-admissible commands (`wm/policies.py`, `ALFWORLD_FAIL_RATE`), and admissible ALFWorld commands always succeed. So "is the action in the [ADMISSIBLE] list" predicts failure perfectly in ALFWorld. This is information visible in the observation, not leakage, but results that use it should say so.
 
 `wm.obs.parse_obs(text)` splits the text back into its sections.
 
@@ -92,3 +93,29 @@ ScienceWorld's heating, melting and measuring steps come 30-60 steps into a task
 ```bash
 python -m wm.export_buffers --env alfworld --train data/raw/alfworld_train.jsonl.gz --heldout data/raw/alfworld_heldout.jsonl.gz --provisional
 ```
+
+## Branched states for decision utility
+
+`wm/branch_states.py` builds the file every world-model arm scores (same states, same candidates for G, F and D):
+
+```bash
+python -m wm.branch_states --env alfworld --data data/raw/alfworld_heldout.jsonl --out data/eval/alfworld_branched_states.jsonl --k 5 --seed 0
+```
+
+- **States:** the task-disjoint held-out set (Word2World test tasks), so no state comes from a game any arm trained on. Pair it with `data/buffers/alfworld_heldout.jsonl` (`python -m wm.export_buffers --env alfworld --train data/raw/alfworld_heldout.jsonl --single data/buffers/alfworld_heldout.jsonl`) as the `--test-buffer`.
+- **Candidates (K = 5):** the expert's action at that state plus 4 other admissible actions, sampled verb-first with a fixed seed, in shuffled order (the expert is not always in the same slot).
+- **True next states:** the state's `action_prefix` is replayed in the real env and each candidate is stepped. Results are cached in `cache/true_next_<env>.jsonl` (sha256 of env, task, prefix, action). ScienceWorld steps each candidate 3 times; `replay_consistent` is false if the replays disagreed.
+
+One JSON line per state:
+
+| Field | Meaning |
+|---|---|
+| `id` | `<env>/<game>/<transition_id>` |
+| `obs` | composite observation `o_t` (same format as the buffers, with `[ADMISSIBLE]`) |
+| `actions` | the K candidate actions |
+| `game`, `goal` | RQ3 game unit; task text (for JEPA's own ranking) |
+| `gold_action`, `gold_index`, `gold_next` | the expert's action, its position in `actions`, its true feedback |
+| `true_next`, `true_next_full` | true feedback / composite next observation for each action (same order as `actions`) |
+| `true_reward`, `true_done`, `true_won` | per action |
+| `replay_consistent` | all replays agreed (always true in ALFWorld) |
+| `transition_id`, `task_id`, `task_type`, `action_prefix`, `source_policy`, `env`, `split` | where the state came from |

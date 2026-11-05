@@ -19,8 +19,8 @@ import random
 from collections import Counter, defaultdict
 from typing import Dict, List
 
-import yaml
 
+from wm.config import load_config
 from wm.obs import parse_obs
 from wm.retrieval import BM25
 from wm.schema import read_jsonl
@@ -113,8 +113,7 @@ def main(argv=None):
     p.add_argument("--baselines-only", action="store_true", help="skip the LLM (no GPU needed)")
     args = p.parse_args(argv)
 
-    with open("configs/shared.yaml") as f:
-        mix = yaml.safe_load(f)["policy_mix"]
+    mix = load_config()["policy_mix"]
     with open(args.budget) as f:
         budget_ids = set(line.strip() for line in f if line.strip())
     pool = [r for r in read_jsonl(args.train) if r["transition_id"] in budget_ids]

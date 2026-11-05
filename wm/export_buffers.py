@@ -29,11 +29,9 @@ import json
 import os
 from typing import Dict, List
 
-import yaml
-
+from wm.config import load_config
 from wm.schema import read_jsonl
 
-CONFIG = "configs/shared.yaml"
 
 
 def family_of(row: Dict) -> str:
@@ -89,11 +87,10 @@ def main(argv=None):
         print("wrote %d rows (%d games) to %s" % (len(rows), len({r["game"] for r in rows}), args.single))
         return
 
-    with open(CONFIG) as f:
-        cfg = yaml.safe_load(f)
+    cfg = load_config()
     suffix = "_provisional" if args.provisional else ""
     by_id = {r["transition_id"]: r for r in read_jsonl(args.train)}
-    for seed in cfg["seeds"]:
+    for seed in cfg["budget_seeds"]:
         for n in cfg["budgets"]:
             name = "%s_seed%d_n%d%s" % (args.env, seed, n, suffix)
             with open(os.path.join(args.budget_dir, name + ".txt")) as f:
@@ -102,7 +99,7 @@ def main(argv=None):
             if missing:
                 raise SystemExit("%s: %d ids not in %s (e.g. %s)" % (name, len(missing), args.train, missing[0]))
             write_jsonl(os.path.join(args.out_dir, name + ".jsonl"), [conv(by_id[i]) for i in ids])
-    msg = "wrote %d budget buffers" % (len(cfg["seeds"]) * len(cfg["budgets"]))
+    msg = "wrote %d budget buffers" % (len(cfg["budget_seeds"]) * len(cfg["budgets"]))
     if args.heldout:
         held = [conv(r) for r in read_jsonl(args.heldout) if r["split"] == "heldout"]
         write_jsonl(os.path.join(args.out_dir, "%s_heldout.jsonl" % args.env), held)
