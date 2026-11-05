@@ -1,4 +1,4 @@
-# JEPA arm — Phase 1 results (ALFWorld)
+# JEPA arm — Phase 1 results (ALFWorld; probe: all three environments)
 
 Raw outputs from the runs of 31 Oct – 1 Nov 2026 on Siddhant's RTX 5070
 (NV-Embed-v2, NF4). Data: Saanvi's `alfworld_games.jsonl` — 12 games,
@@ -87,20 +87,29 @@ The training runs in `jepa/` used the original projection + EMA design.
 `env, game, probe_fidelity, ...`. **Definition (agreed 1 Nov 2026): 50
 optimiser steps on n = 32, 5 random draws per game, current arm model**
 (separate action + admissible input, frozen targets, MSE). Game ids match the
-feature matrix in PR #3; joined there it fills Feature 1 for 42 of 52 games.
+feature matrix; joined there it fills Feature 1 for **all 64 games**.
 
 | Env | Games | Score range | Separation ratio |
 |---|---|---|---|
 | ALFWorld | 12 | 0.139–0.228 | 1.63 |
 | ByteSized32 | 30 (+ `clean-energy`) | 0.154–0.303 | 2.02 |
-| ScienceWorld | — | waiting for the longer-episode buffer | — |
+| ScienceWorld | 22 task types | 0.180–0.316 | 1.55 |
 
 `clean-energy` has only 24 transitions, so it was probed on 20 (not 32) and is
 not in the feature matrix (which keeps 30 ByteSized32 games). ByteSized32 games
 separate more than ALFWorld games, as Feature 2 found. Compare scores within an
 environment: across environments the text styles differ, which also shifts the
 encoder's distances. ByteSized32 has no [ADMISSIBLE] list, so the
-admissible-action input is zero there.
+admissible-action input is zero there. ScienceWorld's [ADMISSIBLE] section
+lists action templates ("open OBJ"), not real actions, so it is treated as no
+list and the input is zero there too (fix 9e41217, before the run).
+
+ScienceWorld (`sciworld_games.jsonl`, 2,300 transitions, up to 80 steps,
+game = task type): easiest are test-conductivity (0.180) and the
+identify-life-stages tasks (0.196, 0.219); hardest are chemistry-mix (0.316),
+boil (0.297) and find-living-thing (0.291). Separation (1.55) is about the
+same as ALFWorld's. All three environments separate games well above 1,
+so Feature 1 carries signal within each environment.
 
 `probe_fidelity` = mean held-out cosine distance (lower = the game is easier to
 predict). `probe_scores_1epoch.csv` and `probe_scores_steps200.csv` are the
