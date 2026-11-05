@@ -32,12 +32,25 @@ N_FEATURES = 2
 _ADMISSIBLE = re.compile(r"\[ADMISSIBLE\]\s*(.*?)(?=\n\s*\[[A-Z_]+\]|\Z)", re.S)
 
 
+_TEMPLATE_SLOT = re.compile(r"\bobj\b", re.I)   # ScienceWorld lists "open OBJ", not real actions
+
+
 def admissible_set(obs: str) -> Optional[Set[str]]:
-    """The allowed actions listed in an observation, or None if there is no list."""
+    """
+    The allowed actions listed in an observation, or None if there is no usable list.
+
+    ScienceWorld's [ADMISSIBLE] section holds action TEMPLATES ("open OBJ",
+    "connect OBJ to OBJ"), not concrete actions, so a real action never matches
+    it. Such a list is treated as no list (features [0, 0], like ByteSized32)
+    instead of marking every action as not allowed.
+    """
     m = _ADMISSIBLE.search(obs or "")
     if not m:
         return None
-    return {a.strip().lower() for a in m.group(1).split("|") if a.strip()}
+    items = {a.strip().lower() for a in m.group(1).split("|") if a.strip()}
+    if items and sum(bool(_TEMPLATE_SLOT.search(a)) for a in items) > len(items) / 2:
+        return None
+    return items
 
 
 def action_features(obs: str, action: str) -> List[float]:
