@@ -127,7 +127,7 @@ def main():
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     n_actions = 0
-    with track("jepa_predict", arm="jepa", env=env_label(items), n=budget):
+    with track("jepa_predict", arm="D", env=env_label(items), n=budget):
         wm = LatentWorldModel.from_checkpoint(args.checkpoint, encoder,
                                               buffer_items=answer_items, device=args.device)
         with open(out_path, "w") as f:
