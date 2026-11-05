@@ -47,7 +47,8 @@ def test_full_run_with_fake_llm(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     import shutil, os
     os.makedirs("configs")
-    shutil.copy(os.path.join(os.path.dirname(__file__), "..", "configs", "shared.yaml"), "configs/")
+    for name in ("shared.yaml", "config.yaml"):
+        shutil.copy(os.path.join(os.path.dirname(__file__), "..", "configs", name), "configs/")
     os.makedirs("data/sample")
     shutil.copy(os.path.join(os.path.dirname(__file__), "..", "data", "sample", "alfworld_sample20.jsonl"), "data/sample/")
     out = tmp_path / "res.json"

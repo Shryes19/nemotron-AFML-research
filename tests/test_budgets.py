@@ -52,3 +52,15 @@ def test_failing_action_is_well_formed_and_not_admissible():
         assert all(w in {"cabinet", "drawer", "mug", "1", "2", "take", "from", "move", "to", "open",
                          "close", "use", "examine", "heat", "cool", "clean", "slice", "with", "go"}
                    for w in a.split())
+
+
+def test_config_single_source_of_truth():
+    import yaml
+    from wm.config import load_config
+    cfg = load_config()
+    team = yaml.safe_load(open("configs/config.yaml"))
+    assert cfg["budgets"] == team["data"]["budgets"]
+    assert cfg["policy_mix"] == team["data"]["collection_policy"]
+    assert cfg["budget_seeds"] == [0, 1, 2]
+    shared = yaml.safe_load(open("configs/shared.yaml"))
+    assert not {"budgets", "policy_mix", "seeds", "random_policy"} & set(shared)

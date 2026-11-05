@@ -16,11 +16,9 @@ import os
 import random
 from typing import Dict, List
 
-import yaml
-
+from wm.config import load_config
 from wm.schema import read_jsonl
 
-CONFIG = "configs/shared.yaml"
 
 
 def allocate(n: int, mix: Dict[str, float]) -> Dict[str, int]:
@@ -59,8 +57,7 @@ def main(argv=None):
     p.add_argument("--provisional", action="store_true", help="expert/random only, before LLM rows exist")
     args = p.parse_args(argv)
 
-    with open(CONFIG) as f:
-        cfg = yaml.safe_load(f)
+    cfg = load_config()
     mix = dict(cfg["policy_mix"])
     if args.provisional:
         mix.pop("llm")
@@ -75,7 +72,7 @@ def main(argv=None):
     os.makedirs(args.out_dir, exist_ok=True)
     manifest = {"env": args.env, "data": os.path.basename(args.data), "mix": mix,
                 "pool": {k: len(v) for k, v in ids_by_policy.items()}, "files": {}}
-    for seed in cfg["seeds"]:
+    for seed in cfg["budget_seeds"]:
         for n, ids in make_budgets(ids_by_policy, cfg["budgets"], seed, mix).items():
             name = "%s_seed%d_n%d%s.txt" % (args.env, seed, n, suffix)
             with open(os.path.join(args.out_dir, name), "w") as f:
