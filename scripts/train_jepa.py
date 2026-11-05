@@ -350,7 +350,10 @@ def main():
         trainer.save(str(out_dir / f"budget_{b}.pt"),
                      extra={"budget": b, "final": final, "input_mode": mode,
                             "admissible_feature": use_adm, "buffer": args.buffer,
-                            "target_mode": target_mode, "loss": loss_name})
+                            "target_mode": target_mode, "loss": loss_name,
+                            # rows of --buffer this model was trained on: the only
+                            # states it may answer with when decoding to text
+                            "train_rows": [int(i) for i in tr_idx]})
 
     # ── 4. Save + summarise ────────────────────────────────────────────────────
     with open(out_dir / "results.json", "w") as f:
