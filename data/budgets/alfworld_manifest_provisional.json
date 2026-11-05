@@ -1,0 +1,86 @@
+{
+  "env": "alfworld",
+  "data": "alfworld_train.jsonl",
+  "mix": {
+    "expert": 0.5,
+    "random": 0.3
+  },
+  "pool": {
+    "expert": 800,
+    "random": 480
+  },
+  "files": {
+    "alfworld_seed0_n32_provisional.txt": {
+      "expert": 20,
+      "random": 12
+    },
+    "alfworld_seed0_n64_provisional.txt": {
+      "expert": 40,
+      "random": 24
+    },
+    "alfworld_seed0_n128_provisional.txt": {
+      "expert": 80,
+      "random": 48
+    },
+    "alfworld_seed0_n256_provisional.txt": {
+      "expert": 160,
+      "random": 96
+    },
+    "alfworld_seed0_n512_provisional.txt": {
+      "expert": 320,
+      "random": 192
+    },
+    "alfworld_seed0_n1024_provisional.txt": {
+      "expert": 640,
+      "random": 384
+    },
+    "alfworld_seed1_n32_provisional.txt": {
+      "expert": 20,
+      "random": 12
+    },
+    "alfworld_seed1_n64_provisional.txt": {
+      "expert": 40,
+      "random": 24
+    },
+    "alfworld_seed1_n128_provisional.txt": {
+      "expert": 80,
+      "random": 48
+    },
+    "alfworld_seed1_n256_provisional.txt": {
+      "expert": 160,
+      "random": 96
+    },
+    "alfworld_seed1_n512_provisional.txt": {
+      "expert": 320,
+      "random": 192
+    },
+    "alfworld_seed1_n1024_provisional.txt": {
+      "expert": 640,
+      "random": 384
+    },
+    "alfworld_seed2_n32_provisional.txt": {
+      "expert": 20,
+      "random": 12
+    },
+    "alfworld_seed2_n64_provisional.txt": {
+      "expert": 40,
+      "random": 24
+    },
+    "alfworld_seed2_n128_provisional.txt": {
+      "expert": 80,
+      "random": 48
+    },
+    "alfworld_seed2_n256_provisional.txt": {
+      "expert": 160,
+      "random": 96
+    },
+    "alfworld_seed2_n512_provisional.txt": {
+      "expert": 320,
+      "random": 192
+    },
+    "alfworld_seed2_n1024_provisional.txt": {
+      "expert": 640,
+      "random": 384
+    }
+  }
+}
