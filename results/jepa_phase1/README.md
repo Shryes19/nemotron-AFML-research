@@ -172,3 +172,39 @@ ScienceWorld: 77–100% for task types in the training buffer;
 `measure-melting-point-unknown-substance` (not in the training buffer) 33.3%.
 So on ALFWorld, JEPA's top-1 text is often from another game (wrong objects);
 report `--mode topk` and `--mode native` next to top-1.
+
+## Retrain for decision utility: held-out test sets (6 Nov 2026)
+
+Checkpoints now record their training rows (needed by
+`jepa_predict_candidates.py`). Defaults (separate action + admissible input,
+frozen targets, MSE, 2,000 steps); test = Saanvi's held-out buffers.
+Decode = exact match by nearest training state; reach = its ceiling;
+b_action = no-learning lookup on the action text.
+
+**ALFWorld** (`alfworld_games` → `alfworld_heldout_buffer`, 240 rows from new games)
+
+| n | cos dist | decode | reach | b_action |
+|---|---|---|---|---|
+| 32 | 0.219 | 35.0% | 37.5% | 37.1% |
+| 64 | 0.193 | 42.1% | 43.3% | 41.7% |
+| 128 | 0.148 | 42.9% | 45.8% | 44.2% |
+| 256 | 0.133 | 43.8% | 47.5% | 44.6% |
+| 512 | 0.101 | 49.6% | 55.0% | 50.8% |
+| 1024 | 0.090 | 52.5% | 58.8% | 52.9% |
+
+**ScienceWorld** (`sciworld_games` → `sciworld_heldout_buffer`, 480 rows, 12 test task types)
+
+| n | cos dist | decode | reach | b_action |
+|---|---|---|---|---|
+| 32 | 0.284 | 24.2% | 29.4% | 14.6% |
+| 64 | 0.225 | 38.1% | 44.4% | 32.3% |
+| 128 | 0.180 | 43.3% | 50.2% | 37.5% |
+| 256 | 0.152 | 47.3% | 53.5% | 41.9% |
+| 512 | 0.109 | 53.1% | 59.4% | 46.7% |
+| 1024 | 0.084 | 60.2% | 65.2% | 51.2% |
+
+On new ALFWorld games JEPA ties the lookup (within ±1.5 points at every
+budget) and gets 89–97% of the reachable answers: the buffer, not the
+predictor, is the limit there. On ScienceWorld it beats the lookup at every
+budget (+6 to +10 points) and improves steadily with data. Both runs: error
+falls and decode rises at every budget step.
