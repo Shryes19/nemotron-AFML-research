@@ -154,3 +154,21 @@ python scripts/probe_fidelity.py --buffer data/buffers/alfworld_games.jsonl --re
 
 Older runs: add `--target ema` (original projection + EMA), `--joint` (single
 text input), `--no-admissible`, or `--use-epochs --epochs 20`.
+
+## Decision utility: reach on the branched states (6 Nov 2026)
+
+`scripts/check_reach.py`: how often a branched state's true next state appears
+word-for-word in the JEPA training buffer (whole buffer, so this is the n=1024+
+upper bound; smaller budgets reach less). It caps top-1 *exact match*, not
+decision utility.
+
+| Env (train buffer → branched states) | States | Gold reach | All-candidate reach |
+|---|---|---|---|
+| ALFWorld (`alfworld_games` → 60 new games) | 193 | 31.1% | 39.8% |
+| ScienceWorld (`sciworld_games` → 12 test task types) | 182 | 80.2% | 73.5% |
+
+ALFWorld by family: gold reach 19.7% (pick_two) to 50.0% (pick_cool).
+ScienceWorld: 77–100% for task types in the training buffer;
+`measure-melting-point-unknown-substance` (not in the training buffer) 33.3%.
+So on ALFWorld, JEPA's top-1 text is often from another game (wrong objects);
+report `--mode topk` and `--mode native` next to top-1.
