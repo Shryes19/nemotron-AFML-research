@@ -74,3 +74,18 @@ def test_late_prefix_reaches_late_gold_steps():
     assert max(default) <= MAX_EXPERT_PREFIX
     assert max(late) > 40 and max(late) <= 60          # hands over anywhere along the 60-step path
     assert all(n <= 80 for _, n in (_handover_step(True, ep) for ep in range(20)))
+
+
+def test_record_prob_spreads_rows_over_the_episode():
+    def steps(prob):
+        out = []
+        for ep in range(40):
+            rows = run_episode(FakeEnv(), "fake", "train", "t1", ep, "expert",
+                               {"expert": ExpertPolicy(), "random": RandomPolicy()}, random.Random(ep), 0,
+                               {"expert": 10 ** 6, "random": 10 ** 6}, max_rows=6, max_steps=60, record_prob=prob)
+            out += [r["step"] for r in rows]
+        return out
+    first = steps(1.0)
+    spread = steps(0.2)
+    assert max(first) == 5                  # cap keeps only the first 6 steps
+    assert max(spread) > 20 and len(spread) <= 40 * 6

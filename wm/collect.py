@@ -73,12 +73,15 @@ def parse_target(text: str) -> Dict[str, int]:
 
 
 def run_episode(env, env_name, split, task_id, ep, driver, policies, rng, seed, need, max_rows=None,
-                seen=None, tag=None, expert_warmup=0, max_steps=MAX_EPISODE_STEPS, late_prefix=False):
+                seen=None, tag=None, expert_warmup=0, max_steps=MAX_EPISODE_STEPS, late_prefix=False,
+                record_prob=1.0):
     """Roll out one episode; return the rows it produced (only for policies still needed).
     If `seen` is a set, (task_id, o_t, a_t) already in it are not recorded again.
     expert_warmup > 0: expert-driven episodes start with U[0, expert_warmup] random steps, so a
     replanning expert (ALFWorld) reaches new states on repeated plays of the same game.
-    late_prefix: random/llm drivers take over at k ~ U[0, gold length] when the env knows it."""
+    late_prefix: random/llm drivers take over at k ~ U[0, gold length] when the env knows it.
+    record_prob < 1: each eligible step is recorded with this probability, so a per-episode row cap
+    samples steps from the whole episode instead of keeping only its first steps."""
     episode_id = "%s-%s-e%06d" % (env_name, tag or split, ep)
     r = env.reset(task_id)
     gold = env.gold_length() if late_prefix else None
@@ -89,6 +92,7 @@ def run_episode(env, env_name, split, task_id, ep, driver, policies, rng, seed, 
     m = rng.randint(*DRIVER_STEPS)
     warmup = rng.randint(0, expert_warmup) if driver == "expert" and expert_warmup else 0
     prefix, rows = [], []
+    rec_rng = random.Random("rec-%d-%d" % (seed, ep))  # separate stream: policies see the same rng
     for step in range(max_steps):
         who = "random" if step < warmup else ("expert" if step < k else driver)
         if step >= k + m and driver != "expert":
@@ -106,7 +110,8 @@ def run_episode(env, env_name, split, task_id, ep, driver, policies, rng, seed, 
         r = env.step(action)
         room_left = max_rows is None or len(rows) < max_rows
         is_new = seen is None or (task_id, o_t, action) not in seen
-        if action not in SKIP_ACTIONS and room_left and is_new and need.get(who.replace("_fallback", ""), 0) > 0:
+        sampled = record_prob >= 1 or rec_rng.random() < record_prob
+        if action not in SKIP_ACTIONS and room_left and is_new and sampled                 and need.get(who.replace("_fallback", ""), 0) > 0:
             if seen is not None:
                 seen.add((task_id, o_t, action))
             rows.append({
@@ -148,6 +153,8 @@ def main(argv=None):
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--out", required=True)
     p.add_argument("--max-episodes", type=int, default=100000)
+    p.add_argument("--record-prob", type=float, default=1.0,
+                   help="record each eligible step with this probability (spreads rows over the episode)")
     p.add_argument("--max-rows-per-episode", type=int, default=None,
                    help="record at most this many rows per episode (more task diversity)")
     p.add_argument("--tasks", default=None,
@@ -216,7 +223,7 @@ def main(argv=None):
                 task_id = task_ids[ep % len(task_ids)]
             rows = run_episode(env, args.env, args.split, task_id, ep, driver, policies, rng,
                                args.seed, need, args.max_rows_per_episode, seen, args.tag,
-                               args.expert_warmup, args.max_steps, args.late_prefix)
+                               args.expert_warmup, args.max_steps, args.late_prefix, args.record_prob)
             for row in rows:
                 f.write(json.dumps(row) + "\n")
                 per_task[task_id] += 1

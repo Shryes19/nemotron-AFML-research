@@ -79,3 +79,40 @@ def test_limit_chunks_then_finishes(tmp_path, monkeypatch):
     args = ["--env", "alfworld", "--data", str(data), "--out", str(tmp_path / "b.jsonl"), "--limit", "2"]
     assert [bs.main(args) for _ in range(3)] == [3, 3, 0]
     assert len(open(tmp_path / "b.jsonl").readlines()) == 5
+
+
+def test_noop_actions_never_distractors():
+    adm = ACTIONS + ["look", "inventory"]
+    noop = bs.NOOP_ACTIONS["alfworld"]
+    for seed in range(30):
+        c = bs.choose_candidates("open drawer 1", adm, 5, random.Random(seed), noop)
+        assert not set(c) & noop and "open drawer 1" in c
+
+
+class ExpertByTaskEnv(CountingEnv):
+    """Expert action depends on the task: a normal action, a no-op, or none at all."""
+    EXPERT = {"alfworld_2400": "take pen 1 from desk 1", "alfworld_2401": "look", "alfworld_2402": None}
+
+    def reset(self, task_id):
+        self.task = task_id
+        return super().reset(task_id)
+
+    def expert_action(self):
+        return self.EXPERT[self.task]
+
+
+def test_skips_noop_gold_and_missing_expert_and_resumes(tmp_path, monkeypatch, capsys):
+    data = tmp_path / "held.jsonl"
+    data.write_text("".join(json.dumps(_row(i)) + "\n" for i in range(3)))
+    env = ExpertByTaskEnv()
+    monkeypatch.setattr(bs, "make_env", lambda name: env)
+    monkeypatch.chdir(tmp_path)
+    out = tmp_path / "b.jsonl"
+    assert bs.main(["--env", "alfworld", "--data", str(data), "--out", str(out)]) == 0
+    assert [json.loads(l)["task_id"] for l in open(out)] == ["alfworld_2400"]
+    reasons = {json.loads(l)["reason"] for l in open(str(out) + ".skipped")}
+    assert reasons == {"noop_gold", "no_expert"}
+    assert "skipped {'noop_gold': 1, 'no_expert': 1}" in capsys.readouterr().out
+    steps = env.steps
+    bs.main(["--env", "alfworld", "--data", str(data), "--out", str(out)])
+    assert env.steps == steps                     # skipped states are not replayed again
