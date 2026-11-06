@@ -36,8 +36,16 @@ def index(rows):
     return {(r["env"], r["game"]): r for r in rows}
 
 
+def family_of(env, game):
+    """ALFWorld task id -> task type ("pick_heat_then_place_in_recep-Mug-...-20_trial_T..." ->
+    "pick_heat_then_place_in_recep"), same rule as wm/utility/score.py. Other envs: unchanged."""
+    return game.split("-")[0] if env == "alfworld" else game
+
+
 def lookup(idx, env, game, col):
-    r = idx.get((env, game)) or idx.get((env, "*"))
+    """Exact (env, game) first, then (env, family) - ALFWorld labels are per task type because the
+    held-out scoring games are not the 12 training games - then (env, "*")."""
+    r = idx.get((env, game)) or idx.get((env, family_of(env, game))) or idx.get((env, "*"))
     return r.get(col, "") if r else ""
 
 
