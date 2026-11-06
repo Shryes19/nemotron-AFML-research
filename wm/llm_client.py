@@ -15,6 +15,7 @@ import hashlib
 import json
 import os
 import sqlite3
+import threading
 import time
 from typing import Dict, List, Optional
 
@@ -53,7 +54,9 @@ class LLMClient:
         self.max_retries, self.backoff, self.timeout = max_retries, backoff, timeout
         self.log_path = log_path
         os.makedirs(os.path.dirname(cache_path) or ".", exist_ok=True)
-        self.db = sqlite3.connect(cache_path)
+        # shared across threads (the utility judge calls in parallel); every db/log access is locked
+        self.db = sqlite3.connect(cache_path, check_same_thread=False)
+        self._lock = threading.Lock()
         self.db.execute("CREATE TABLE IF NOT EXISTS cache (key TEXT PRIMARY KEY, response TEXT, created REAL)")
         self.db.commit()
 
@@ -62,7 +65,8 @@ class LLMClient:
         """Return {"text", "cache_key", "cached", "latency_s", "usage"}."""
         params = dict(temperature=temperature, max_tokens=max_tokens, **extra)
         key = cache_key(self.model, messages, params)
-        row = self.db.execute("SELECT response FROM cache WHERE key = ?", (key,)).fetchone()
+        with self._lock:
+            row = self.db.execute("SELECT response FROM cache WHERE key = ?", (key,)).fetchone()
         if row:
             out = json.loads(row[0])
             out.update(cached=True, cache_key=key, latency_s=0.0)
@@ -73,8 +77,9 @@ class LLMClient:
         t0 = time.time()
         data = self._post({"model": self.model, "messages": messages, **params})
         out = {"text": data["choices"][0]["message"]["content"], "usage": data.get("usage", {})}
-        self.db.execute("INSERT OR REPLACE INTO cache VALUES (?, ?, ?)", (key, json.dumps(out), time.time()))
-        self.db.commit()
+        with self._lock:
+            self.db.execute("INSERT OR REPLACE INTO cache VALUES (?, ?, ?)", (key, json.dumps(out), time.time()))
+            self.db.commit()
         out.update(cached=False, cache_key=key, latency_s=round(time.time() - t0, 3))
         self._log(out)
         return out
@@ -99,7 +104,7 @@ class LLMClient:
 
     def _log(self, out: Dict) -> None:
         os.makedirs(os.path.dirname(self.log_path) or ".", exist_ok=True)
-        with open(self.log_path, "a") as f:
+        with self._lock, open(self.log_path, "a") as f:
             f.write(json.dumps({"time": time.time(), "model": self.model, "cache_key": out["cache_key"],
                                 "cached": out["cached"], "latency_s": out["latency_s"],
                                 "usage": out.get("usage", {})}) + "\n")

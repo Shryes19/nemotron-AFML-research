@@ -35,6 +35,20 @@ class SciWorldEnv(TextEnv):
                 self.games += [(task, i) for i in range(self._env.get_max_variations(task))]
 
     def reset(self, task_id: str) -> StepResult:
+        return self._result(self._load(task_id), 0.0, False)
+
+    def step(self, action: str) -> StepResult:
+        return self._result(*self._advance(action))
+
+    def replay(self, task_id: str, prefix: List[str]) -> StepResult:
+        """Same result as reset + step for each action, but the observation (look, valid
+        actions, templates) is built only once at the end: about half the time per replay."""
+        feedback, reward, done = self._load(task_id), 0.0, False
+        for action in prefix:
+            feedback, reward, done = self._advance(action)
+        return self._result(feedback, reward, done)
+
+    def _load(self, task_id: str) -> str:
         task, variation = self.games[int(task_id.split("_")[-1])]
         self._env.load(task, variation, "", generateGoldPath=True)
         self._task = task
@@ -44,9 +58,10 @@ class SciWorldEnv(TextEnv):
         feedback, _, _, info = self._env.step("look around")
         self._score = info["score"]
         self._ambiguous = False
-        return self._result(feedback, 0.0, False)
+        return feedback
 
-    def step(self, action: str) -> StepResult:
+    def _advance(self, action: str):
+        """Apply one action and update the bookkeeping; no observation is built."""
         if self._on_gold >= 0:
             on_path = self._on_gold < len(self._gold) and action == self._gold[self._on_gold]
             self._on_gold = self._on_gold + 1 if on_path else -1
@@ -54,7 +69,7 @@ class SciWorldEnv(TextEnv):
         self._ambiguous = feedback.strip().startswith("Ambiguous request")
         reward = float(info["score"] - self._score)
         self._score = info["score"]
-        return self._result(feedback, reward, bool(done))
+        return feedback, reward, bool(done)
 
     def admissible_actions(self) -> List[str]:
         if self._ambiguous:

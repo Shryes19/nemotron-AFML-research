@@ -103,7 +103,7 @@ python -m wm.branch_states --env alfworld --data data/raw/alfworld_heldout.jsonl
 ```
 
 - **States:** the task-disjoint held-out set (Word2World test tasks), so no state comes from a game any arm trained on. Pair it with `data/buffers/alfworld_heldout.jsonl` (`python -m wm.export_buffers --env alfworld --train data/raw/alfworld_heldout.jsonl --single data/buffers/alfworld_heldout.jsonl`) as the `--test-buffer`.
-- **Candidates (K = 5):** the expert's action at that state plus 4 other admissible actions, sampled verb-first with a fixed seed, in shuffled order (the expert is not always in the same slot).
+- **Candidates (K = 5):** the expert's action at that state plus 4 other admissible actions, sampled verb-first with a fixed seed, in shuffled order (the expert is not always in the same slot). Distractors never include no-op actions (ALFWorld `look`, `inventory`; ScienceWorld `look around`, `inventory`, `task`), and states whose expert action is a no-op are dropped. This deviates from "any admissible action": with it, 36% of ALFWorld distractors were look/inventory. ScienceWorld states without an expert action (off the gold path) are dropped too. Skipped states and reasons go to `<file>.skipped`. The metric and arm formats are in `docs/DECISION_UTILITY.md`.
 - **True next states:** the state's `action_prefix` is replayed in the real env and each candidate is stepped. Results are cached in `cache/true_next_<env>.jsonl` (sha256 of env, task, prefix, action). ScienceWorld steps each candidate 3 times; `replay_consistent` is false if the replays disagreed.
 
 One JSON line per state:
@@ -118,4 +118,5 @@ One JSON line per state:
 | `true_next`, `true_next_full` | true feedback / composite next observation for each action (same order as `actions`) |
 | `true_reward`, `true_done`, `true_won` | per action |
 | `replay_consistent` | all replays agreed (always true in ALFWorld) |
+| `replay_checked` | this state's candidates were stepped 3 times (`--check-frac`; default 10% of ScienceWorld states) |
 | `transition_id`, `task_id`, `task_type`, `action_prefix`, `source_policy`, `env`, `split` | where the state came from |

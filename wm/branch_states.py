@@ -1,7 +1,7 @@
 """Branched states for the decision-utility scorer.
 
-For each held-out state: K candidate actions (the expert's action + K-1 other admissible
-actions, verb-stratified, in shuffled order), and the TRUE next state of every candidate,
+For each held-out state: K candidate actions (the expert's action + K-1 other admissible,
+non-no-op actions, verb-stratified, in shuffled order), and the TRUE next state of every candidate,
 obtained by replaying the state's action_prefix in the real env and stepping the candidate.
 The same file is used by every world-model arm (G, F, D), so all arms rank the same choices.
 
@@ -13,12 +13,17 @@ One JSON line per state. Required by the JEPA hand-off (docs/LATENT_WORLD_MODEL.
 Also: game (agreed RQ3 unit), goal (task text, for JEPA's own ranking), gold_action,
 gold_index, gold_next (feedback of the gold action), true_next / true_next_full /
 true_reward / true_done / true_won (one per action, same order as actions), transition_id,
-task_id, task_type, action_prefix, source_policy, env, split, replay_consistent.
+task_id, task_type, action_prefix, source_policy, env, split, replay_consistent, replay_checked.
+
+States are skipped (and listed with a reason in <out>.skipped) when there is no expert action
+(ScienceWorld off its gold path), the expert action is a no-op (NOOP_ACTIONS), or fewer than
+K-1 non-no-op distractors exist.
 
 True next states are cached in cache/true_next_<env>.jsonl keyed by
 sha256(env, task_id, prefix, action), and the run is resumable (finished ids are skipped).
-ScienceWorld is not fully deterministic (~2% of states), so each candidate is stepped
---replays times; replay_consistent says whether all replays agreed (up to word order).
+ScienceWorld is not fully deterministic (~2% of states): --check-frac of the states (default
+0.1 for ScienceWorld) step every candidate 3 times; replay_consistent says whether they agreed
+(up to word order) and replay_checked marks those states.
 
 ALFWorld leaks ~32 MB of disk per reset (textworld loads a temp copy of the planner library
 that is only freed when the process exits), so long runs go in chunks: --limit N stops after
@@ -47,10 +52,24 @@ def game_of(row: Dict) -> str:
     return row["task_id"] if row["env"] == "alfworld" else row["task_type"]
 
 
+# Actions that never change the world or reveal anything new. They are not used as distractors,
+# and states whose expert action is one of them are skipped: with them, 36% of ALFWorld
+# distractors were look/inventory, which made picking the right action easier than 1-in-5.
+# (A deviation from "any admissible action"; examine / look at X stay.)
+NOOP_ACTIONS = {
+    "alfworld": frozenset({"look", "inventory"}),
+    "sciworld": frozenset({"look around", "inventory", "task"}),
+}
+
+
+def candidate_pool(expert: Optional[str], admissible: List[str], noop=frozenset()) -> List[str]:
+    return [a for a in admissible if a not in SKIP_ACTIONS and a not in noop and a != expert]
+
+
 def choose_candidates(expert: Optional[str], admissible: List[str], k: int,
-                      rng: random.Random) -> List[str]:
-    """Expert action + k-1 distinct other admissible actions (verb-stratified), shuffled."""
-    pool = [a for a in admissible if a not in SKIP_ACTIONS and a != expert]
+                      rng: random.Random, noop=frozenset()) -> List[str]:
+    """Expert action + k-1 distinct other admissible, non-no-op actions (verb-stratified), shuffled."""
+    pool = candidate_pool(expert, admissible, noop)
     chosen = [expert] if expert else []
     while len(chosen) < k and pool:
         a = sample_by_verb(pool, rng)
@@ -114,41 +133,68 @@ def main(argv=None):
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--limit", type=int, default=None,
                    help="stop after N new states (exit code 3 if more remain)")
-    p.add_argument("--replays", type=int, default=None,
-                   help="steps per candidate (default 1 for ALFWorld, 3 for ScienceWorld)")
+    p.add_argument("--replays", type=int, default=1, help="steps per candidate")
+    p.add_argument("--check-frac", type=float, default=None,
+                   help="share of states whose candidates are stepped 3 times to check determinism "
+                        "(default 0 for ALFWorld, 0.1 for ScienceWorld)")
     args = p.parse_args(argv)
-    replays = args.replays or (1 if args.env == "alfworld" else 3)
+    check_frac = args.check_frac if args.check_frac is not None else (0.0 if args.env == "alfworld" else 0.1)
+    noop = NOOP_ACTIONS.get(args.env, frozenset())
 
     rows = sorted((r for r in read_jsonl(args.data) if r["split"] == "heldout" and r["env"] == args.env),
                   key=lambda r: r["transition_id"])
-    rows = [r for r in rows if len([a for a in r["admissible_actions"] if a not in SKIP_ACTIONS]) >= args.k]
+    rows = [r for r in rows if len(candidate_pool(None, r["admissible_actions"], noop)) >= args.k - 1]
     if args.n is not None and args.n < len(rows):
         rows = sorted(random.Random(args.seed).sample(rows, args.n), key=lambda r: r["transition_id"])
 
-    done_ids = set()
+    # finished ids: written states plus states skipped earlier (kept in a side file, with reason)
+    skipped_path = args.out + ".skipped"
+    done_ids, skipped = set(), {}
     if os.path.exists(args.out):
         done_ids = {json.loads(line)["id"] for line in open(args.out, encoding="utf-8")}
+    if os.path.exists(skipped_path):
+        for line in open(skipped_path, encoding="utf-8"):
+            rec = json.loads(line)
+            skipped[rec["id"]] = rec["reason"]
     cache = TrueNextCache(os.path.join("cache", "true_next_%s.jsonl" % args.env))
     env = make_env(args.env)
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
-    print("%d eligible states, %d already done" % (len(rows), len(done_ids)), flush=True)
+    print("%d eligible states, %d written, %d skipped earlier" % (len(rows), len(done_ids), len(skipped)),
+          flush=True)
+
+    def skip(sid, reason):
+        skipped[sid] = reason
+        with open(skipped_path, "a", encoding="utf-8") as sf:
+            sf.write(json.dumps({"id": sid, "reason": reason}) + "\n")
 
     t0 = time.time()
     new = 0
     with open(args.out, "a", encoding="utf-8") as f:
         for i, row in enumerate(rows):
             sid = "%s/%s/%s" % (args.env, game_of(row), row["transition_id"])
-            if sid in done_ids:
+            if sid in done_ids or sid in skipped:
                 continue
             if args.limit is not None and new >= args.limit:
-                print("limit reached; %d states left" % (len(rows) - len(done_ids) - new), flush=True)
+                left = len(rows) - len(done_ids) - len(skipped)
+                print("limit reached; %d states left" % left, flush=True)
                 if hasattr(env, "close"):
                     env.close()
                 return 3
             env.replay(row["task_id"], row["action_prefix"])
             expert = env.expert_action()
+            if expert is None:
+                skip(sid, "no_expert")         # ScienceWorld state off the gold path
+                continue
+            if expert in noop:
+                skip(sid, "noop_gold")
+                continue
+            if len(candidate_pool(expert, env.admissible_actions(), noop)) < args.k - 1:
+                skip(sid, "small_pool")
+                continue
             rng = random.Random("%d-%s" % (args.seed, row["transition_id"]))
-            actions = choose_candidates(expert, row["admissible_actions"], args.k, rng)
+            actions = choose_candidates(expert, row["admissible_actions"], args.k, rng, noop)
+            checked = rng.random() < check_frac
+            replays = 3 if checked else args.replays
             truths = [step_true(env, args.env, row, a, cache, replays) for a in actions]
             gold = actions.index(expert) if expert in actions else None
             rec = {
@@ -166,6 +212,7 @@ def main(argv=None):
                 "true_done": [t["done"] for t in truths],
                 "true_won": [t["won"] for t in truths],
                 "replay_consistent": all(t["consistent"] for t in truths),
+                "replay_checked": checked,
                 "transition_id": row["transition_id"],
                 "task_id": row["task_id"],
                 "task_type": row["task_type"],
@@ -181,6 +228,10 @@ def main(argv=None):
                 print("%d/%d states (%.0fs)" % (i + 1, len(rows), time.time() - t0), flush=True)
     if hasattr(env, "close"):
         env.close()
+    reasons = {}
+    for r in skipped.values():
+        reasons[r] = reasons.get(r, 0) + 1
+    print("done: %d states written, skipped %s" % (len(done_ids) + new, reasons), flush=True)
     return 0
 
 
