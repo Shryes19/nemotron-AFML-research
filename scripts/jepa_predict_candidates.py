@@ -79,11 +79,14 @@ def read_jsonl(path: str):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--checkpoint", required=True, help="budget_<n>.pt from train_jepa.py")
+    p.add_argument("--checkpoint", required=True, nargs="+",
+                   help="budget_<n>.pt from train_jepa.py; give several (e.g. a glob) to run every "
+                        "budget with ONE encoder load — then --out must contain {budget}")
     p.add_argument("--buffer", required=True,
                    help="the SAME buffer the checkpoint was trained on (its rows are the answers)")
     p.add_argument("--queries", required=True, help="JSONL of {id, obs, actions}")
-    p.add_argument("--out", required=True, help="output JSONL")
+    p.add_argument("--out", required=True,
+                   help="output JSONL, e.g. outputs/jepa_candidates/alfworld_b{budget}.jsonl")
     p.add_argument("--k", type=int, default=5, help="nearest buffer states per action (default 5)")
     p.add_argument("--target-key", default="goal",
                    help="query key holding a target state text for ranking (default: goal; "
@@ -92,11 +95,32 @@ def main():
     p.add_argument("--real-encoder", action="store_true", help="use NV-Embed-v2 (GPU)")
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     args = p.parse_args()
+    if len(args.checkpoint) > 1 and "{budget}" not in args.out:
+        p.error("with several checkpoints, --out must contain {budget}")
 
     ecfg = load_config(args.config).get("encoder", {})
     items = TransitionDataset.from_jsonl(args.buffer).transitions
-    extra = torch.load(args.checkpoint, map_location="cpu").get("extra", {})
 
+    queries = read_jsonl(args.queries)
+    bad = [q.get("id", i) for i, q in enumerate(queries) if not q.get("obs") or not q.get("actions")]
+    if bad:
+        sys.exit(f"[Error] queries missing 'obs' or 'actions': {bad[:5]}")
+
+    encoder = load_encoder(
+        real=args.real_encoder, device=args.device,
+        model_name=ecfg.get("model_name"), quantize=bool(ecfg.get("quantize", True)),
+        batch_size=int(ecfg.get("batch_size", 32)), max_length=int(ecfg.get("max_length", 512)),
+    )
+    for ckpt in args.checkpoint:
+        run_one(ckpt, items, queries, encoder, args)
+
+
+# Answer fields in the branched-state files: never copied into JEPA's output.
+_DROP = ("obs", "actions", "gold_action", "gold_index", "gold_next", "action_prefix")
+
+
+def run_one(ckpt_path, items, queries, encoder, args):
+    extra = torch.load(ckpt_path, map_location="cpu").get("extra", {})
     rows = extra.get("train_rows")
     if rows is None:
         print("[Warn] checkpoint has no train_rows (trained before 5 Nov 2026) — answering "
@@ -110,33 +134,24 @@ def main():
             print(f"[Warn] checkpoint was trained on {extra['buffer']}, you passed {args.buffer}")
         answer_items = [items[i] for i in rows]
 
-    queries = read_jsonl(args.queries)
-    bad = [q.get("id", i) for i, q in enumerate(queries) if not q.get("obs") or not q.get("actions")]
-    if bad:
-        sys.exit(f"[Error] queries missing 'obs' or 'actions': {bad[:5]}")
-
-    encoder = load_encoder(
-        real=args.real_encoder, device=args.device,
-        model_name=ecfg.get("model_name"), quantize=bool(ecfg.get("quantize", True)),
-        batch_size=int(ecfg.get("batch_size", 32)), max_length=int(ecfg.get("max_length", 512)),
-    )
     budget = extra.get("budget", len(answer_items))
-    print(f"[JEPA] {args.checkpoint}  budget={budget}  answer states from {len(answer_items)} rows  "
+    out_path = Path(args.out.replace("{budget}", str(budget)))
+    print(f"[JEPA] {ckpt_path}  budget={budget}  answer states from {len(answer_items)} rows  "
           f"queries={len(queries)}  k={args.k}")
 
-    out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     n_actions = 0
     with track("jepa_predict", arm="D", env=env_label(items), n=budget):
-        wm = LatentWorldModel.from_checkpoint(args.checkpoint, encoder,
+        wm = LatentWorldModel.from_checkpoint(ckpt_path, encoder,
                                               buffer_items=answer_items, device=args.device)
         with open(out_path, "w") as f:
             for q in queries:
                 acts = list(q["actions"])
                 z = wm.predict(q["obs"], acts)
                 topk = wm.decode_topk(z, k=args.k)
-                rec = {k: v for k, v in q.items() if k not in ("obs", "actions")}
-                rec.update({"budget": budget, "checkpoint": args.checkpoint, "candidates": [
+                rec = {k: v for k, v in q.items()
+                       if k not in _DROP and not k.startswith("true_")}
+                rec.update({"budget": budget, "checkpoint": ckpt_path, "candidates": [
                     {"action": a, "topk": [{"text": t, "sim": round(s, 4)} for t, s in tk]}
                     for a, tk in zip(acts, topk)]})
                 if q.get(args.target_key):

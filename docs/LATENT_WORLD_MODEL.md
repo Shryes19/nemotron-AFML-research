@@ -71,6 +71,16 @@ python scripts/jepa_predict_candidates.py \
   --out outputs/jepa_candidates/alfworld_b256.jsonl --k 5 --real-encoder
 ```
 
+All budgets in one go (loads NV-Embed once): pass every checkpoint and put
+`{budget}` in `--out`, e.g. `--checkpoint outputs/jepa/<run>/budget_*.pt --out
+outputs/jepa_candidates/alfworld_b{budget}.jsonl`. Answer fields of the
+branched-state file (`gold_*`, `true_*`, `action_prefix`) are never copied into
+the output.
+
+Before the GPU run, `scripts/check_reach.py --states <file> --buffer <train
+buffer>` shows how often the true next state exists word-for-word in the
+training buffer (the most top-1 decode can match exactly). CPU only.
+
 **Step 3 — your scorer reads the output**, one line per state:
 
 ```json
