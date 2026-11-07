@@ -166,12 +166,19 @@ decision utility.
 |---|---|---|---|
 | ALFWorld (`alfworld_games` → 60 new games) | 193 | 31.1% | 39.8% |
 | ScienceWorld (`sciworld_games` → 12 test task types) | 182 | 80.2% | 73.5% |
+| ScienceWorld seen (`sciworld_games` → held-out variations of 20 seen types, 7 Nov) | 323 | 90.1% | 74.5% |
+| ByteSized32 (`bytesized32_games` → known states, new actions, 31 games, 7 Nov) | 328 | 57.9% | 67.9% |
 
 ALFWorld by family: gold reach 19.7% (pick_two) to 50.0% (pick_cool).
 ScienceWorld: 77–100% for task types in the training buffer;
 `measure-melting-point-unknown-substance` (not in the training buffer) 33.3%.
 So on ALFWorld, JEPA's top-1 text is often from another game (wrong objects);
 report `--mode topk` and `--mode native` next to top-1.
+
+ScienceWorld seen: 73–100% gold reach per type (lowest `test-conductivity-of-unknown-substances`
+73.3%, `chemistry-mix` 52.9%). ByteSized32: three games have **0% gold reach**
+(`dishwasher` 25 states, `thermometer` 3, `volume` 5), so JEPA's top-1 can never be exactly
+right there; expect weak D scores on those games (a buffer limit, not a model bug).
 
 ## Retrain for decision utility: held-out test sets (6 Nov 2026)
 
@@ -208,3 +215,34 @@ budget) and gets 89–97% of the reachable answers: the buffer, not the
 predictor, is the limit there. On ScienceWorld it beats the lookup at every
 budget (+6 to +10 points) and improves steadily with data. Both runs: error
 falls and decode rises at every budget step.
+
+**ByteSized32** (`bytesized32_games`, 2,954 rows; random 10% held out = 295 rows from the
+same games, since there is no test buffer; 7 Nov 2026). No [ADMISSIBLE] list, so the
+admissible input is zero.
+
+| n | cos dist | decode | reach | b_action |
+|---|---|---|---|---|
+| 32 | 0.442 | 6.1% | 18.6% | 7.5% |
+| 64 | 0.380 | 6.8% | 21.7% | 7.1% |
+| 128 | 0.292 | 19.3% | 27.5% | 13.2% |
+| 256 | 0.228 | 26.8% | 31.9% | 16.9% |
+| 512 | 0.170 | 36.6% | 41.7% | 23.1% |
+| 1024 | 0.123 | 48.8% | 54.6% | 33.6% |
+
+JEPA roughly ties the lookup at n = 32–64 and beats it from n = 128 on, by a growing
+margin (+6 → +15 points); at n ≥ 256 it gets 84–89% of the reachable answers. Target
+spread stays at 0.70 (no collapse).
+
+**Decision-utility prediction files** (on the GPU box, not in git), one per budget,
+from the checkpoints above with `scripts/jepa_predict_candidates.py --k 5`:
+
+| File | States per file | Checkpoints |
+|---|---|---|
+| `outputs/jepa_candidates/alfworld_b{n}.jsonl` | 193 | `alfworld_games_steps2000_test-alfworld_heldout_buffer_sepact_adm_frozen` |
+| `outputs/jepa_candidates/sciworld_b{n}.jsonl` | 182 | `sciworld_games_steps2000_test-sciworld_heldout_buffer_sepact_adm_frozen` |
+| `outputs/jepa_candidates/sciworld_seen_b{n}.jsonl` | 323 | same ScienceWorld checkpoints (no retrain) |
+| `outputs/jepa_candidates/bytesized32_b{n}.jsonl` | 328 | `bytesized32_games_steps2000_sepact_adm_frozen` |
+
+Leak check for ScienceWorld seen (7 Nov): none of the 210 reserved variations
+(`splits/sciworld_heldout_seen.txt`), and none of the 126 used by the 323 states,
+appear in `sciworld_games.jsonl`.
