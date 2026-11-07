@@ -216,6 +216,23 @@ predictor, is the limit there. On ScienceWorld it beats the lookup at every
 budget (+6 to +10 points) and improves steadily with data. Both runs: error
 falls and decode rises at every budget step.
 
+**ScienceWorld seen** (`sciworld_games` → `sciworld_seen_heldout_buffer`, 1,600 rows from
+held-out variations of 20 seen task types; 7 Nov 2026). Same training rows as the
+ScienceWorld run above (same seed, whole buffer as the pool), so its checkpoints match the
+ones used for `sciworld_seen_b{n}.jsonl`.
+
+| n | cos dist | decode | reach | b_action |
+|---|---|---|---|---|
+| 32 | 0.265 | 27.8% | 32.0% | 16.0% |
+| 64 | 0.204 | 41.4% | 45.8% | 32.8% |
+| 128 | 0.161 | 47.2% | 53.3% | 40.3% |
+| 256 | 0.124 | 52.4% | 58.2% | 47.0% |
+| 512 | 0.095 | 59.8% | 65.4% | 52.6% |
+| 1024 | 0.069 | 65.2% | 70.6% | 57.3% |
+
+JEPA beats the lookup at every budget (+5 to +12 points) and gets 87–92% of the reachable
+answers, like on the 12 test task types.
+
 **ByteSized32** (`bytesized32_games`, 2,954 rows; random 10% held out = 295 rows from the
 same games, since there is no test buffer; 7 Nov 2026). No [ADMISSIBLE] list, so the
 admissible input is zero.
