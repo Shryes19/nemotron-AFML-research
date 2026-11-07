@@ -21,6 +21,15 @@ We also report each arm's **fidelity** on the same predictions: normalized exact
 |---|---|---|---|---|
 | `data/eval/alfworld_branched_states.jsonl` | ALFWorld held-out | Word2World test tasks (not the 12 training games) | `alfworld_games.jsonl` | `data/eval/alfworld_heldout_buffer.jsonl` |
 | `data/eval/sciworld_branched_states.jsonl` | ScienceWorld held-out, long episodes | 12 task types (the only ones in Word2World's test split) | `sciworld_games.jsonl` | `data/eval/sciworld_heldout_buffer.jsonl` |
+| `data/eval/sciworld_seen_branched_states.jsonl` | ScienceWorld **held-out variations of seen task types** (split `heldout_seen`), 323 states | 20 of the 22 matrix types | `sciworld_games.jsonl` | `data/eval/sciworld_seen_heldout_buffer.jsonl` |
+| `data/eval/bytesized32_branched_states.jsonl` | ByteSized32 **known states, new actions** (GPT-simulator crawl) | 31 games, 3–45 states each | `bytesized32_games.jsonl` | none: the states are training states |
+
+**Three evaluation regimes** (report them separately):
+- **ALFWorld: new games.** Every state comes from a game no arm trained on.
+- **ScienceWorld: new variations of seen task types.** The test file uses Word2World's test split. The `heldout_seen` file uses train-split variations reserved by `scripts/reserve_heldout_seen.py` (`splits/sciworld_heldout_seen.txt`); no training data file uses them, and `wm.collect` removes them from `train`. `identify-life-stages-1/2` have no unused variations left, so they get no held-out states.
+- **ScienceWorld coverage (test file + seen file, states per matrix task type):** 14 of 22 types have ≥ 25. Below 25: `freeze` 22, `lifespan-longest-lived-then-shortest-lived` 22, `power-component-renewable-vs-nonrenewable-energy` 23, `test-conductivity-of-unknown-substances` 24, `chemistry-mix-paint-tertiary-color` 10, `power-component` 10 (their few unused variations ran out of on-gold-path states); `identify-life-stages-1/2` 0. Report the small ones with their CIs. `measure-melting-point-unknown-substance` (27 states, test file only) is not a matrix type: report it separately.
+- **ByteSized32: known states, new actions.** `wm/bs32_branch.py` builds them from the GPT-simulator crawl (`train.jsonl`, ~150 actions tried per state on each game's gold playthrough). 310 of the crawl's 337 states are also in `test.jsonl`, which the arms train on, so only the candidate actions are new: distractors are (state, action) pairs absent from the training data. The gold action comes from walking the game's playthrough; `gold_seen_in_training` flags the 118 of 328 states whose gold transition is in the training data. Per-game counts are small (median ~8), so report wide CIs.
+- **ByteSized32's recorded score** (`true_score`, `true_reward`) gives a judge-free value for each candidate. The score changes in only 45 of 328 states, but those states check the judge against the game itself.
 
 **Candidate rule:**
 - **Distractors exclude no-op actions:** ALFWorld `look`, `inventory`; ScienceWorld `look around`, `inventory`, `task`. `examine` / `look at X` stay.
@@ -31,6 +40,13 @@ We also report each arm's **fidelity** on the same predictions: normalized exact
 
   ```bash
   python -m wm.collect --env sciworld --split heldout --balance-by task_type --late-prefix --max-steps 80 --dedupe --tag heldout-games --target expert=300,random=180 --seed 0 --max-rows-per-episode 6 --record-prob 0.2 --out data/raw/sciworld_heldout_games.jsonl
+  # held-out variations of seen task types (after scripts/reserve_heldout_seen.py)
+  python -m wm.collect --env sciworld --split heldout_seen --balance-by task_type --late-prefix --max-steps 80 --dedupe --tag heldout-seen --target expert=1000,random=600 --seed 0 --max-rows-per-episode 6 --record-prob 0.2 --out data/raw/sciworld_heldout_seen.jsonl
+  # deep ScienceWorld states replay slowly (~1 min each), so: expert rows only, a quota of 25 per
+  # type counting the test file, 3 shards in parallel (hash of transition id), then concatenate
+  for i in 0 1 2; do python -m wm.branch_states --env sciworld --split heldout_seen --data data/raw/sciworld_heldout_seen.jsonl --out data/eval/sciworld_seen_part$i.jsonl --expert-rows-only --max-per-type 25 --count-existing data/eval/sciworld_branched_states.jsonl --shard $i/3 & done; wait
+  # ByteSized32 (GPT-simulator data/train.zip, data/test.zip, data/playthroughs)
+  python -m wm.bs32_branch --crawl train.jsonl --train test.jsonl --playthroughs data/playthroughs --out data/eval/bytesized32_branched_states.jsonl
   ```
 
 Field list: `docs/SCHEMA.md` → "Branched states".
