@@ -12,7 +12,7 @@ python -m wm.schema path/to/file.jsonl
 |---|---|---|
 | `transition_id` | str | `{episode_id}-s{step:03d}`, unique |
 | `env` | str | `alfworld` or `sciworld` |
-| `split` | str | `train` (from Word2World train ids) or `heldout` (from Word2World test ids). Split is by task instance, never by transition |
+| `split` | str | `train` (from Word2World train ids), `heldout` (from Word2World test ids) or `heldout_seen` (ScienceWorld train-split variations reserved in `splits/sciworld_heldout_seen.txt`, never used for training). Split is by task instance, never by transition |
 | `task_id` | str | Word2World/AgentGym item id, e.g. `alfworld_17`, `sciworld_3491` |
 | `task_type` | str | ALFWorld task family or ScienceWorld task name |
 | `episode_id` | str | `{env}-{split}-e{index:06d}` |

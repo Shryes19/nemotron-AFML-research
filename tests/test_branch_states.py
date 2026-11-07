@@ -116,3 +116,45 @@ def test_skips_noop_gold_and_missing_expert_and_resumes(tmp_path, monkeypatch, c
     steps = env.steps
     bs.main(["--env", "alfworld", "--data", str(data), "--out", str(out)])
     assert env.steps == steps                     # skipped states are not replayed again
+
+
+def test_split_and_max_per_type(tmp_path, monkeypatch, capsys):
+    rows = [dict(_row(i), split="heldout_seen", task_id="alfworld_2400") for i in range(4)]
+    rows += [_row(9)]                                   # a plain heldout row is ignored here
+    data = tmp_path / "held.jsonl"
+    data.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    monkeypatch.setattr(bs, "make_env", lambda name: CountingEnv())
+    monkeypatch.chdir(tmp_path)
+    out = tmp_path / "b.jsonl"
+    bs.main(["--env", "alfworld", "--data", str(data), "--out", str(out), "--split", "heldout_seen",
+             "--max-per-type", "2", "--min-per-type", "3"])
+    recs = [json.loads(l) for l in open(out)]
+    assert len(recs) == 2 and all(r["split"] == "heldout_seen" for r in recs)
+    assert "games below 3 states: {'alfworld_2400': 2}" in capsys.readouterr().out
+
+
+def test_interleave_shards_and_existing_quota(tmp_path, monkeypatch):
+    rows = []
+    for i in range(12):                                  # two games, 6 expert rows each, 1 random row
+        r = dict(_row(i), task_id="alfworld_24%02d" % (i % 2))
+        rows.append(r)
+    rows.append(dict(_row(20), policy="random"))
+    data = tmp_path / "held.jsonl"
+    data.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    existing = tmp_path / "existing.jsonl"            # game alfworld_2400 already has 3 states elsewhere
+    existing.write_text("".join(json.dumps({"id": "x%d" % i, "game": "alfworld_2400"}) + "\n" for i in range(3)))
+    monkeypatch.setattr(bs, "make_env", lambda name: CountingEnv())
+    monkeypatch.chdir(tmp_path)
+    outs = []
+    for i in range(2):
+        out = tmp_path / ("part%d.jsonl" % i)
+        bs.main(["--env", "alfworld", "--data", str(data), "--out", str(out), "--expert-rows-only",
+                 "--max-per-type", "5", "--count-existing", str(existing), "--shard", "%d/2" % i])
+        outs += [json.loads(l) for l in open(out)]
+    games = [r["game"] for r in outs]
+    assert len({r["id"] for r in outs}) == len(outs)                    # shards never overlap
+    assert games.count("alfworld_2400") == 2                              # 5 - 3 existing, split 1 + 1
+    assert games.count("alfworld_2401") == 6                              # ceil(5/2)=3 per shard
+    assert all(r["source_policy"] == "expert" for r in outs)
+    assert sorted(bs.interleave_by_game([{"env": "alfworld", "task_id": t, "task_type": "x"}
+                                          for t in ["a", "a", "b"]])[i]["task_id"] for i in range(3)) == ["a", "a", "b"]

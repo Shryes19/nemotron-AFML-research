@@ -79,6 +79,21 @@ def choose_candidates(expert: Optional[str], admissible: List[str], k: int,
     return chosen
 
 
+def interleave_by_game(rows: List[Dict]) -> List[Dict]:
+    """Round-robin across games (each game's rows in transition_id order), so per-game quotas fill
+    evenly instead of one game at a time."""
+    groups = {}
+    for r in rows:
+        groups.setdefault(game_of(r), []).append(r)
+    out, i = [], 0
+    while any(i < len(g) for g in groups.values()):
+        for game in sorted(groups):
+            if i < len(groups[game]):
+                out.append(groups[game][i])
+        i += 1
+    return out
+
+
 def true_key(env_name: str, task_id: str, prefix: List[str], action: str) -> str:
     blob = json.dumps([env_name, task_id, prefix, action])
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
@@ -133,6 +148,21 @@ def main(argv=None):
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--limit", type=int, default=None,
                    help="stop after N new states (exit code 3 if more remain)")
+    p.add_argument("--split", default="heldout", choices=["heldout", "heldout_seen"],
+                   help="which held-out rows to branch (heldout_seen: reserved variations of seen task types)")
+    p.add_argument("--max-per-type", type=int, default=None,
+                   help="stop adding states for a game once it has this many")
+    p.add_argument("--min-per-type", type=int, default=None, help="report games below this many states")
+    p.add_argument("--count-existing", nargs="*", default=[],
+                   help="other branched files whose states count toward --max-per-type")
+    p.add_argument("--done-from", nargs="*", default=[],
+                   help="other branched files (and their .skipped) whose ids are already finished")
+    p.add_argument("--expert-rows-only", action="store_true",
+                   help="only branch rows chosen by the expert (on the gold path; avoids replaying "
+                        "ScienceWorld states that would be skipped for having no expert)")
+    p.add_argument("--shard", default=None,
+                   help="I/N: process every N-th row starting at I, with its own cache file and "
+                        "1/N of each type's remaining --max-per-type quota (run N processes in parallel)")
     p.add_argument("--replays", type=int, default=1, help="steps per candidate")
     p.add_argument("--check-frac", type=float, default=None,
                    help="share of states whose candidates are stepped 3 times to check determinism "
@@ -141,22 +171,56 @@ def main(argv=None):
     check_frac = args.check_frac if args.check_frac is not None else (0.0 if args.env == "alfworld" else 0.1)
     noop = NOOP_ACTIONS.get(args.env, frozenset())
 
-    rows = sorted((r for r in read_jsonl(args.data) if r["split"] == "heldout" and r["env"] == args.env),
+    rows = sorted((r for r in read_jsonl(args.data) if r["split"] == args.split and r["env"] == args.env),
                   key=lambda r: r["transition_id"])
     rows = [r for r in rows if len(candidate_pool(None, r["admissible_actions"], noop)) >= args.k - 1]
     if args.n is not None and args.n < len(rows):
         rows = sorted(random.Random(args.seed).sample(rows, args.n), key=lambda r: r["transition_id"])
+    if args.expert_rows_only:
+        rows = [r for r in rows if r["policy"] == "expert"]
+    shard_i, shard_n = (int(x) for x in args.shard.split("/")) if args.shard else (0, 1)
+    # shard by a hash of the transition id (not by position: collection alternates games, so
+    # every-N-th row would give each shard only some games), then interleave within the shard
+    rows = interleave_by_game([r for r in rows if int(hashlib.md5(r["transition_id"].encode()).hexdigest(), 16)
+                               % shard_n == shard_i])
+
+    def read_states(path):
+        out = []
+        if os.path.exists(path):
+            out = [json.loads(line) for line in open(path, encoding="utf-8") if line.strip()]
+        return out
 
     # finished ids: written states plus states skipped earlier (kept in a side file, with reason)
     skipped_path = args.out + ".skipped"
-    done_ids, skipped = set(), {}
-    if os.path.exists(args.out):
-        done_ids = {json.loads(line)["id"] for line in open(args.out, encoding="utf-8")}
-    if os.path.exists(skipped_path):
-        for line in open(skipped_path, encoding="utf-8"):
-            rec = json.loads(line)
-            skipped[rec["id"]] = rec["reason"]
-    cache = TrueNextCache(os.path.join("cache", "true_next_%s.jsonl" % args.env))
+    done_ids, skipped, per_game = set(), {}, {}
+    for rec in read_states(args.out):
+        done_ids.add(rec["id"])
+        per_game[rec["game"]] = per_game.get(rec["game"], 0) + 1
+    for rec in read_states(skipped_path):
+        skipped[rec["id"]] = rec["reason"]
+    other = {}                                # states in other files: count toward the quota
+    for path in args.count_existing + args.done_from:
+        for rec in read_states(path):
+            other[rec["id"]] = rec["game"]
+    for path in args.done_from:
+        done_ids |= {rec["id"] for rec in read_states(path)}
+        skipped.update({rec["id"]: rec["reason"] for rec in read_states(path + ".skipped")})
+    base = {}
+    for game in other.values():
+        base[game] = base.get(game, 0) + 1
+
+    def quota_full(game):
+        if args.max_per_type is None:
+            return False
+        own = per_game.get(game, 0)
+        if shard_n == 1:
+            return own + base.get(game, 0) >= args.max_per_type
+        remaining = max(0, args.max_per_type - base.get(game, 0))
+        return own >= -(-remaining // shard_n)          # ceil(remaining / N) per shard
+
+    cache_name = "true_next_%s.jsonl" % args.env if shard_n == 1 else \
+        "true_next_%s.shard%d.jsonl" % (args.env, shard_i)
+    cache = TrueNextCache(os.path.join("cache", cache_name))
     env = make_env(args.env)
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     print("%d eligible states, %d written, %d skipped earlier" % (len(rows), len(done_ids), len(skipped)),
@@ -173,6 +237,8 @@ def main(argv=None):
         for i, row in enumerate(rows):
             sid = "%s/%s/%s" % (args.env, game_of(row), row["transition_id"])
             if sid in done_ids or sid in skipped:
+                continue
+            if quota_full(game_of(row)):
                 continue
             if args.limit is not None and new >= args.limit:
                 left = len(rows) - len(done_ids) - len(skipped)
@@ -219,11 +285,12 @@ def main(argv=None):
                 "action_prefix": row["action_prefix"],
                 "source_policy": row["policy"],
                 "env": args.env,
-                "split": "heldout",
+                "split": args.split,
             }
             f.write(json.dumps(rec) + "\n")
             f.flush()
             new += 1
+            per_game[rec["game"]] = per_game.get(rec["game"], 0) + 1
             if (i + 1) % 10 == 0:
                 print("%d/%d states (%.0fs)" % (i + 1, len(rows), time.time() - t0), flush=True)
     if hasattr(env, "close"):
@@ -232,6 +299,10 @@ def main(argv=None):
     for r in skipped.values():
         reasons[r] = reasons.get(r, 0) + 1
     print("done: %d states written, skipped %s" % (len(done_ids) + new, reasons), flush=True)
+    print("states per game: %s" % dict(sorted(per_game.items())), flush=True)
+    if args.min_per_type is not None:
+        low = {g: n for g, n in per_game.items() if n < args.min_per_type}
+        print("games below %d states: %s" % (args.min_per_type, low or "none"), flush=True)
     return 0
 
 

@@ -43,16 +43,32 @@ MAX_EXPERT_PREFIX = 15   # k ~ U[0, 15] before a random/llm driver takes over
 DRIVER_STEPS = (3, 10)   # m ~ U[3, 10] driver steps
 
 
+def reserved_seen(env: str) -> List[str]:
+    """Held-out variations of seen task types (splits/<env>_heldout_seen.txt), if reserved."""
+    path = os.path.join("splits", "%s_heldout_seen.txt" % env)
+    if not os.path.exists(path):
+        return []
+    with open(path) as f:
+        return [line.strip() for line in f if line.strip()]
+
+
 def load_task_ids(env: str, split: str) -> List[str]:
-    """Word2World ids for a split. Train drops any id that is also a test id: Word2World's
-    ScienceWorld train and test files share 61 ids, and held-out must stay task-disjoint."""
+    """Task ids for a split.
+
+    heldout:      Word2World test ids.
+    heldout_seen: train-split ids reserved by scripts/reserve_heldout_seen.py (new variations of
+                  task types the arms trained on; no training data file uses them).
+    train:        Word2World train ids minus test ids (Word2World's ScienceWorld train and test
+                  files share 61 ids) and minus heldout_seen ids, so held-out stays task-disjoint."""
     def read(name):
         with open(os.path.join("splits", "%s_%s.json" % (env, name))) as f:
             return [x["item_id"] for x in json.load(f)]
     if split == "heldout":
         return read("test")
-    test = set(read("test"))
-    return [t for t in read("train") if t not in test]
+    if split == "heldout_seen":
+        return reserved_seen(env)
+    excluded = set(read("test")) | set(reserved_seen(env))
+    return [t for t in read("train") if t not in excluded]
 
 
 def pick_balanced(groups: Dict[str, List[str]], rows_per_group: Counter,
@@ -148,7 +164,7 @@ def run_episode(env, env_name, split, task_id, ep, driver, policies, rng, seed, 
 def main(argv=None):
     p = argparse.ArgumentParser()
     p.add_argument("--env", required=True, choices=["alfworld", "sciworld"])
-    p.add_argument("--split", required=True, choices=["train", "heldout"])
+    p.add_argument("--split", required=True, choices=["train", "heldout", "heldout_seen"])
     p.add_argument("--target", required=True, help="rows per policy, e.g. expert=800,random=480")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--out", required=True)

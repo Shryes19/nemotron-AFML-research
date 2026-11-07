@@ -36,7 +36,7 @@ FIELDS = {
     "llm_meta": (dict, type(None)),
 }
 ENVS = {"alfworld", "sciworld"}
-SPLITS = {"train", "heldout"}
+SPLITS = {"train", "heldout", "heldout_seen"}
 POLICIES = {"expert", "random", "llm", "llm_fallback"}
 
 
