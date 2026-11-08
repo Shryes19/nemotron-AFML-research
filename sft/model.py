@@ -107,8 +107,8 @@ def load_lora_model(model_name: str, cfg: Dict, device: str, seed: int = 42):
         bias="none", task_type="CAUSAL_LM",
     )
     model = get_peft_model(model, lcfg)
-    if cfg.get("gradient_checkpointing"):
-        model.gradient_checkpointing_enable()
+    if cfg.get("gradient_checkpointing", True):     # saves activation memory (12 GB card)
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
         model.enable_input_require_grads()
     return model.to(device)
 
@@ -128,6 +128,34 @@ def steps_for(n: int, cfg: Dict) -> int:
 def _pad(seqs: List[List[int]], value: int) -> torch.Tensor:
     width = max(len(s) for s in seqs)
     return torch.tensor([s + [value] * (width - len(s)) for s in seqs])
+
+
+def _microbatch_loss(model, chunk: List[Dict], n_tok: int, device: str) -> torch.Tensor:
+    """Sum of answer-token cross-entropy / n_tok, with loss.backward() already called.
+
+    Memory saver: sequences are LEFT-padded, so every answer ends at the last position,
+    and the model computes logits only for the last (longest answer + 1) positions
+    (logits_to_keep). Qwen's vocabulary is ~152k, so full-sequence logits for 4 x 700
+    tokens would take several GB; answers are ~10-30 tokens.
+    """
+    width = max(len(e["input_ids"]) for e in chunk)
+    ans = max(sum(l != -100 for l in e["labels"]) for e in chunk)
+    ids = torch.tensor([[0] * (width - len(e["input_ids"])) + e["input_ids"] for e in chunk], device=device)
+    labels = torch.tensor([[-100] * (width - len(e["labels"])) + e["labels"] for e in chunk], device=device)
+    mask = torch.tensor([[0] * (width - len(e["input_ids"])) + [1] * len(e["input_ids"]) for e in chunk],
+                        device=device)
+    pos = (mask.cumsum(-1) - 1).clamp(min=0)
+    keep = min(ans + 1, width)
+    try:
+        logits = model(input_ids=ids, attention_mask=mask, position_ids=pos, logits_to_keep=keep).logits
+    except TypeError:                     # older transformers: no logits_to_keep
+        logits = model(input_ids=ids, attention_mask=mask, position_ids=pos).logits[:, -keep:]
+    logits = logits[:, :-1].float()
+    tgt = labels[:, width - keep + 1:]
+    loss = torch.nn.functional.cross_entropy(logits.reshape(-1, logits.size(-1)), tgt.reshape(-1),
+                                             ignore_index=-100, reduction="sum") / n_tok
+    loss.backward()
+    return loss.detach()
 
 
 def train_lora(model, examples: List[Dict], steps: int, cfg: Dict, device: str, seed: int = 42,
@@ -168,15 +196,7 @@ def train_lora(model, examples: List[Dict], steps: int, cfg: Dict, device: str, 
         total = 0.0
         for i in range(0, len(batch), mb):
             chunk = batch[i:i + mb]
-            ids = _pad([e["input_ids"] for e in chunk], 0).to(device)
-            labels = _pad([e["labels"] for e in chunk], -100).to(device)
-            mask = _pad([[1] * len(e["input_ids"]) for e in chunk], 0).to(device)
-            logits = model(input_ids=ids, attention_mask=mask).logits[:, :-1].float()
-            loss = torch.nn.functional.cross_entropy(
-                logits.reshape(-1, logits.size(-1)), labels[:, 1:].reshape(-1),
-                ignore_index=-100, reduction="sum") / n_tok
-            loss.backward()
-            total += loss.item()
+            total += _microbatch_loss(model, chunk, n_tok, device).item()
         torch.nn.utils.clip_grad_norm_(params, float(cfg.get("max_grad_norm", 1.0)))
         opt.step()
         sched.step()

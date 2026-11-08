@@ -29,7 +29,8 @@ def main():
     p.add_argument("--model", default="Qwen/Qwen2.5-1.5B-Instruct")
     p.add_argument("--attn", default=None, help="eager | sdpa")
     p.add_argument("--dtype", default="bfloat16", choices=["bfloat16", "float16", "float32"])
-    p.add_argument("--gen-batch", type=int, default=8)
+    p.add_argument("--gen-batch", type=int, default=32)
+    p.add_argument("--max-new", type=int, default=192)
     args = p.parse_args()
 
     import transformers, peft
@@ -44,9 +45,10 @@ def main():
     from sft.data import read_jsonl
     from sft.model import (generate, load_lora_model, load_tokenizer, tokenize_example,
                            tokenize_prompt, train_lora)
-    items = read_jsonl("data/buffers/alfworld_games.jsonl")[:16]
+    # the LONGEST observations: the hardest case for memory
+    items = sorted(read_jsonl("data/buffers/alfworld_games.jsonl"), key=lambda r: -len(r["obs"]))[:64]
     tok = load_tokenizer(args.model)
-    cfg = {"lora_rank": 16, "lora_alpha": 32, "lora_dropout": 0.05, "batch_size": 8, "micro_batch": 4,
+    cfg = {"lora_rank": 16, "lora_alpha": 32, "lora_dropout": 0.05, "batch_size": 16, "micro_batch": 4,
            "lr": 2e-4, "warmup_steps": 1, "attn_implementation": args.attn}
     t0 = time.time()
     if args.dtype != "bfloat16":
@@ -58,7 +60,8 @@ def main():
     ok("load model + LoRA", t0)
 
     t0 = time.time()
-    prompts = [tokenize_prompt(tok, r["obs"], r["action"], 1024, 64) for r in items]
+    prompts = [tokenize_prompt(tok, r["obs"], r["action"], 1024, args.max_new) for r in items]
+    print(f"     prompt lengths: {min(map(len, prompts))}-{max(map(len, prompts))} tokens")
     with torch.no_grad():
         ids = torch.tensor([prompts[0]], device="cuda")
         model(input_ids=ids)
@@ -70,13 +73,15 @@ def main():
     print("     sample:", repr(out[0][:80]))
 
     t0 = time.time()
-    generate(model, tok, prompts[: args.gen_batch], 32, args.gen_batch, "cuda")
-    ok(f"generate, batch {args.gen_batch} (left padding)", t0)
+    generate(model, tok, prompts[: args.gen_batch], args.max_new, args.gen_batch, "cuda")
+    ok(f"generate, batch {args.gen_batch}, longest prompts", t0)
 
     t0 = time.time()
-    ex = [tokenize_example(tok, r["obs"], r["action"], r["obs_next"], 1024) for r in items]
+    torch.cuda.reset_peak_memory_stats()
+    ex = [tokenize_example(tok, r["obs"], r["action"], r["obs_next"], 1024) for r in items[:16]]
+    print(f"     training examples: {min(len(e['input_ids']) for e in ex)}-{max(len(e['input_ids']) for e in ex)} tokens")
     train_lora(model, ex, 3, cfg, "cuda", log_every=1)
-    ok("3 training steps", t0)
+    ok("3 training steps, longest examples", t0)
     print("\nALL STAGES OK")
 
 
