@@ -92,10 +92,13 @@ def load_lora_model(model_name: str, cfg: Dict, device: str, seed: int = 42):
 
     torch.manual_seed(seed)
     dtype = torch.bfloat16 if device.startswith("cuda") else torch.float32
+    kw = {}
+    if cfg.get("attn_implementation"):    # "eager" | "sdpa" (default: transformers' choice)
+        kw["attn_implementation"] = cfg["attn_implementation"]
     try:
-        model = AutoModelForCausalLM.from_pretrained(model_name, dtype=dtype)
+        model = AutoModelForCausalLM.from_pretrained(model_name, dtype=dtype, **kw)
     except TypeError:                     # older transformers
-        model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=dtype)
+        model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=dtype, **kw)
     model.config.use_cache = False
     lcfg = LoraConfig(
         r=int(cfg.get("lora_rank", 16)), lora_alpha=int(cfg.get("lora_alpha", 32)),
