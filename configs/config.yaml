@@ -59,8 +59,11 @@ sft:
   lora_dropout: 0.05
   lora_targets: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]  # all linear
   epochs: 5                           # Word2World trains 5 epochs (was 3)
-  min_steps: null                     # floor for tiny budgets — set from the pilot
-                                      #   (scripts/train_sft.py --pilot)
+  min_steps: 20                       # floor for tiny budgets, from the pilot (9 Nov 2026,
+                                      #   ALFWorld, 2 held-out training games): n=32 peaks at
+                                      #   step 20 (exact 0.365) vs 0.280 at 5 epochs (10 steps),
+                                      #   then flat ~0.335; n=1024 plateaus from ~1 epoch
+                                      #   (0.60-0.615), 5 epochs = 0.585 (within noise)
   batch_size: 16                      # examples per optimiser step
   micro_batch: 4                      # examples per forward pass (memory)
   lr: 2e-4                            # usual LoRA rate (Word2World's 1e-5 is full FT)

@@ -82,3 +82,24 @@ GPU time is logged as `sft_train` and `sft_predict` (arm F).
 
 **CPU code check** (no download): build a tiny random Qwen2 model and run with
 `--model <dir> --device cpu --limit 12`.
+
+## Pilot result (9 Nov 2026) → `min_steps: 20`, `epochs: 5`
+
+ALFWorld, 2 held-out training games, 200 rows. Exact / F1:
+
+| step | n=32 | n=1024 |
+|---|---|---|
+| 0 (no training) | 0.055 / 0.395 | 0.055 / 0.395 |
+| 10 | 0.280 / 0.705 (5 epochs) | 0.255 / 0.690 |
+| 20 | **0.365 / 0.785** | 0.330 / 0.800 |
+| 40 | 0.335 / 0.705 | 0.605 / 0.901 |
+| 80 | 0.335 / 0.689 | 0.610 / 0.907 |
+| 160 | 0.335 / 0.684 | 0.600 / 0.909 |
+| 320 | 0.335 / 0.695 | 0.585 / 0.892 (5 epochs) |
+| 480 | 0.335 / 0.690 | 0.615 / 0.900 |
+
+At n = 32, 5 epochs (10 steps) is under-trained. The peak is at 20 steps, and longer
+training only costs a few points (mild overfitting). At n = 1024 the score plateaus after
+about 1 epoch, and Word2World's 5 epochs sits on the plateau (differences are within the
+±3.5-point noise of 200 rows). So the rule is: 5 epochs, at least 20 steps.
+Steps per budget: 20, 20, 40, 80, 160, 320.
