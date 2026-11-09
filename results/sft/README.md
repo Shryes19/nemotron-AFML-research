@@ -59,6 +59,16 @@ both from `results/jepa_phase1/README.md`. F writes new text, so it has no reach
   ALFWorld games (+2 to +12 points) and large on ScienceWorld and ByteSized32 (+16 to
   +35). F often scores above D's reach ceiling, because it can write next states that
   are not in the buffer.
+- **Why F leads on fidelity, and why that is not the verdict on JEPA.** D answers with
+  the nearest *training* state's text, so it can never be exactly right when the true next
+  state is not in its buffer (at n = 32 it chooses from 32 sentences). Within that limit,
+  D's predictor is near-optimal: it gets 87–97% of its reach ceiling in every environment,
+  with no collapse, so the gap to F is the decoder and the buffer, not JEPA training. JEPA's
+  usual advantage (ignoring unpredictable detail, as in I-/V-JEPA and DINO-WM) has little to
+  work with here: next states are short, mostly deterministic sentences, which next-token
+  fine-tuning copies well (Word2World reports near-perfect exact match on ALFWorld). JEPA's
+  claim is about *decisions*, so the test is decision-utility regret, including its
+  `native` mode (action choice in embedding space, no text).
 - Unlike Ashok et al.'s finding that fine-tuning fails at low scales, F is already strong
   at n = 32. Short, formulaic feedback text is easy to copy (ScienceWorld 59% at n = 32).
 - Not monotone everywhere: ALFWorld 64 > 128, and ScienceWorld 32 ≈ 64. With 240–480
