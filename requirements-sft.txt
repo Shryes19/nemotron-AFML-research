@@ -1,0 +1,10 @@
+# SFT arm (F) — separate venv (.venv-sft) so JEPA's .venv-enc stays untouched.
+# Install torch first with CUDA 12.8 wheels (RTX 5070 / Blackwell needs cu128+):
+#   pip install torch --index-url https://download.pytorch.org/whl/cu128
+# then:  pip install -r requirements-sft.txt
+transformers>=4.51,<4.58
+peft>=0.15,<0.22
+accelerate>=1.0
+pyyaml
+numpy
+pytest

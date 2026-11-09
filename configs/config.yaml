@@ -52,13 +52,27 @@ training:
 
 # ── SFT arm ───────────────────────────────────────────────────────────────────
 sft:
-  model_name: "Qwen/Qwen2.5-1.5B-Instruct"
+  model_name: "Qwen/Qwen2.5-1.5B-Instruct"   # Word2World: 1.5B already captures core
+                                              #   dynamics in structured envs
   lora_rank: 16
   lora_alpha: 32
   lora_dropout: 0.05
-  epochs: 3
-  lr: 2e-4
-  max_seq_len: 512
+  lora_targets: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]  # all linear
+  epochs: 5                           # Word2World trains 5 epochs (was 3)
+  min_steps: 20                       # floor for tiny budgets, from the pilot (9 Nov 2026,
+                                      #   ALFWorld, 2 held-out training games): n=32 peaks at
+                                      #   step 20 (exact 0.365) vs 0.280 at 5 epochs (10 steps),
+                                      #   then flat ~0.335; n=1024 plateaus from ~1 epoch
+                                      #   (0.60-0.615), 5 epochs = 0.585 (within noise)
+  batch_size: 16                      # examples per optimiser step
+  micro_batch: 4                      # examples per forward pass (memory)
+  lr: 2e-4                            # usual LoRA rate (Word2World's 1e-5 is full FT)
+  warmup_steps: 10                    # Word2World: constant LR with 10 warmup steps
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  max_seq_len: 1024                   # prompts reach ~700 tokens; [ADMISSIBLE] list removed
+  max_new_tokens: 192                 # answers are ~10-15 tokens (longest ~230 chars/4)
+  gen_batch: 32                       # greedy decoding batch
 
 # ── RAG arm ───────────────────────────────────────────────────────────────────
 rag:

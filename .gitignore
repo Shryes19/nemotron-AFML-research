@@ -67,3 +67,6 @@ data/upload/
 *.jsonl.gz
 results/*_predictions.jsonl
 .pytest_cache/
+
+# SFT venv on the GPU box
+.venv-*/
