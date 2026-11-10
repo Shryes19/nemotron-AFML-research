@@ -36,7 +36,9 @@ from wm.utility.predictions import load_predictions
 
 
 def track(stage, **kw):
-    """GPU-hour logging (capability/compute_log.py) when available."""
+    """GPU-hour logging (capability/compute_log.py) when available; WM_NO_COMPUTE_LOG=1 turns it off."""
+    if os.environ.get("WM_NO_COMPUTE_LOG") == "1":
+        return contextlib.nullcontext()
     try:
         from capability.compute_log import track as _track
         return _track(stage, **kw)
@@ -190,6 +192,7 @@ def cmd_score(args):
                 continue
             rec.update({"id": sid, "env": s["env"], "arm": args.arm, "mode": args.mode,
                         "budget": preds[sid]["budget"], "game": s["game"], "family": family_of(s),
+                        "split": s.get("split", ""), "gold_seen": s.get("gold_seen_in_training"),
                         "gold_index": s["gold_index"], "pred_values": pred_values[sid],
                         "true_values": tv[sid], "judge": judge.name if judge else "none"})
             rows.append(rec)
@@ -214,21 +217,27 @@ def oracle_rows(states: Dict, tv: Dict, seed: int = 0) -> List[Dict]:
         rec = score_state(s, tv[sid], tv[sid], s["true_next"], seed)
         if rec:
             rec.update({"id": sid, "env": s["env"], "arm": "oracle", "mode": "true", "budget": "-",
-                        "game": s["game"], "family": family_of(s)})
+                        "game": s["game"], "family": family_of(s), "split": s.get("split", ""),
+                        "gold_seen": s.get("gold_seen_in_training")})
             rows.append(rec)
     return rows
 
 
 def summarize_rows(rows: List[Dict], seed: int = 0) -> List[Dict]:
+    """One row per (env, split, arm, mode, budget, game) plus pooled game "*" rows. ByteSized32
+    also gets a pooled "<split>:gold_unseen" row: states whose gold transition the arms never saw."""
     groups = defaultdict(list)
     for r in rows:
-        base = (r["env"], r["arm"], r.get("mode", ""), str(r["budget"]))
+        split = r.get("split", "")
+        base = (r["env"], split, r["arm"], r.get("mode", ""), str(r["budget"]))
         groups[base + (r["game"], r["family"])].append(r)
         groups[base + ("*", "*")].append(r)
+        if r.get("gold_seen") is False:
+            groups[(r["env"], split + ":gold_unseen") + base[2:] + ("*", "*")].append(r)
     out = []
-    for (env, arm, mode, budget, game, family), rs in sorted(groups.items()):
+    for (env, split, arm, mode, budget, game, family), rs in sorted(groups.items()):
         m, lo, hi = mean_ci([r["regret"] for r in rs], seed)
-        row = {"env": env, "arm": arm, "mode": mode, "budget": budget, "game": game, "family": family,
+        row = {"env": env, "split": split, "arm": arm, "mode": mode, "budget": budget, "game": game, "family": family,
                "n_states": len(rs), "mean_regret": m, "regret_ci_lo": lo, "regret_ci_hi": hi,
                "gold_hit": round(sum(r["gold_hit"] for r in rs) / len(rs), 4)}
         for key in ("em", "f1"):
@@ -239,20 +248,42 @@ def summarize_rows(rows: List[Dict], seed: int = 0) -> List[Dict]:
 
 
 def disagreement(summary: List[Dict]) -> List[Dict]:
-    """Per (env, budget): best arm by utility (lowest regret) vs best by fidelity (highest EM)."""
+    """Per (env, split, budget): best arm by utility (lowest regret) vs best by fidelity (highest EM)."""
     by = defaultdict(list)
     for r in summary:
         if r["game"] == "*" and r["arm"] != "oracle" and r["em"] != "":
-            by[(r["env"], r["budget"])].append(r)
+            by[(r["env"], r["split"], r["budget"])].append(r)
     out = []
-    for (env, budget), rs in sorted(by.items()):
+    for (env, split, budget), rs in sorted(by.items()):
         if len(rs) < 2:
             continue
         u = min(rs, key=lambda r: (r["mean_regret"], r["arm"]))
         fi = max(rs, key=lambda r: (r["em"], r["f1"]))
-        out.append({"env": env, "budget": budget, "best_by_utility": "%s/%s" % (u["arm"], u["mode"]),
+        out.append({"env": env, "split": split, "budget": budget, "best_by_utility": "%s/%s" % (u["arm"], u["mode"]),
                     "best_by_fidelity": "%s/%s" % (fi["arm"], fi["mode"]), "agree": u is fi})
     return out
+
+
+def judge_check(states: Dict, tv: Dict) -> List[Dict]:
+    """Judge-free check of the judge where the env records a reward (ByteSized32 score change):
+    over candidate pairs of one state with different rewards, how often does the judge's true value
+    order them the same way? Ties in the judge's values count as half."""
+    by_env = defaultdict(lambda: [0, 0.0, set()])
+    for sid, s in states.items():
+        rewards, vals = s.get("true_reward"), tv.get(sid)
+        if not rewards or not vals or any(v is None for v in vals) or len(set(rewards)) < 2:
+            continue
+        acc = by_env[s["env"]]
+        acc[2].add(sid)
+        for i in range(len(rewards)):
+            for j in range(i + 1, len(rewards)):
+                if rewards[i] == rewards[j]:
+                    continue
+                hi, lo = (i, j) if rewards[i] > rewards[j] else (j, i)
+                acc[0] += 1
+                acc[1] += 1.0 if vals[hi] > vals[lo] else (0.5 if vals[hi] == vals[lo] else 0.0)
+    return [{"env": env, "n_states": len(ids), "n_pairs": n, "agreement": round(agree / n, 4)}
+            for env, (n, agree, ids) in sorted(by_env.items()) if n]
 
 
 def write_csv(path: str, rows: List[Dict]):
@@ -276,10 +307,15 @@ def cmd_summarize(args):
     summary = summarize_rows(rows, args.seed)
     write_csv(os.path.join(args.out_dir, "summary.csv"), summary)
     write_csv(os.path.join(args.out_dir, "fidelity_vs_utility.csv"), disagreement(summary))
+    check = judge_check(states, tv)
+    write_csv(os.path.join(args.out_dir, "judge_check.csv"), check)
+    for c in check:
+        print("judge check %s: %d states, %d pairs, agreement with recorded reward %.3f"
+              % (c["env"], c["n_states"], c["n_pairs"], c["agreement"]))
     for r in summary:
         if r["game"] == "*":
-            print("%-9s %-7s %-7s %-6s n=%-5s regret %-6s [%s, %s] gold-hit %s EM %s"
-                  % (r["env"], r["arm"], r["mode"], r["budget"], r["n_states"], r["mean_regret"],
+            print("%-11s %-30s %-7s %-7s %-6s n=%-5s regret %-6s [%s, %s] gold-hit %s EM %s"
+                  % (r["env"], r["split"], r["arm"], r["mode"], r["budget"], r["n_states"], r["mean_regret"],
                      r["regret_ci_lo"], r["regret_ci_hi"], r["gold_hit"], r["em"]))
     return 0
 
