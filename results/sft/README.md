@@ -87,3 +87,32 @@ both from `results/jepa_phase1/README.md`. F writes new text, so it has no reach
 | Training rows | `sft/rows/<env>.json` (copied from the JEPA checkpoints) |
 
 GPU time is in the compute log as `sft_train` / `sft_predict` (arm F).
+
+## SFT probe: Feature 1 ablation input (9–10 Nov 2026)
+
+`scripts/sft_probe.py` → `results/sft/sft_probe_scores.csv` (65 games). The protocol is the
+same as the JEPA probe: same per-game split (32 train / up to 64 held out), 5 draws. The
+difference is that it runs 20 LoRA steps and scores the written text by word F1 (higher =
+easier game). It took about 5.5 h of GPU for all 65 games (roughly 2.5–6.5 min per game),
+against seconds per game for the JEPA probe on cached embeddings.
+
+| Env | Games | F1 range | Mean | Separation ratio (SFT) | JEPA probe separation | Spearman with JEPA probe |
+|---|---|---|---|---|---|---|
+| ALFWorld | 12 | 0.784–0.886 | 0.856 | 1.12 | 1.63 | −0.54 |
+| ScienceWorld | 22 | 0.722–0.872 | 0.792 | 0.95 | 1.55 | −0.66 |
+| ByteSized32 | 31 | 0.654–0.945 | 0.768 | 1.41 | 2.02 | −0.65 |
+| All | 65 | 0.654–0.945 | 0.792 | 1.48 | — | −0.63 |
+
+Separation ratio = between-game sd ÷ mean within-game (draw-to-draw) sd, the same
+definition as for the JEPA probe. The correlation is negative because the JEPA probe is a
+distance (lower = easier) and the SFT probe is an F1 score (higher = easier).
+
+Reading:
+- The two probes mostly agree on which games are easy (|ρ| ≈ 0.6).
+- The JEPA probe separates games more clearly relative to its own noise (1.55–2.02 vs
+  0.95–1.41), and it is far cheaper.
+- Whether either one predicts the winning arm is tested by `scripts/rq3_predictor.py`
+  once the labels arrive.
+
+`clean-energy` (ByteSized32) has only 24 transitions, so it was trained on 20 and scored
+on 4, flagged "short" as in the JEPA probe.
