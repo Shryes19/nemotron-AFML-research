@@ -173,7 +173,8 @@ def main():
     p.add_argument("--target", choices=["ema", "frozen"], default=None,
                    help="ema = learned projection + EMA target (default: jepa.target_mode); "
                         "frozen = predict the frozen encoder vectors directly (DINO-WM / V-JEPA 2-AC style)")
-    p.add_argument("--loss", choices=["mse", "l1"], default=None, help="default: jepa.loss")
+    p.add_argument("--loss", choices=["mse", "l1", "infonce"], default=None,
+                   help="default: jepa.loss. infonce = VL-JEPA-style contrastive loss")
     p.add_argument("--no-admissible", action="store_true",
                    help="leave out the 'is the action allowed' input (default: jepa.admissible_feature)")
     p.add_argument("--joint", action="store_true",
@@ -306,6 +307,7 @@ def main():
         "batch_size": batch_size,
         "target_mode": target_mode,
         "loss": loss_name,
+        "infonce_temperature": float(jcfg.get("infonce_temperature", 0.05)),
     }
 
     for b in budgets:
