@@ -1,0 +1,149 @@
+{
+  "config": {
+    "env": "alfworld",
+    "train": "data/raw/alfworld_train.jsonl",
+    "heldout": "data/raw/alfworld_heldout.jsonl",
+    "budget": "data/budgets/alfworld_seed0_n1024_provisional.txt",
+    "n": 200,
+    "seed": 0,
+    "k": 3,
+    "out": "results/sanity_alfworld.json",
+    "baselines_only": false
+  },
+  "pool_size": 1024,
+  "heldout_size": 200,
+  "heldout_policies": {
+    "expert": 125,
+    "random": 75
+  },
+  "baselines": {
+    "copy_top1": {
+      "em": 0.285,
+      "ci95": [
+        0.225,
+        0.35
+      ],
+      "n": 200
+    },
+    "nothing_happens": {
+      "em": 0.125,
+      "ci95": [
+        0.085,
+        0.17
+      ],
+      "n": 200
+    }
+  },
+  "model": {
+    "em": 0.345,
+    "ci95": [
+      0.275,
+      0.41
+    ],
+    "n": 200
+  },
+  "per_category": {
+    "clean/heat/cool": {
+      "em": 0.3333,
+      "ci95": [
+        0.0833,
+        0.5833
+      ],
+      "n": 12
+    },
+    "close": {
+      "em": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "n": 4
+    },
+    "examine": {
+      "em": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "n": 3
+    },
+    "failure": {
+      "em": 0.24,
+      "ci95": [
+        0.08,
+        0.44
+      ],
+      "n": 25
+    },
+    "go to": {
+      "em": 0.1858,
+      "ci95": [
+        0.115,
+        0.2566
+      ],
+      "n": 113
+    },
+    "inventory": {
+      "em": 1.0,
+      "ci95": [
+        1.0,
+        1.0
+      ],
+      "n": 4
+    },
+    "look": {
+      "em": 0.7179,
+      "ci95": [
+        0.5897,
+        0.8462
+      ],
+      "n": 39
+    },
+    "move": {
+      "em": 1.0,
+      "ci95": [
+        1.0,
+        1.0
+      ],
+      "n": 1
+    },
+    "open": {
+      "em": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "n": 10
+    },
+    "other": {
+      "em": 0.5,
+      "ci95": [
+        0.0,
+        1.0
+      ],
+      "n": 2
+    },
+    "take": {
+      "em": 1.0,
+      "ci95": [
+        1.0,
+        1.0
+      ],
+      "n": 10
+    },
+    "use": {
+      "em": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "n": 2
+    }
+  },
+  "rule": {
+    "1_em_between_25_and_80": true,
+    "2_beats_both_baselines_by_10pts": false,
+    "3_go_to_below_failure": true,
+    "PASS": false
+  }
+}

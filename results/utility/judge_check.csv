@@ -1,0 +1,4 @@
+env,n_states,n_pairs,agreement
+alfworld,6,24,0.8542
+bytesized32,45,184,0.7935
+sciworld,274,1312,0.7393

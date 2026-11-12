@@ -65,4 +65,36 @@ So criterion 2 currently requires the model to reach at least 38.5%. These numbe
 
 ## Result
 
-_To be filled in after the run (date, EM with CI, baselines, per-category table, PASS/FAIL)._
+**Run 12 Nov 2026, RTX 5070, Qwen2.5-7B-Instruct-AWQ (4-bit; deviation from the full-precision
+model, needed to fit 12 GB). Pool: `alfworld_seed0_n1024_provisional` (the final budget: every arm
+trained on these buffers). Held-out: 200 transitions (125 expert, 75 random; no LLM rows, see below).
+Files: `results/sanity_alfworld.json`, `results/sanity_alfworld_predictions.jsonl`.**
+
+| | Exact match | 95% CI |
+|---|---|---|
+| Qwen 3-shot (BM25 top 3) | **34.5%** | 27.5–41.0 |
+| Baseline (a): copy top-1 retrieved | 28.5% | 22.5–35.0 |
+| Baseline (b): always `Nothing happens.` | 12.5% | 8.5–17.0 |
+
+| Rule | Result |
+|---|---|
+| 1. EM between 25% and 80% | pass (34.5%) |
+| 2. Beats both baselines by >= 10 points | **fail** (+6.0 over copy-top-1; +22.0 over `Nothing happens.`) |
+| 3. EM on `go to` below EM on failures | pass (18.6% vs 24.0%) |
+
+**Verdict: FAIL** (rule 2). Thresholds unchanged, as pre-registered.
+
+Per category (EM, n): go to 18.6% (113), look 71.8% (39), failure 24.0% (25), clean/heat/cool
+33.3% (12), open 0% (10), take 100% (10), close 0% (4), inventory 100% (4), examine 0% (3),
+use 0% (2), other 50% (2), move 100% (1).
+
+**Pipeline debugging (as the rule requires).** All 131 misses were inspected for format or field
+bugs; none found. No prediction is the right answer with extra text around it, and rules 1 and 3
+pass, so there is no sign of broken observations or leakage. The misses are model errors on
+information the observation does not contain: the contents of receptacles reached by `go to` or
+`open` (wrong or invented objects), and 12 `look` predictions that list room objects where the
+true answer is "you see nothing".
+
+**Reading.** The data and prompt format work, but at 7B (4-bit) with three retrieved examples the
+model is only slightly better than copying the most similar example's outcome. This bears on arm
+G, which is also a retrieval-augmented LLM.
