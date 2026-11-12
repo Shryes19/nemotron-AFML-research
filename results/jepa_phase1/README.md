@@ -263,3 +263,29 @@ from the checkpoints above with `scripts/jepa_predict_candidates.py --k 5`:
 Leak check for ScienceWorld seen (7 Nov): none of the 210 reserved variations
 (`splits/sciworld_heldout_seen.txt`), and none of the 126 used by the 323 states,
 appear in `sciworld_games.jsonl`.
+
+## Ablation: VL-JEPA-style InfoNCE loss (12–13 Nov 2026)
+
+`--loss infonce` is a contrastive loss between predicted and true next-state embeddings,
+with in-batch negatives and identical next states counted as positives (VL-JEPA trains
+with InfoNCE). It matches the nearest-state decode used at test time. Everything else is
+the same as the default runs (frozen targets, separate action, admissible feature,
+2,000 steps, same training rows). Exact-match decode on the test buffers:
+
+| n | ALFWorld MSE | ALFWorld InfoNCE | ScienceWorld MSE | ScienceWorld InfoNCE |
+|---|---|---|---|---|
+| 32 | **35.0%** | 33.3% | **24.2%** | 23.1% |
+| 64 | **42.1%** | 36.2% | **38.1%** | 37.9% |
+| 128 | **42.9%** | 41.7% | **43.3%** | 42.5% |
+| 256 | 43.8% | 43.8% | **47.3%** | 47.1% |
+| 512 | **49.6%** | 49.2% | **53.1%** | 51.0% |
+| 1024 | **52.5%** | 51.7% | **60.2%** | 60.0% |
+
+InfoNCE ties or is slightly worse everywhere (cos_dist is higher by design, because it
+ranks rather than regresses). The decode already reaches about 90% of its ceiling with
+MSE, so the loss is not the limit. The limit is answering with training states only. MSE
+stays the default, and the decision-utility files were not regenerated. A text decoder
+(VL-JEPA's y-decoder) or a token-level transformer predictor would be the next step.
+Both are future work.
+
+Checkpoints: `outputs/jepa/{alfworld,sciworld}_games_steps2000_test-*_heldout_buffer_sepact_adm_frozen_infonce/`
