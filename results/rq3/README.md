@@ -59,7 +59,7 @@ Only the object-state rate does (ρ = +0.44, p = 0.02).
     multiple-comparisons risk
   - **its sign flips between D modes** (+0.34 for top-1, −0.46 for native)
   - it disappears when the other features are added, and in the leave-one-env-out test
-- A likely reason for the sign flip is a floor effect. F's regret is 0 on 11 of 20
+- A likely reason for the sign flip is a floor effect. F's regret is 0 on 13 of 20
   ScienceWorld types, so "the gap" mostly measures how badly D does, and that depends on
   the decoding mode.
 - **Feature 1 cost** (Siddhant's GPU log): the SFT probe costs 0.7–3.1 GPU-h per
