@@ -1,5 +1,6 @@
 torch>=2.2
 transformers>=4.45
-sentence-transformers>=3.0
+bitsandbytes>=0.43
+requests>=2.31
 numpy>=1.26
 matplotlib>=3.8

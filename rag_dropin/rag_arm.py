@@ -10,10 +10,12 @@ from typing import Any, Iterable
 import numpy as np
 
 QWEN_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-RETRIEVER_MODEL = "BAAI/bge-base-en-v1.5"  # Not NV-Embed.
+RETRIEVER_MODEL = "nvidia/NV-Embed-v2"  # the encoder JEPA (arm D) uses, 4-bit
 K = 5
 STOPWORDS = r"\b(the|a|an|to|at|in|on|with|from)\b"
-MAX_CHARS = 3000  # per text in the prompt; keeps 5 ScienceWorld examples well inside 8192 tokens
+# Characters kept per text in the prompt: 5 examples x 2 texts x 1500 + a 4000-char state stay
+# under ~5k tokens, well inside vLLM's 8192 (most texts are far shorter and are not cut).
+DEMO_CHARS, QUERY_CHARS = 1500, 4000
 
 
 def first(row: dict[str, Any], *keys: str, default: str = "") -> str:
@@ -64,6 +66,27 @@ def transition(row: dict[str, Any]) -> Transition:
     )
 
 
+class NVEmbedEncoder:
+    """NV-Embed-v2 through the team's wrapper (jepa/encoder/text_encoder.py): 4-bit on GPU,
+    L2-normalised, batched. Load it once per process: it needs most of the 12 GB GPU."""
+    def __init__(self, device: str = "cuda"):
+        from jepa.encoder.text_encoder import TextEncoder
+        self.encoder = TextEncoder(model_name=RETRIEVER_MODEL, quantize=(device != "cpu"), device=device)
+
+    def encode(self, texts, normalize_embeddings=True, batch_size=64):
+        return self.encoder.encode(list(texts)).numpy()
+
+
+class CachedEncoder:
+    """Looks texts up in vectors computed once (prepare_g_prompts.py encodes every text of a set
+    in one pass, then builds the retriever for each budget from this cache)."""
+    def __init__(self, vectors: dict[str, np.ndarray]):
+        self.vectors = vectors
+
+    def encode(self, texts, normalize_embeddings=True, batch_size=64):
+        return np.stack([self.vectors[t] for t in texts])
+
+
 class HierarchicalRetriever:
     """Top-min(50,n/2) observation retrieval, action-similarity re-rank, top-k."""
     def __init__(self, buffer: Iterable[dict[str, Any]], encoder_name: str = RETRIEVER_MODEL,
@@ -72,8 +95,9 @@ class HierarchicalRetriever:
         if not self.items:
             raise ValueError("Retrieval buffer is empty")
         if encoder is None:
-            from sentence_transformers import SentenceTransformer
-            encoder = SentenceTransformer(encoder_name, device=device)
+            if encoder_name != RETRIEVER_MODEL:
+                raise ValueError(f"only {RETRIEVER_MODEL} is wired up")
+            encoder = NVEmbedEncoder(device or "cuda")
         self.encoder = encoder
         self.obs = self.encode([x.observation for x in self.items])
         self.actions = self.encode([x.action for x in self.items])
@@ -105,8 +129,8 @@ def recall_at5(rows: Iterable[dict[str, Any]], retriever: HierarchicalRetriever)
     return hits / len(rows)
 
 
-def clip(text: str) -> str:
-    return text if len(text) <= MAX_CHARS else text[:MAX_CHARS] + " ..."
+def clip(text: str, limit: int = DEMO_CHARS) -> str:
+    return text if len(text) <= limit else text[:limit] + " ..."
 
 
 def prompt(observation: str, action: str, examples: list[Transition]) -> str:
@@ -115,7 +139,8 @@ def prompt(observation: str, action: str, examples: list[Transition]) -> str:
         for x in examples
     )
     return ("Predict the next text observation after the action. Return only the prediction.\n\n"
-            f"Retrieved transitions:\n{demos}\n\nObservation: {clip(observation)}\nAction: {action}\nNext observation:")
+            f"Retrieved transitions:\n{demos}\n\n"
+            f"Observation: {clip(observation, QUERY_CHARS)}\nAction: {action}\nNext observation:")
 
 
 class FrozenQwen:

@@ -16,7 +16,12 @@ def main() -> None:
     p.add_argument("--budget", required=True, type=int)
     p.add_argument("--out", required=True)
     a = p.parse_args()
-    retriever = HierarchicalRetriever(read_jsonl(a.buffer)[:a.budget])
+    # --buffer must be the budget's exact D/F rows (export_g_buffers.py), not the first n of a file.
+    # prepare_g_prompts.py already writes recall_at5.csv for every set and budget in one NV-Embed load.
+    buffer = read_jsonl(a.buffer)
+    if len(buffer) != a.budget:
+        raise SystemExit(f"{a.buffer} has {len(buffer)} rows, expected exactly {a.budget}")
+    retriever = HierarchicalRetriever(buffer)
     groups = defaultdict(list)
     for row in read_jsonl(a.queries): groups[first(row, UNIT_KEY[a.env])].append(row)
     with open(a.out, "w", newline="", encoding="utf-8") as f:

@@ -1,38 +1,42 @@
 # Rohini RAG drop-in
 
-The G arm is frozen Qwen2.5-7B-Instruct; retrieval is `BAAI/bge-base-en-v1.5`, **not NV-Embed**. It uses top-`min(50, n//2)` observation similarity, action-similarity re-ranking, and `k=5` returned transitions.
+The G arm is frozen Qwen2.5-7B-Instruct with retrieval by `nvidia/NV-Embed-v2` (4-bit, the same
+encoder as JEPA, arm D). It uses top-`min(50, n//2)` observation similarity, action-similarity
+re-ranking, and `k=5` returned transitions.
 
 ## Producing G's predictions (GPU box)
 
-`run_g.sh` does everything, resumably, from the repo root, with the team's vLLM server running:
+NV-Embed and the vLLM Qwen server cannot share the 12 GB GPU, so G runs in two stages.
+`overnight.sh` runs everything left on the GPU in one go, resumably, from the repo root:
 
-1. `export_g_buffers.py` writes each budget's retrieval buffer: **exactly the rows D and F trained on**
-   (the `train_rows` saved in the JEPA checkpoints), and checks them against JEPA's own candidate files.
-2. `generate_predictions.py` writes `<set>_b<n>.jsonl` = `{"id", "arm":"G", "budget", "actions", "pred_next"}`
-   for `alfworld`, `sciworld`, `sciworld_seen`, `bytesized32`, n = 256 first, then 32 … 1024.
-   Its GPU time is logged as stage `g_generation` in the shared compute log.
+1. `export_g_buffers.py`: each budget's retrieval buffer = **exactly the rows D and F trained on**
+   (the `train_rows` saved in the JEPA checkpoints), checked against JEPA's own candidate files.
+2. `prepare_g_prompts.py` (NV-Embed, loaded once): encodes every text of a set in one batched pass,
+   writes one prompt per (state, candidate action) for every budget, and `recall_at5.csv`.
+3. vLLM starts; `generate_predictions.py` writes `<set>_b<n>.jsonl` =
+   `{"id", "arm":"G", "budget", "actions", "pred_next"}`, n = 256 first, then 32 ... 1024.
+4. `scripts/run_utility.sh` scores G (D and F are already scored), then labels and figures.
 
 ```bash
-SID=/home/siddanth_anil/nemotron-AFML-research TORCH_PY=~/vllm-venv/bin/python G_PY=~/g-venv/bin/python \
-    bash rag_dropin/run_g.sh
-G_DIR=~/g_candidates PRED_ROOT=$SID/outputs bash scripts/run_utility.sh   # score G
+bash rag_dropin/overnight.sh 2>&1 | tee overnight.log
 ```
+
+GPU time is logged as stages `rag_index_build` and `g_generation` (`results/compute/compute_log_g.jsonl`).
 
 **Deviations from the plan (report in the paper):**
 - The LLM is **Qwen2.5-7B-Instruct-AWQ** served by vLLM (`--backend vllm`, the default), the same model
   as the decision-utility judge: full-precision 7B does not fit the 12 GB RTX 5070.
   `--backend hf` keeps the original `transformers` path for a bigger GPU.
-- Each text in the prompt is cut at 3000 characters (rarely hit; keeps prompts inside 8192 tokens).
+- Each example text in the prompt is cut at 1500 characters and the current state at 4000
+  (keeps prompts inside vLLM's 8192 tokens; most texts are shorter).
 - Greedy decoding, at most 128 new tokens, one seed, as for the other arms.
 
-Generate the requested n=32 feature-matrix column (one row per unit):
-
-```bash
-python measure_recall.py --env alfworld --budget 32 --buffer data/alfworld_transitions.jsonl \
-  --queries data/alfworld_queries.jsonl --out metrics/alfworld_recall_b32.csv
-```
-
-The CSV columns are `env,game,recall_at5`; units are task ID (ALFWorld), task type (ScienceWorld), and game (ByteSized32). Relevance is intentionally model-free: same normalized action template and primary action object.
+**Recall@5 (feature-matrix column):** `prepare_g_prompts.py` writes `recall_at5.csv`
+(copied to `results/utility/g_recall_at5.csv`): `env, game, budget, n_states, recall_at5` for every set
+and budget; the matrix uses `budget = 32`. Query = each branched state with its gold action; a hit is
+a retrieved example with the same normalized action template and object (model-free). Units are
+task ID (ALFWorld), task type (ScienceWorld), and game (ByteSized32).
+`measure_recall.py` does the same for one budget and a custom query file.
 
 ## Team handoff
 
