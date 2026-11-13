@@ -10,7 +10,7 @@ from typing import Any, Iterable
 import numpy as np
 
 QWEN_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-RETRIEVER_MODEL = "BAAI/bge-base-en-v1.5"  # Not NV-Embed.
+RETRIEVER_MODEL = "nvidia/NV-Embed-v2"
 K = 5
 
 
@@ -61,20 +61,40 @@ def transition(row: dict[str, Any]) -> Transition:
     )
 
 
+class NVEmbedEncoder:
+    """Shared NV-Embed-v2 wrapper used by the JEPA arm as well as G."""
+    def __init__(self, device: str = "cuda"):
+        from jepa.encoder.text_encoder import TextEncoder
+        self.encoder = TextEncoder(model_name=RETRIEVER_MODEL,
+                                   quantize=(device != "cpu"), device=device)
+
+    def encode(self, texts, normalize_embeddings=True, batch_size=64):
+        return self.encoder.encode(list(texts)).numpy()
+
+
 class HierarchicalRetriever:
     """Top-min(50,n/2) observation retrieval, action-similarity re-rank, top-k."""
-    def __init__(self, buffer: Iterable[dict[str, Any]], encoder_name: str = RETRIEVER_MODEL):
-        from sentence_transformers import SentenceTransformer
+    def __init__(self, buffer: Iterable[dict[str, Any]], encoder_name: str = RETRIEVER_MODEL,
+                 device: str | None = None, encoder: Any = None):
         self.items = [transition(x) for x in buffer]
         if not self.items:
             raise ValueError("Retrieval buffer is empty")
-        self.encoder = SentenceTransformer(encoder_name)
-        self.obs = self.encoder.encode([x.observation for x in self.items], normalize_embeddings=True)
-        self.actions = self.encoder.encode([x.action for x in self.items], normalize_embeddings=True)
+        if encoder is None:
+            if encoder_name != RETRIEVER_MODEL:
+                raise ValueError(f"Only shared {RETRIEVER_MODEL} is supported")
+            encoder = NVEmbedEncoder(device or "cuda")
+        self.encoder = encoder
+        self.obs = self.encode([x.observation for x in self.items])
+        self.actions = self.encode([x.action for x in self.items])
+
+    def encode(self, texts: list[str]) -> np.ndarray:
+        return np.asarray(self.encoder.encode(texts, normalize_embeddings=True, batch_size=64))
 
     def retrieve(self, observation: str, candidate_action: str, k: int = K) -> list[Transition]:
-        q_obs = self.encoder.encode([observation], normalize_embeddings=True)[0]
-        q_action = self.encoder.encode([candidate_action], normalize_embeddings=True)[0]
+        q_obs, q_action = self.encode([observation, candidate_action])
+        return self.retrieve_vec(q_obs, q_action, k)
+
+    def retrieve_vec(self, q_obs: np.ndarray, q_action: np.ndarray, k: int = K) -> list[Transition]:
         pre_k = min(50, max(1, len(self.items) // 2))
         obs_order = np.argsort(-(self.obs @ q_obs))[:pre_k]
         ranked = obs_order[np.argsort(-(self.actions[obs_order] @ q_action))]

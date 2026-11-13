@@ -12,7 +12,7 @@ def main():
     out=Path(a.outdir); out.mkdir(parents=True, exist_ok=True); means=[]
     for n in BUDGETS:
         csv_path=out/f"{a.env}_recall_b{n}.csv"
-        subprocess.run(["python", "measure_recall.py", "--env",a.env,"--buffer",a.buffer,"--queries",a.queries,"--budget",str(n),"--out",str(csv_path)], check=True)
+        subprocess.run(["python", str(Path(__file__).with_name("measure_recall.py")), "--env",a.env,"--buffer",a.buffer,"--queries",a.queries,"--budget",str(n),"--out",str(csv_path)], check=True)
         with csv_path.open() as f: means.append(sum(float(r["recall_at5"]) for r in csv.DictReader(f)))
         with csv_path.open() as f: count=sum(1 for _ in csv.DictReader(f))
         means[-1] /= max(count,1)

@@ -1,15 +1,15 @@
 # Rohini RAG drop-in
 
-Standalone files only: no repository code is changed. The G arm is frozen `Qwen/Qwen2.5-7B-Instruct`; retrieval is `BAAI/bge-base-en-v1.5`, **not NV-Embed**. It uses top-`min(50, n//2)` observation similarity, action-similarity re-ranking, and `k=5` returned transitions.
+Standalone files only: no repository code is changed. The G arm is frozen `Qwen2.5-7B-Instruct`; retrieval is shared `nvidia/NV-Embed-v2`. It uses top-`min(50, n//2)` observation similarity, action-similarity re-ranking, and `k=5` returned transitions.
 
 ## Required input and outputs
 
-Use the exact shared branched states, preserving their candidate-action order:
+Use the exact shared branched states and the exact D/F training rows. On the 12 GB GPU, first prepare retrieval prompts with NV-Embed, then unload it and generate through vLLM Qwen:
 
 ```bash
-python generate_predictions.py --buffer data/<set>_transitions.jsonl \
-  --states data/eval/<set>_branched_states.jsonl --set <set> --budget 256 \
-  --outdir /shared/siddanth/rohini_g
+SID=/path/to/repo bash rag_dropin/run_g_nv.sh
+# after NV-Embed is unloaded and vLLM is running:
+SID=/path/to/repo GENERATE=1 bash rag_dropin/run_g_nv.sh
 ```
 
 This produces `/shared/siddanth/rohini_g/<set>_b256.jsonl` with exactly `{"id", "arm":"G", "budget", "actions", "pred_next"}`. Repeat for `32 64 128 256 512 1024` and sets `alfworld`, `sciworld`, `sciworld_seen`, `bytesized32`. Validate any project-specific decision-utility constraints against `docs/DECISION_UTILITY.md` before scoring.
@@ -25,13 +25,7 @@ The CSV columns are `env,game,recall_at5`; units are task ID (ALFWorld), task ty
 
 ## Team handoff
 
-Use the tracking adapter so G GPU-hours reach the cost table (set the actual module, without guessing a repository layout):
-
-```bash
-TRACK_IMPORT=your_project.tracking python run_g_tracked.py -- --buffer ... --states ... --set alfworld --budget 256
-```
-
-It invokes `track(arm="G")`. Compare G decision utility against Shryes’s action-lookup baseline and push the Recall CSV on the review branch.
+Generation invokes the repository's `wm.utility.score.track("g_generation", arm="G", ...)`, so GPU-hours land in the shared cost table. Compare G decision utility against Shryes’s action-lookup baseline and push the Recall CSV on the review branch.
 
 ## WebShop checklist
 
