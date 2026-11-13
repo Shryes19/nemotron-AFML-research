@@ -1,0 +1,6 @@
+env,split,n_points,spearman_em_vs_regret
+alfworld,heldout,18,-0.767
+sciworld,heldout,18,-0.771
+sciworld,heldout_seen,18,-0.86
+bytesized32,seen_state_new_actions:gold_unseen,18,-0.736
+*,*,72,-0.832

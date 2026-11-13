@@ -1,0 +1,9 @@
+env,split,incumbent,challenger,first_n_challenger_lower,cis_separate_there
+alfworld,heldout,F/top1,D/top1,never,
+alfworld,heldout,F/top1,D/native,never,
+sciworld,heldout,F/top1,D/top1,never,
+sciworld,heldout,F/top1,D/native,never,
+sciworld,heldout_seen,F/top1,D/top1,never,
+sciworld,heldout_seen,F/top1,D/native,never,
+bytesized32,seen_state_new_actions:gold_unseen,F/top1,D/top1,never,
+bytesized32,seen_state_new_actions:gold_unseen,F/top1,D/native,never,
