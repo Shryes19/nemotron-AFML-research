@@ -1,18 +1,29 @@
 # Rohini RAG drop-in
 
-Standalone files only: no repository code is changed. The G arm is frozen `Qwen/Qwen2.5-7B-Instruct`; retrieval is `BAAI/bge-base-en-v1.5`, **not NV-Embed**. It uses top-`min(50, n//2)` observation similarity, action-similarity re-ranking, and `k=5` returned transitions.
+The G arm is frozen Qwen2.5-7B-Instruct; retrieval is `BAAI/bge-base-en-v1.5`, **not NV-Embed**. It uses top-`min(50, n//2)` observation similarity, action-similarity re-ranking, and `k=5` returned transitions.
 
-## Required input and outputs
+## Producing G's predictions (GPU box)
 
-Use the exact shared branched states, preserving their candidate-action order:
+`run_g.sh` does everything, resumably, from the repo root, with the team's vLLM server running:
+
+1. `export_g_buffers.py` writes each budget's retrieval buffer: **exactly the rows D and F trained on**
+   (the `train_rows` saved in the JEPA checkpoints), and checks them against JEPA's own candidate files.
+2. `generate_predictions.py` writes `<set>_b<n>.jsonl` = `{"id", "arm":"G", "budget", "actions", "pred_next"}`
+   for `alfworld`, `sciworld`, `sciworld_seen`, `bytesized32`, n = 256 first, then 32 … 1024.
+   Its GPU time is logged as stage `g_generation` in the shared compute log.
 
 ```bash
-python generate_predictions.py --buffer data/<set>_transitions.jsonl \
-  --states data/eval/<set>_branched_states.jsonl --set <set> --budget 256 \
-  --outdir /shared/siddanth/rohini_g
+SID=/home/siddanth_anil/nemotron-AFML-research TORCH_PY=~/vllm-venv/bin/python G_PY=~/g-venv/bin/python \
+    bash rag_dropin/run_g.sh
+G_DIR=~/g_candidates PRED_ROOT=$SID/outputs bash scripts/run_utility.sh   # score G
 ```
 
-This produces `/shared/siddanth/rohini_g/<set>_b256.jsonl` with exactly `{"id", "arm":"G", "budget", "actions", "pred_next"}`. Repeat for `32 64 128 256 512 1024` and sets `alfworld`, `sciworld`, `sciworld_seen`, `bytesized32`. Validate any project-specific decision-utility constraints against `docs/DECISION_UTILITY.md` before scoring.
+**Deviations from the plan (report in the paper):**
+- The LLM is **Qwen2.5-7B-Instruct-AWQ** served by vLLM (`--backend vllm`, the default), the same model
+  as the decision-utility judge: full-precision 7B does not fit the 12 GB RTX 5070.
+  `--backend hf` keeps the original `transformers` path for a bigger GPU.
+- Each text in the prompt is cut at 3000 characters (rarely hit; keeps prompts inside 8192 tokens).
+- Greedy decoding, at most 128 new tokens, one seed, as for the other arms.
 
 Generate the requested n=32 feature-matrix column (one row per unit):
 
@@ -25,13 +36,7 @@ The CSV columns are `env,game,recall_at5`; units are task ID (ALFWorld), task ty
 
 ## Team handoff
 
-Use the tracking adapter so G GPU-hours reach the cost table (set the actual module, without guessing a repository layout):
-
-```bash
-TRACK_IMPORT=your_project.tracking python run_g_tracked.py -- --buffer ... --states ... --set alfworld --budget 256
-```
-
-It invokes `track(arm="G")`. Compare G decision utility against Shryes’s action-lookup baseline and push the Recall CSV on the review branch.
+Compare G decision utility against Shryes’s action-lookup baseline and push the Recall CSV on the review branch.
 
 ## WebShop checklist
 
