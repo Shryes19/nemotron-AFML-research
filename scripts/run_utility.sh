@@ -67,4 +67,7 @@ for dmode in top1 topk native; do
     $PY -m wm.utility.labels --scored "$OUT/scored/*.jsonl" --budget 256 --arms G,F,D --key family \
         --arm-mode D=$dmode --out "$OUT/labels_D${dmode}.csv"
 done
+# 5) Phase 3 figures and tables (results/figures, or $OUT/figures for dry runs)
+FIG=results/figures; [ "${DRY:-0}" = 1 ] && FIG=$OUT/figures
+$PY scripts/make_figures.py --utility-dir "$OUT" --out-dir "$FIG"
 echo "done: $OUT/summary.csv, fidelity_vs_utility.csv, judge_check.csv, labels_D*.csv"
