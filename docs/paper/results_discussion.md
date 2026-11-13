@@ -1,10 +1,12 @@
 # Results, discussion and limitations (draft, Saanvi)
 
-Status (12 Nov 2026): filled from the GPU scoring run of 12 Nov (arms F and D, all four
-regimes, all six budgets; `results/utility/`, `results/figures/`). Still open, marked **TBD**:
-arm G (Rohini's prediction files have not been scored yet) and the RQ3 predictor numbers
-(`results/rq3/`, Shryes). When G is scored, rerun `scripts/run_utility.sh` and update the
-sentences that say "F has the lowest regret": they compare F and D only.
+Status (13 Nov 2026): filled from the GPU scoring run of 12 Nov (arms F and D, all four
+regimes, all six budgets; `results/utility/`, `results/figures/`), the RQ3 predictor's first
+run (`results/rq3/README.md`, Shryes), the JEPA ablations (`results/jepa_phase1/README.md`,
+last two sections) and the GPU-hour table (`results/compute/cost_table.csv`, Siddhant).
+Still open, marked **TBD**: arm G (Rohini's prediction files have not been scored yet). When
+G is scored, rerun `scripts/run_utility.sh` and the predictor, then update the sentences that
+say "F has the lowest regret" and the predictor numbers: they compare F and D only.
 Every claim names its figure or table, as the plan asks.
 
 ---
@@ -155,10 +157,28 @@ binary task "D beats F" therefore has one positive row in the feature matrix and
 learned; the regression on regret differences is still informative. With top-k or native D
 labels, D wins 3 and 1 groups. ByteSized32 (reported separately): F wins 25 of 31 games, D 6.
 
-- **TBD** (`results/rq3/`): accuracy of each binary decision (F vs G, D vs F) and of the
-  winner, against the majority-class baseline and the permutation test.
-- **TBD**: which features drive it (importance), and the Feature-1 ablation: JEPA probe vs
-  SFT probe.
+The predictor (`results/rq3/README.md`) is evaluated on the 32 labelled rows of the feature
+matrix, which carry 26 independent labels (ALFWorld is labelled per family):
+
+- **Yes/no "D beats F": not testable.** F wins 31 of 32 rows, so always answering "F" already
+  scores 97%. Every model scores exactly that (balanced accuracy 0.50; permutation p = 0.60).
+  F vs G and the three-way winner: **TBD** until G is scored.
+- **Ranking the size of D's gap to F** (regression on regret_F − regret_D, out-of-fold
+  Spearman ρ, leave-one-(env, family)-out). All features together: ρ = +0.10; features 2–4
+  without a probe: +0.07; with the SFT probe instead of the JEPA probe: +0.10.
+- **Feature-1 ablation.** The JEPA probe alone ranks the gap out of sample (ρ = +0.47,
+  permutation p = 0.01); the SFT probe alone does not (ρ = +0.03, p = 0.29). This is the
+  direction the plan hoped for, but we treat it as suggestive: it is one of several tests
+  (2 probes × 3 D modes × 2 CV schemes), it disappears when the other features are added,
+  and its sign flips with the D mode used for the labels (single-feature correlation +0.34
+  with top-1 labels, −0.46 with native labels).
+- **Transfer across environments fails.** Trained on ALFWorld and tested on ScienceWorld, or
+  the reverse, every feature set gives ρ between −0.13 and +0.11.
+- **ByteSized32** (separate analysis, 29 games, D wins 4): neither probe relates to the gap
+  (|ρ| ≤ 0.14); only the object-state rate does (ρ = +0.44, p = 0.02).
+- **Cost of Feature 1.** The SFT probe costs 0.7–3.1 GPU-hours per environment against
+  0.02 h for the JEPA probe, more than F's whole pipeline (Table 4), so it fails the "cheap"
+  requirement before any result.
 - Figure 3 (`fig3_capability_vs_dwins`) shows the five capability-mix rates for rows where
   D wins against the rest. With one D-win row (`chemistry-mix`) out of 32 labelled rows, it
   cannot show which capability profile favours the specialist; we report "no capability
@@ -169,8 +189,15 @@ labels, D wins 3 and 1 groups. ByteSized32 (reported separately): F wins 25 of 3
 
 ## 6 Discussion
 
-**Does the predictor work? (TBD)** One paragraph: accuracy against the majority baseline, and
-whether it survives leave-one-env-out. With ~30 labelled rows, call it a proof of concept.
+**Does the predictor work? Not yet, and for D vs F it is not needed.** With F and D only, F
+has lower regret on 31 of 32 rows, so the yes/no decision is trivially "F" and no feature can
+improve on that (5.6). The one positive signal, the JEPA probe ranking the size of D's gap to
+F within an environment (ρ = 0.47), is fragile: it vanishes with the other features, flips
+sign with the D mode, and does not transfer across environments. A likely reason is a floor
+effect: F's regret is 0 on 13 of 21 ScienceWorld task types, so "the gap" mostly measures how
+badly D does, which depends on how D's predictions are decoded. The predictor is therefore a
+proof of concept whose real test needs G (two decisions with both outcomes present) and
+more environments than two. **TBD**: the rerun with G.
 
 **Where JEPA fails, and why.** Most of the reasons are already visible in the data, before
 regret:
@@ -191,13 +218,41 @@ regret:
    some decision information (it beats random choice) but much less than judging its decoded
    text. On these tasks the decision-relevant information is in text a judge can read, not in
    distances in JEPA's embedding space.
+5. *The frozen encoder is the main limit, not the loss or the decoder.* Two ablations at
+   fixed data (`results/jepa_phase1/README.md`) rule out the obvious fixes. Training with
+   VL-JEPA's contrastive InfoNCE loss instead of MSE ties or is slightly worse at every
+   budget (e.g. ALFWorld n = 256: 43.8% exact match both; ScienceWorld n = 1024: 60.0% vs
+   60.2%). Replacing nearest-sentence decoding with a learned text decoder (VL-JEPA-style:
+   Qwen2.5-1.5B + LoRA reading only JEPA's predicted vector) does not help either (n = 256:
+   43.3% vs 43.8% on ALFWorld, 44.0% vs 47.3% on ScienceWorld test). Most tellingly, the same
+   decoder given the *true* next-state vector reaches only 33–55% exact match, below F in
+   every environment (52.9% vs 56.2% on ALFWorld, 50.6% vs 69.0% on ScienceWorld test).
+   The frozen general-purpose sentence embedding (NV-Embed) drops exact details such as
+   object numbers and quantities, which F keeps by working on the text. So D's gap to F
+   splits into what the frozen embedding loses (the larger part outside ALFWorld) and
+   prediction error (3–10 points). Training the encoder itself, as I-JEPA and V-JEPA do,
+   is the natural next step.
 
 **Practical reading (with Siddhant's compute analysis).** In our data, the answer to "is the
 specialist worth it?" is no: a 1.5B fine-tuned LM (F) beats the JEPA specialist (D) on
 decisions in every regime from n = 32 to n = 1024, and D never crosses over. Where retrieval
 (G) sits, and whether "use retrieval below n = X, fine-tune above X" holds, is **TBD** until G
-is scored. The cost side (GPU-hours per arm) is Siddhant's table; judging all D and F
-predictions took 0.72 GPU-hours on the RTX 5070.
+is scored.
+
+| GPU-hours (RTX 5070) | ALFWorld | ScienceWorld | ByteSized32 |
+|---|---|---|---|
+| D (JEPA): train + predict + judging | 0.36 | 1.10 | 0.39 |
+| F (SFT): train + predict + judging | 0.60 | 1.52 | 0.70 |
+| NV-Embed encoding (shared with G if G uses it) | 0.11 | 0.42 | — |
+| SFT probe (Feature-1 ablation, not part of F) | 0.69 | 3.13 | 2.46 |
+
+Table 4: GPU-hours for all six budgets (`results/compute/cost_table.csv`). Pilots, the
+InfoNCE and decoder ablations and fidelity-only runs are excluded and listed there.
+
+Cost does not rescue the specialist. D is cheaper than F (56–72% of F's GPU-hours, or
+78–100% on ALFWorld and ScienceWorld if NV-Embed encoding is charged to D alone), but the
+saving is under half an hour per environment and comes with higher regret everywhere.
+G's cost: **TBD**.
 
 **Fidelity vs utility.** Across arms, text fidelity was a good proxy for decision utility
 (ρ = −0.83; the best-fidelity arm was the best-utility arm in every case). The decision-based
@@ -215,11 +270,16 @@ equal fidelity).
   ByteSized32 is reported separately). Leave-one-env-out has only two folds. With F and D
   only, D wins one row, so "D beats F" cannot be learned. Treat the predictor as a proof of
   concept, not a tool.
-- **Labels from one budget and one seed.** Labels use n = 256 and, unless Shryes's seed runs are added, one training
-  seed per arm; with 10–61 states per group, only 8 of 27 F-vs-D labels have a difference
-  whose 95% CI excludes 0. Two
-  ScienceWorld types (paint-tertiary, power-component) have only 10 states, and two
+- **Labels from one budget and one seed.** Labels use n = 256 and a single training run per
+  (environment, budget) for each arm (seed 42; F trains on exactly D's rows). Seed variance
+  is therefore not in the CIs, which only cover state sampling. With 10–61 states per group,
+  only 8 of 27 F-vs-D labels have a difference whose 95% CI excludes 0. Two ScienceWorld
+  types (paint-tertiary, power-component) have only 10 states, and two
   (identify-life-stages-1/2) have none, because no unused variations were left.
+- **Several tests on few rows.** The predictor results come from one of several analyses
+  (two probes, three D modes, two cross-validation schemes) on 26 independent labels, with
+  no correction for multiple comparisons; the one significant result (JEPA probe alone,
+  p = 0.01) should be read as suggestive.
 - **A frozen LLM judge defines utility.** Regret is measured in the judge's ratings
   (Qwen2.5-7B-Instruct, 4-bit AWQ so it fits a 12 GB GPU, a deviation from the planned
   full-precision model). The oracle gold-hit rate and the ByteSized32 score check bound the
