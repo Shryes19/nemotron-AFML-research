@@ -1,0 +1,2598 @@
+{
+  "rows": 34,
+  "labelled": 32,
+  "envs": "alfworld,sciworld",
+  "feature_sets": {
+    "jepa_probe": [
+      "rate_object_state",
+      "rate_containment_location",
+      "rate_numeric_physical",
+      "rate_partial_obs",
+      "rate_action_failure",
+      "obs_len_chars",
+      "action_vocab",
+      "zero_overlap_frac",
+      "mean_jaccard",
+      "target_repeat_frac",
+      "probe_fidelity"
+    ],
+    "no_probe": [
+      "rate_object_state",
+      "rate_containment_location",
+      "rate_numeric_physical",
+      "rate_partial_obs",
+      "rate_action_failure",
+      "obs_len_chars",
+      "action_vocab",
+      "zero_overlap_frac",
+      "mean_jaccard",
+      "target_repeat_frac"
+    ],
+    "sft_probe": [
+      "rate_object_state",
+      "rate_containment_location",
+      "rate_numeric_physical",
+      "rate_partial_obs",
+      "rate_action_failure",
+      "obs_len_chars",
+      "action_vocab",
+      "zero_overlap_frac",
+      "mean_jaccard",
+      "target_repeat_frac",
+      "sft_probe_f1"
+    ],
+    "both_probes": [
+      "rate_object_state",
+      "rate_containment_location",
+      "rate_numeric_physical",
+      "rate_partial_obs",
+      "rate_action_failure",
+      "obs_len_chars",
+      "action_vocab",
+      "zero_overlap_frac",
+      "mean_jaccard",
+      "target_repeat_frac",
+      "probe_fidelity",
+      "sft_probe_f1"
+    ],
+    "sft_probe_only": [
+      "sft_probe_f1"
+    ],
+    "jepa_probe_only": [
+      "probe_fidelity"
+    ]
+  },
+  "results": {
+    "D_vs_F|group": {
+      "jepa_probe": {
+        "n": 32,
+        "accuracy": 0.96875,
+        "balanced_acc": 0.5,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": 0.09833062291095673,
+        "wilson95": [
+          0.843,
+          0.994
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.5710271230737777
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.4169753153836576
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.4501184387481739
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.38769280279613577
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.3268518319562561
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.07473719962715733
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.30020104168747636
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": -0.25588116689566964
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": -0.22205053104772604
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.28642630623242743
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.4246942691647303
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.38882004307120177
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.14115156610407903
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.18981953155428638
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.1498887082633307
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": -0.23984244729903892
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.3134905927262541
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.12520716109458918
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.23135897149372908
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.32174240939854704
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.1327167003382981
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.32509195929045354
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.34209121304779255
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.22921277006478366
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.28519441705809556
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.19523485119285702
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.38422275439620013
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.3217375742788766
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.22549870752981108
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.378807791563396
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.41391689904280693
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.31443570194235904
+          }
+        ],
+        "perm_p": 0.6019900497512438
+      },
+      "no_probe": {
+        "n": 32,
+        "accuracy": 0.96875,
+        "balanced_acc": 0.5,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": 0.06677676630520196,
+        "wilson95": [
+          0.843,
+          0.994
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.5745294849225353
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.42793343233138115
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.4383793381878548
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.3812828326564359
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.30215475210753684
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.046430169977247165
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.29310173794316896
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": -0.23250920403975459
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": -0.2541519460877991
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.2964165394214204
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.4352021433956447
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.3948929278024925
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.18487608876252248
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.22945559106918392
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.14294764643062
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": -0.2680732007952836
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.3316185203514435
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.18895036772018398
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.2904730336429603
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.32476294275963763
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.0963845736258537
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.3506857821755278
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.3591414209066372
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.27994270816040634
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.21929257405518363
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.11266110484826902
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.3349587739074346
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.27354391317821747
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.1892884471357875
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.29452782076939993
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.27557217098656694
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.2930017906272519
+          }
+        ]
+      },
+      "sft_probe": {
+        "n": 32,
+        "accuracy": 0.96875,
+        "balanced_acc": 0.5,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": 0.10310039193275687,
+        "wilson95": [
+          0.843,
+          0.994
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.5489785421113706
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.41221019347844073
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.4583247717199278
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.410382663281599
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.31496860463466647
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.05251998789389223
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.3014809372414337
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": -0.2501441854163735
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": -0.23822420723313692
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.2602326692736462
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.41376121898764306
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.39474209177512043
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.1554737240443107
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.150658260462734
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.1351797641465772
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": -0.20874244900869698
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.30313138756424474
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.1441906114847839
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.240634103156108
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.3593125251160654
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.10588506912296897
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.26672235522062127
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.3946098263964971
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.1864069426228693
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.2306212243258099
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.13349012526329684
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.3713071672990411
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.2867882469950678
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.2210214321925455
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.36586132593014786
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.3206128665880726
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.3136546446774743
+          }
+        ]
+      },
+      "both_probes": {
+        "n": 32,
+        "accuracy": 0.96875,
+        "balanced_acc": 0.5,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": 0.12749959500581143,
+        "wilson95": [
+          0.843,
+          0.994
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.561668570812476
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.4153940320448875
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.45944461828006833
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.389261066147752
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.32039457046648834
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.06918640927122192
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.3071072383693449
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": -0.27251783743329183
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": -0.2101913457393006
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.26299435151282313
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.4133245337714565
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.3904335512723224
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.15622571077129474
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.15707767140717677
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.1534989869912644
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": -0.20333937452714954
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.29224644776489006
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.13551194071280953
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.2349322075458643
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.3420869777199727
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.12112597320354557
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.30526471329066146
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.380990477420017
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.1679487389070724
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.28358915715636634
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.200064298385668
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.38475406292904035
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.315904059037148
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.2116605731552946
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.39741795574795336
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.4472893020149792
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.33418090806374
+          }
+        ]
+      },
+      "sft_probe_only": {
+        "n": 32,
+        "accuracy": 0.9375,
+        "balanced_acc": 0.4838709677419355,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": 0.020363244669992904,
+        "wilson95": [
+          0.799,
+          0.983
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.3723092319201391
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.26746335433174573
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.36472169809154276
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.3635605315207195
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.30357177548360126
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.30306426120710994
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.38607905910883167
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": -0.3380527362177904
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": -0.31655175681515846
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.25715448283192965
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.35074349044337005
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.3118269325245702
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.23083229908268188
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.1711617877710751
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.3001510595356236
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": 0.07289273229936519
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.2104078452799681
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.18389157017731877
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.11978431888918482
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.3157865869855603
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.26261068010342614
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.21887416055645634
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.3846147280434784
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.15330756846357552
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.21480273258980534
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.3183542803554571
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.3242702836697135
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.29228443519550584
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.270258671418675
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.35292748462137835
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.34920572346095047
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.3133159996589866
+          }
+        ]
+      },
+      "jepa_probe_only": {
+        "n": 32,
+        "accuracy": 0.96875,
+        "balanced_acc": 0.5,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": 0.47495892297848313,
+        "wilson95": [
+          0.843,
+          0.994
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.3822140316224933
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.3584306004894453
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.3735298529216169
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.4057147822078819
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.40218437314520705
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.33505760922194594
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.30433003865530905
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": -0.3033930872330561
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": -0.30839903943747904
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.30720775011033785
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.2685609976519188
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.2772590602564479
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.06177349943587528
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.22907252869601663
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.1926185723047996
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": -0.18893563321621185
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.2760518610698628
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.19916036069901621
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.19713959175910767
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.19312388551060466
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.16058125770682827
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.296927049092479
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.272817894763125
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.21531671814129838
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.35900698861521024
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.39587459829678673
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.20518705041943178
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.3201209938861124
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.3264904049355688
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.35471353650914805
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.33097557148039736
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.3102995659419151
+          }
+        ]
+      }
+    },
+    "D_vs_F|env": {
+      "jepa_probe": {
+        "n": 32,
+        "accuracy": 0.875,
+        "balanced_acc": 0.45161290322580644,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": 0.1060356344077108,
+        "wilson95": [
+          0.719,
+          0.95
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.46634828154308205
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.38561112350384696
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.2923445771057693
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.27030852230513813
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.25677154327443263
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": 0.34931778935992625
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.0584730972651135
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": 0.14724768486074116
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": 0.09493746810645241
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.1649461128678059
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.35053660833287315
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.22070957039707523
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.3227011123238633
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.3189388818912785
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.3136575543993845
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": -0.3649447855658942
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.3524435967216908
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.31316949027359564
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.32503621094511326
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.308362979274133
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.3217565752855577
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.33507462151687706
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.320913371563915
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.33294268764463897
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.29706391482024874
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.3369315181911967
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.29002888751764144
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.305287179842396
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.34052548112828596
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.3355713549773013
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.31827300034134154
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.35270892742314974
+          }
+        ]
+      },
+      "no_probe": {
+        "n": 32,
+        "accuracy": 0.875,
+        "balanced_acc": 0.45161290322580644,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": 0.06384152383024802,
+        "wilson95": [
+          0.719,
+          0.95
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.3957986357994742
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.3424660226842885
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.24727132098908633
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.24967878495483714
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.2192703076307903
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": 0.40369189870324007
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.06570005192822219
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": 0.2136975268644508
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": 0.09394478573655508
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.1669711851860008
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.38891906704535273
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.21805018955999778
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.3238834193698756
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.32028380329333633
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.315069611258339
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": -0.3819887883243539
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.3587610822084044
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.3156817621480031
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.32849255073607575
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.30971997277573493
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.32199634750603373
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.3345416801893118
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.33147886541969673
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.347431997558848
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.2983521917252649
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.33451072706372326
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.2896629911373246
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.3051328504041293
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.3384994065456386
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.3362410561979142
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.31448756086871965
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.35195370541336235
+          }
+        ]
+      },
+      "sft_probe": {
+        "n": 32,
+        "accuracy": 0.875,
+        "balanced_acc": 0.45161290322580644,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": 0.0643918817943019,
+        "wilson95": [
+          0.719,
+          0.95
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.40682224159207897
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.3490940744732734
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.26795033738055896
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.24661388406373203
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.21903216982053095
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": 0.3639970126316038
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.055346357880899796
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": 0.1801046507069951
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": 0.1002082820360477
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.15650501173063416
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.37285551847939946
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.20688019288436138
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.33389197718248476
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.3306978685320283
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.3256343343047109
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": -0.3859173799814994
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.3680059928465668
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.3244279438441219
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.3386774240826592
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.32009839249844163
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.33316236067088717
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.3451632493166681
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.33448087484289213
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.35264820513979345
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.3078582886426805
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.3441225978357411
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.29982471656481346
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.3141655431418808
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.3486211938897142
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.3430163604521844
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.32452820818480893
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.3617380488768465
+          }
+        ]
+      },
+      "both_probes": {
+        "n": 32,
+        "accuracy": 0.875,
+        "balanced_acc": 0.45161290322580644,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": 0.07741702027690997,
+        "wilson95": [
+          0.719,
+          0.95
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.46139173823653723
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.37829404572007397
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.2678848435703737
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.26487023630119
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.24864623654978152
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": 0.3690248746656212
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.049693206235286363
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": 0.1841075109483218
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": 0.09451788537324157
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.18344539288520995
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.3646870738412344
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.21657586203058715
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.3243513502918428
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.3228624534063871
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.3170905911297921
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": -0.37856836826338935
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.35826934210661954
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.31456875531930073
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.32587505937804634
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.30666953289626747
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.32723714078134974
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.3424090769094345
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.3165586883217072
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.3401658885640775
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.298488845056854
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.3403291538187735
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.28990846735524756
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.3065482289835242
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.34518004082550025
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.34281486065460115
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.3205803266503076
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.359816450949777
+          }
+        ]
+      },
+      "sft_probe_only": {
+        "n": 32,
+        "accuracy": 0.96875,
+        "balanced_acc": 0.5,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": -0.1313521007541885,
+        "wilson95": [
+          0.843,
+          0.994
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.2360262675060522
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.2215553758116417
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.23568950135685962
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.23476967739712462
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.22568704408979573
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.22532514613842453
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.3559622799793389
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": -0.23057769279374207
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": -0.2569255268932714
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.25185383253175153
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.34911225604646245
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.22422437320300398
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.27610120659534
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.262471864882767
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.26894742403482463
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": -0.26921871339820774
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.2744911631996098
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.2836737183906423
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.2758829955856623
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.3172377289513181
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.2832726819404239
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.2529767371643583
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.32672663459046525
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.2653852767417073
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.29796359072710465
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.3155805047967386
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.29886592274009627
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.3056717472040985
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.32747562913719686
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.3433404338535963
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.35315633191041895
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.30516455404646925
+          }
+        ]
+      },
+      "jepa_probe_only": {
+        "n": 32,
+        "accuracy": 0.96875,
+        "balanced_acc": 0.5,
+        "majority_acc": 0.96875,
+        "share_pos": 0.03125,
+        "spearman": 0.09594573840005667,
+        "wilson95": [
+          0.843,
+          0.994
+        ],
+        "oof": [
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Newspaper-None-DeskLamp-216_trial_T20190908_143004_004127",
+            "true_diff": -0.5,
+            "pred_diff": -0.28778839512258725
+          },
+          {
+            "env": "alfworld",
+            "game": "look_at_obj_in_light-Watch-None-DeskLamp-205_trial_T20190907_001948_509721",
+            "true_diff": -0.5,
+            "pred_diff": -0.26227053442435316
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Book-None-Dresser-319_trial_T20190906_204305_696118",
+            "true_diff": -0.4082,
+            "pred_diff": -0.26479756590012815
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_and_place_simple-Pillow-None-Ottoman-208_trial_T20190906_172113_458319",
+            "true_diff": -0.4082,
+            "pred_diff": -0.29791714985406087
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-DishSponge-None-CounterTop-427_trial_T20190909_010951_843989",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.27265714951049774
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-6_trial_T20190909_113304_936478",
+            "true_diff": -0.33330000000000004,
+            "pred_diff": -0.3462493153865364
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Mug-None-CoffeeMachine-26_trial_T20190908_063705_795670",
+            "true_diff": -0.3333,
+            "pred_diff": -0.2210541353337536
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_cool_then_place_in_recep-Pan-None-CounterTop-7_trial_T20190909_072619_689367",
+            "true_diff": -0.3333,
+            "pred_diff": -0.21982672004552004
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Mug-None-CoffeeMachine-20_trial_T20190908_101106_990306",
+            "true_diff": -0.3125,
+            "pred_diff": -0.22240532359222923
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_heat_then_place_in_recep-Potato-None-GarbageCan-14_trial_T20190909_114015_210188",
+            "true_diff": -0.3125,
+            "pred_diff": -0.22084784705001687
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-Newspaper-None-Sofa-214_trial_T20190909_102510_153948",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.24163139163649286
+          },
+          {
+            "env": "alfworld",
+            "game": "pick_two_obj_and_place-SoapBottle-None-GarbageCan-418_trial_T20190909_071000_671838",
+            "true_diff": -0.3113999999999999,
+            "pred_diff": -0.2528122166150239
+          },
+          {
+            "env": "sciworld",
+            "game": "boil",
+            "true_diff": 0.0,
+            "pred_diff": -0.2872632909468277
+          },
+          {
+            "env": "sciworld",
+            "game": "change-the-state-of-matter-of",
+            "true_diff": -0.32,
+            "pred_diff": -0.2914676494928607
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix",
+            "true_diff": 0.48140000000000005,
+            "pred_diff": -0.27790017944168355
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-secondary-color",
+            "true_diff": -0.38459999999999994,
+            "pred_diff": -0.3050803277004468
+          },
+          {
+            "env": "sciworld",
+            "game": "chemistry-mix-paint-tertiary-color",
+            "true_diff": -0.2,
+            "pred_diff": -0.2977766988761552
+          },
+          {
+            "env": "sciworld",
+            "game": "find-animal",
+            "true_diff": -0.39999999999999997,
+            "pred_diff": -0.2937782885982074
+          },
+          {
+            "env": "sciworld",
+            "game": "find-living-thing",
+            "true_diff": -0.2593,
+            "pred_diff": -0.2901566129570009
+          },
+          {
+            "env": "sciworld",
+            "game": "find-non-living-thing",
+            "true_diff": -0.44,
+            "pred_diff": -0.2967821194351582
+          },
+          {
+            "env": "sciworld",
+            "game": "find-plant",
+            "true_diff": -0.1481,
+            "pred_diff": -0.3008759691544138
+          },
+          {
+            "env": "sciworld",
+            "game": "freeze",
+            "true_diff": -0.0909,
+            "pred_diff": -0.2940093525087421
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived",
+            "true_diff": -0.1111,
+            "pred_diff": -0.3034126490418053
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-longest-lived-then-shortest-lived",
+            "true_diff": -0.3636,
+            "pred_diff": -0.2949436544078606
+          },
+          {
+            "env": "sciworld",
+            "game": "lifespan-shortest-lived",
+            "true_diff": -0.36,
+            "pred_diff": -0.3081343898222964
+          },
+          {
+            "env": "sciworld",
+            "game": "measure-melting-point-known-substance",
+            "true_diff": -0.4231,
+            "pred_diff": -0.31613623350668185
+          },
+          {
+            "env": "sciworld",
+            "game": "melt",
+            "true_diff": 0.0,
+            "pred_diff": -0.29955488636157424
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component",
+            "true_diff": -0.7,
+            "pred_diff": -0.31082678669287434
+          },
+          {
+            "env": "sciworld",
+            "game": "power-component-renewable-vs-nonrenewable-energy",
+            "true_diff": -0.6522,
+            "pred_diff": -0.31769842646703583
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -0.3415305107808535
+          },
+          {
+            "env": "sciworld",
+            "game": "test-conductivity-of-unknown-substances",
+            "true_diff": -0.1667,
+            "pred_diff": -0.325499345011826
+          },
+          {
+            "env": "sciworld",
+            "game": "use-thermometer",
+            "true_diff": -0.3929,
+            "pred_diff": -0.3233042378617466
+          }
+        ]
+      }
+    }
+  },
+  "importances": {
+    "F_vs_G": {},
+    "D_vs_F": {
+      "rate_object_state": {
+        "gbt": 0.0495,
+        "ridge_coef": 0.0523
+      },
+      "rate_containment_location": {
+        "gbt": 0.0163,
+        "ridge_coef": 0.0854
+      },
+      "rate_numeric_physical": {
+        "gbt": 0.0007,
+        "ridge_coef": -0.0158
+      },
+      "rate_partial_obs": {
+        "gbt": 0.048,
+        "ridge_coef": -0.04
+      },
+      "rate_action_failure": {
+        "gbt": 0.2033,
+        "ridge_coef": -0.0169
+      },
+      "obs_len_chars": {
+        "gbt": 0.1009,
+        "ridge_coef": 0.0472
+      },
+      "action_vocab": {
+        "gbt": 0.0229,
+        "ridge_coef": -0.0531
+      },
+      "zero_overlap_frac": {
+        "gbt": 0.0224,
+        "ridge_coef": -0.016
+      },
+      "mean_jaccard": {
+        "gbt": 0.1105,
+        "ridge_coef": -0.0639
+      },
+      "target_repeat_frac": {
+        "gbt": 0.1456,
+        "ridge_coef": -0.0209
+      },
+      "probe_fidelity": {
+        "gbt": 0.2711,
+        "ridge_coef": 0.0152
+      },
+      "sft_probe_f1": {
+        "gbt": 0.0087,
+        "ridge_coef": -0.0438
+      }
+    },
+    "D_vs_G": {}
+  }
+}

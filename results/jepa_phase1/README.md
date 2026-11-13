@@ -263,3 +263,69 @@ from the checkpoints above with `scripts/jepa_predict_candidates.py --k 5`:
 Leak check for ScienceWorld seen (7 Nov): none of the 210 reserved variations
 (`splits/sciworld_heldout_seen.txt`), and none of the 126 used by the 323 states,
 appear in `sciworld_games.jsonl`.
+
+## Ablation: VL-JEPA-style InfoNCE loss (12–13 Nov 2026)
+
+`--loss infonce` is a contrastive loss between predicted and true next-state embeddings,
+with in-batch negatives and identical next states counted as positives (VL-JEPA trains
+with InfoNCE). It matches the nearest-state decode used at test time. Everything else is
+the same as the default runs (frozen targets, separate action, admissible feature,
+2,000 steps, same training rows). Exact-match decode on the test buffers:
+
+| n | ALFWorld MSE | ALFWorld InfoNCE | ScienceWorld MSE | ScienceWorld InfoNCE |
+|---|---|---|---|---|
+| 32 | **35.0%** | 33.3% | **24.2%** | 23.1% |
+| 64 | **42.1%** | 36.2% | **38.1%** | 37.9% |
+| 128 | **42.9%** | 41.7% | **43.3%** | 42.5% |
+| 256 | 43.8% | 43.8% | **47.3%** | 47.1% |
+| 512 | **49.6%** | 49.2% | **53.1%** | 51.0% |
+| 1024 | **52.5%** | 51.7% | **60.2%** | 60.0% |
+
+InfoNCE ties or is slightly worse everywhere (cos_dist is higher by design, because it
+ranks rather than regresses). The decode already reaches about 90% of its ceiling with
+MSE, so the loss is not the limit. The limit is answering with training states only. MSE
+stays the default, and the decision-utility files were not regenerated. A text decoder
+(VL-JEPA's y-decoder) or a token-level transformer predictor would be the next step.
+Both are future work.
+
+Checkpoints: `outputs/jepa/{alfworld,sciworld}_games_steps2000_test-*_heldout_buffer_sepact_adm_frozen_infonce/`
+
+## Experiment: JEPA + text decoder (VL-JEPA-style y-decoder), n = 256 (13 Nov 2026)
+
+VL-JEPA turns its predicted embedding into text with a light decoder, instead of picking
+the nearest training sentence. We tested the same idea with
+`scripts/export_jepa_vectors.py` + `scripts/train_jepa_decoder.py`:
+
+- the predicted next-state vector is mapped to 8 soft-prompt tokens
+- Qwen2.5-1.5B-Instruct + LoRA writes the next observation from those tokens alone (no
+  observation or action text, so the answer comes entirely from JEPA)
+- the decoder is trained on the true target vectors of the checkpoint's own 256 training
+  rows, for 300 steps (fixed in advance)
+
+Exact match / word F1 on the held-out sets, n = 256:
+
+| Held-out set | JEPA nearest sentence (today's D) | **JEPA + text decoder** | Decoder on the **true** vector (best case) | SFT (F) |
+|---|---|---|---|---|
+| ALFWorld new games (240) | 43.8% / 0.826 | 43.3% / 0.835 | 52.9% / 0.893 | 56.2% / 0.899 |
+| ScienceWorld test types (480) | 47.3% / 0.779 | 44.0% / 0.749 | 50.6% / 0.823 | 69.0% / 0.890 |
+| ScienceWorld seen variations (1,600) | 52.4% / 0.826 | 49.8% / 0.794 | 55.2% / 0.855 | 71.3% / 0.899 |
+| ByteSized32 random 10% (295) | 26.8% / 0.612 | 24.4% / 0.600 | 33.2% / 0.750 | 55.6% / 0.776 |
+
+Reading:
+- **The text decoder does not beat nearest-sentence decoding.** It is within 0.5–3.3
+  points (about the same on ALFWorld, slightly worse elsewhere). Writing new sentences
+  doesn't help when the vector it reads from has already lost the details.
+- **The vector is the deeper limit.** Even a *perfect* JEPA prediction (the true
+  next-state vector) only decodes to 33–55% exact match. That is below SFT everywhere
+  (−3 points on ALFWorld, −16 to −22 elsewhere). A frozen, general-purpose sentence
+  embedding (NV-Embed) drops exact details such as object numbers, quantities and
+  wording, and SFT keeps them by working on the text directly.
+- So the D-vs-F gap splits into (a) what the frozen embedding loses (SFT → decoder on the
+  true vector) and (b) prediction error (true vector → predicted vector, 3–10 points).
+  Together with the InfoNCE ablation, this points to the **frozen encoder**, not the
+  predictor's training or the decode step, as the main limit. Training the encoder
+  itself (as I-JEPA and V-JEPA do) is the natural next step. That is future work.
+- Not part of the decision-utility labels (fidelity only, n = 256, by choice).
+
+Files: `outputs/jepa_decoder/{alfworld,sciworld,bytesized32}_b256.pt` (vectors) and
+`*_results.json` (scores at steps 100 / 200 / 300).

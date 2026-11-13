@@ -80,8 +80,11 @@ class JEPATrainer:
         self.loss_name = config.get("loss", "mse")
         if self.target_mode not in ("ema", "frozen"):
             raise ValueError(f"target_mode must be 'ema' or 'frozen', got {self.target_mode!r}")
-        if self.loss_name not in ("mse", "l1"):
-            raise ValueError(f"loss must be 'mse' or 'l1', got {self.loss_name!r}")
+        if self.loss_name not in ("mse", "l1", "infonce"):
+            raise ValueError(f"loss must be 'mse', 'l1' or 'infonce', got {self.loss_name!r}")
+        # InfoNCE temperature (VL-JEPA trains with InfoNCE between predicted and true
+        # target embeddings; 0.05 is a common choice for normalised embeddings)
+        self.temperature = float(config.get("infonce_temperature", 0.05))
 
         params = list(predictor.parameters())
         if self.target_mode == "ema":
@@ -158,7 +161,7 @@ class JEPATrainer:
 
                 z_pred = self.predictor(self._online(z_ctx_b))
                 z_target = self._target(z_next_b)           # stop-gradient
-                loss = (F.l1_loss if self.loss_name == "l1" else F.mse_loss)(z_pred, z_target)
+                loss = self._loss(z_pred, z_target)
 
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -201,6 +204,28 @@ class JEPATrainer:
         score = history["val_cos_dist"][-1]
         print(f"[JEPA Probe] probe_fidelity = {score:.4f}  (lower = better)")
         return score
+
+    def _loss(self, z_pred: torch.Tensor, z_target: torch.Tensor) -> torch.Tensor:
+        """
+        mse / l1 : regress the target vector (DINO-WM / V-JEPA 2-AC style).
+        infonce  : VL-JEPA style contrastive loss. Each prediction must be closer (cosine)
+                   to its own next state than to the other next states in the batch.
+                   This is the same job the nearest-state decode does at test time.
+                   Rows whose next state is the same text (identical target vector) all
+                   count as positives, so repeated feedback like "Nothing happens." is not
+                   pushed apart from itself.
+        """
+        if self.loss_name == "l1":
+            return F.l1_loss(z_pred, z_target)
+        if self.loss_name == "mse":
+            return F.mse_loss(z_pred, z_target)
+        p = F.normalize(z_pred, dim=-1)
+        t = F.normalize(z_target, dim=-1)
+        logits = p @ t.T / self.temperature                      # (B, B)
+        with torch.no_grad():
+            pos = (t @ t.T) > 0.9999                             # same next state = positive
+        log_prob = logits - torch.logsumexp(logits, dim=1, keepdim=True)
+        return -(torch.logsumexp(log_prob.masked_fill(~pos, float("-inf")), dim=1)).mean()
 
     def _online(self, z: torch.Tensor) -> torch.Tensor:
         """
