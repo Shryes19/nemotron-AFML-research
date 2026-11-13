@@ -109,7 +109,7 @@ environments:
 evaluation:
   decision_utility:
     k_candidates: 5                   # K candidate actions per branched state
-    scorer_model: "Qwen/Qwen2.5-7B-Instruct"
+    scorer_model: "Qwen/Qwen2.5-7B-Instruct-AWQ"   # deviation: 4-bit AWQ to fit the 12 GB RTX 5070
   fidelity:
     judge_model: "google/gemma-3-27b-it"   # LM-as-judge
     scale: [1, 10]

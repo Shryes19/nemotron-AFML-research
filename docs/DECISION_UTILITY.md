@@ -71,31 +71,43 @@ Field list: `docs/SCHEMA.md` → "Branched states".
 
 ## Running it (GPU needed for the judge)
 
-On the GPU box, with vLLM serving Qwen and `.env` pointing at it (`docs/GPU_DAY.md`):
+**Judge model:** Qwen2.5-7B-Instruct-**AWQ** (4-bit) on vLLM, so it fits the 12 GB RTX 5070.
+This deviates from the plan's full-precision Qwen2.5-7B-Instruct; the same judge scores every arm.
+
+One script does everything for the four branched sets (ALFWorld, ScienceWorld test, ScienceWorld
+seen, ByteSized32): true values, D in 3 modes, F, G when its files exist, the summary and labels.
+It is resumable (true values are cached, finished scored files are skipped).
 
 ```bash
-# once per env: judge the true next states
-python -m wm.utility.score true-values --states data/eval/alfworld_branched_states.jsonl --out results/utility/alfworld_true_values.jsonl
-
-# once per (arm, budget)
-python -m wm.utility.score score --states data/eval/alfworld_branched_states.jsonl --true-values results/utility/alfworld_true_values.jsonl \
-    --pred outputs/jepa_candidates/alfworld_b256.jsonl --format jepa --mode top1 --arm D --out results/utility/alfworld_D_top1_256.jsonl
-python -m wm.utility.score score ... --pred <rag_predictions_b256.jsonl> --format generic --arm G --out results/utility/alfworld_G_top1_256.jsonl
-
-# tables: results/utility/summary.csv (+ oracle rows) and fidelity_vs_utility.csv
-python -m wm.utility.score summarize --states data/eval/*_branched_states.jsonl --true-values results/utility/*_true_values.jsonl --scored "results/utility/*_[GFD]_*.jsonl"
-
-# winner labels for the RQ3 matrix (scripts/build_feature_matrix.py --labels)
-python -m wm.utility.labels --scored "results/utility/*_[GFD]_*.jsonl" --budget 256 --arms G,F,D --key game --out results/utility/labels.csv
+vllm serve Qwen/Qwen2.5-7B-Instruct-AWQ --port 8000 --max-model-len 8192 --gpu-memory-utilization 0.85 --enable-prefix-caching --seed 0
+export LLM_BASE_URL=http://localhost:8000/v1 LLM_MODEL=Qwen/Qwen2.5-7B-Instruct-AWQ
+PRED_ROOT=~/nemotron-AFML-research/outputs DRY=1 bash scripts/run_utility.sh   # CPU check first, overlap judge
+PRED_ROOT=~/nemotron-AFML-research/outputs bash scripts/run_utility.sh          # the real run
 ```
 
-- `--workers 8` sends judge calls in parallel; responses are cached, so reruns are free.
-- Judge passes are logged as stage `utility_scoring` in the shared GPU-hour log.
-- Add `--judge overlap` to any command for a dry run without an LLM. That judge just counts goal words, so its numbers mean nothing.
+Outputs in `results/utility/`:
+- `<set>_true_values.jsonl`, `scored/<set>_<arm>_<mode>_b<n>.jsonl`;
+- `summary.csv`: one row per env, split (regime), arm, mode, budget and game, plus pooled `game = *`
+  rows and oracle rows. ByteSized32 also has a `seen_state_new_actions:gold_unseen` split: the 210
+  states whose gold transition is not in the arms' training data (report this one);
+- `fidelity_vs_utility.csv`: best arm by regret vs by exact match, per env, split and budget;
+- `judge_check.csv`: where the env records a reward, how often the judge's true values order two
+  candidates like the reward does (ByteSized32: the 45 states whose score changes);
+- `labels_D{top1,topk,native}.csv`: labels at n = 256 per family, one file per D mode.
+  ScienceWorld test and seen states are pooled per task type. Columns `regret_*` and `n_*` stay so
+  the predictor can weight by state count. ByteSized32 rows are included; `rq3_predictor.py` leaves
+  them out by default.
 
-**Label unit (team decision pending):**
-- **ScienceWorld:** held-out states share task types with training, so `--key game` joins the feature matrix directly.
-- **ALFWorld:** held-out games are different games from the 12 training games. Labels join only per task family (`--key family`), or would need states from the training games themselves.
+Single commands, when needed:
+```bash
+python -m wm.utility.score true-values --states data/eval/alfworld_branched_states.jsonl --out results/utility/alfworld_true_values.jsonl
+python -m wm.utility.score score --states data/eval/alfworld_branched_states.jsonl --true-values results/utility/alfworld_true_values.jsonl     --pred outputs/jepa_candidates/alfworld_b256.jsonl --format jepa --mode top1 --arm D --out results/utility/scored/alfworld_D_top1_b256.jsonl
+python -m wm.utility.labels --scored "results/utility/scored/*.jsonl" --budget 256 --arms G,F,D --key family --arm-mode D=native
+```
+
+- `--workers` sends judge calls in parallel; responses are cached, so reruns are free.
+- Judge passes are logged as stage `utility_scoring` in the shared GPU-hour log.
+- `--judge overlap` (or `DRY=1`) is a dry run without an LLM; its numbers mean nothing.
 
 ## Episode check (`wm/utility/episodes.py`)
 

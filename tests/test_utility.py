@@ -179,3 +179,29 @@ def test_labels_pick_lowest_regret_and_break_ties():
     assert out["g0"]["label"] == "F"
     assert out["g1"]["label"] == "D"           # tie on regret -> higher gold-hit
     assert {"env", "game", "label"} <= set(out["g0"])
+
+
+def test_summary_splits_gold_unseen_and_judge_check():
+    states = {}
+    for i in range(4):
+        s = _state(i, ACTS, TRUE, env="bytesized32")
+        s.update({"split": "seen_state_new_actions", "gold_seen_in_training": i < 2,
+                  "true_reward": [1, 0, 0, 0, 0]})
+        states[s["id"]] = s
+    tv = {sid: [9, 1, 1, 1, 1] for sid in states}
+    rows = sc.oracle_rows(states, tv)
+    summary = {(r["split"], r["game"]): r for r in sc.summarize_rows(rows)}
+    assert summary[("seen_state_new_actions", "*")]["n_states"] == 4
+    assert summary[("seen_state_new_actions:gold_unseen", "*")]["n_states"] == 2
+    check = sc.judge_check(states, tv)[0]
+    assert check["n_states"] == 4 and check["n_pairs"] == 16 and check["agreement"] == 1.0
+
+
+def test_labels_per_arm_mode():
+    rows = [{"env": "sciworld", "game": "boil", "family": "boil", "arm": "D", "budget": 256,
+             "mode": m, "regret": reg, "gold_hit": 0} for m, reg in (("top1", 5), ("native", 0))]
+    rows.append({"env": "sciworld", "game": "boil", "family": "boil", "arm": "F", "budget": 256,
+                 "mode": "top1", "regret": 1, "gold_hit": 0})
+    assert lab.make_labels(rows, ["F", "D"], 256)[0]["label"] == "F"
+    out = lab.make_labels(rows, ["F", "D"], 256, arm_modes={"D": "native"})[0]
+    assert out["label"] == "D" and out["regret_D"] == 0 and out["n_D"] == 1

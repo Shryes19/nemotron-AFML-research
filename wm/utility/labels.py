@@ -22,10 +22,13 @@ from typing import Dict, List
 from wm.utility.score import write_csv
 
 
-def make_labels(rows: List[Dict], arms: List[str], budget, key: str = "game", mode: str = "top1") -> List[Dict]:
+def make_labels(rows: List[Dict], arms: List[str], budget, key: str = "game", mode: str = "top1",
+                arm_modes: Dict[str, str] = None) -> List[Dict]:
+    """arm_modes overrides the scoring mode per arm, e.g. {"D": "native"}."""
+    arm_modes = arm_modes or {}
     acc = defaultdict(lambda: defaultdict(list))
     for r in rows:
-        if r["arm"] in arms and str(r["budget"]) == str(budget) and r.get("mode", "top1") == mode:
+        if r["arm"] in arms and str(r["budget"]) == str(budget) and                 r.get("mode", "top1") == arm_modes.get(r["arm"], mode):
             acc[(r["env"], r[key])][r["arm"]].append(r)
     out = []
     for (env, game), by_arm in sorted(acc.items()):
@@ -48,6 +51,8 @@ def main(argv=None):
     p.add_argument("--budget", default="256")
     p.add_argument("--arms", default="G,F,D")
     p.add_argument("--mode", default="top1", help="which scoring mode labels are based on")
+    p.add_argument("--arm-mode", action="append", default=[], metavar="ARM=MODE",
+                   help="scoring mode for one arm, e.g. D=native (others use --mode)")
     p.add_argument("--key", choices=["game", "family"], default="game")
     p.add_argument("--out", default="results/utility/labels.csv")
     args = p.parse_args(argv)
@@ -56,7 +61,8 @@ def main(argv=None):
         for path in sorted(glob.glob(pattern)):
             with open(path, encoding="utf-8") as f:
                 rows += [json.loads(l) for l in f if l.strip()]
-    labels = make_labels(rows, args.arms.split(","), args.budget, args.key, args.mode)
+    arm_modes = dict(x.split("=", 1) for x in args.arm_mode)
+    labels = make_labels(rows, args.arms.split(","), args.budget, args.key, args.mode, arm_modes)
     write_csv(args.out, labels)
     print("wrote %d labels to %s" % (len(labels), args.out))
     return 0
