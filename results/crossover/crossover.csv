@@ -1,0 +1,7 @@
+env,specialist,specialist_best_regret,specialist_best_n,specialist_best_gpu_h,G_best_regret,G_best_n,G_best_gpu_h,crossover_gpu_h,crossover_n,ci_overlap_at_crossover,best_vs_best_ci_overlap
+alfworld,F,0.5803,1024,0.1926,0.5337,512,0.3451,,,,yes
+alfworld,D,0.8031,1024,0.1528,0.5337,512,0.3451,,,,yes
+sciworld,F,0.0713,1024,0.3537,0.099,256,1.0818,0.1931,32,yes,yes
+sciworld,D,0.2416,1024,0.5301,0.099,256,1.0818,,,,no
+bytesized32,F,0.3476,1024,0.1988,0.6048,1024,0.1558,0.0836,128,yes,yes
+bytesized32,D,1.2,1024,0.0351,0.6048,1024,0.1558,,,,no

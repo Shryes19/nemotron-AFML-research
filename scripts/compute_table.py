@@ -10,14 +10,15 @@ Summarise compute logs (written by capability/compute_log.track) into the GPU-ho
 
 Every logged step is put in one of three categories:
   arm       cost of an arm (G / F / D): training, prediction, encoding, scoring
-  feature   cost of an ex-ante feature (stage "probe": JEPA probe = Feature 1, SFT probe = ablation)
+  feature   cost of an ex-ante feature (stage "probe": JEPA probe = Feature 1, SFT probe = ablation;
+            stage "recall_feature": Feature 3)
   excluded  pilot runs (pilot: true), rows matching --exclude, and older duplicates of the same run
 Only "arm" belongs in the compute-vs-regret comparison (RQ2); "feature" is reported next to the RQ3
 predictor; "excluded" is listed so nothing disappears silently.
 Duplicates: with --dedupe, if the same configuration (all fields except timings, host and time) was logged
 more than once, only the latest run counts. Off by default: the logs do not record every setting (e.g. JEPA
 loss, scoring mode), so identical-looking rows can be different real runs.
---http-gpu: the utility scorer calls vLLM over HTTP, so its rows say gpu_name "cpu" with gpu_s 0 although
+--http-gpu: the utility scorer and G's generation call vLLM over HTTP, so its rows say gpu_name "cpu" with gpu_s 0 although
 the time was spent on the GPU; this counts their wall time as GPU time on the named GPU.
 --shared-to D: assign arm "shared" (NV-Embed encoding) to one arm, once it is known who uses it.
 GPU names stay a column: an RTX 5070 hour and a 4090 hour are not the same cost.
@@ -29,7 +30,10 @@ import json
 import os
 
 TIMING = {"wall_s", "gpu_s", "peak_mem_gb", "host", "time", "gpu_name"}
-HTTP_STAGES = {"utility_scoring"}
+# stages that call a vLLM server over HTTP: logged as gpu_name "cpu", but the time is GPU time
+HTTP_STAGES = {"utility_scoring", "g_generation"}
+# stages that measure an ex-ante feature, not an arm
+FEATURE_STAGES = {"probe", "recall_feature"}
 
 
 def load(paths):
@@ -62,7 +66,7 @@ def main():
     ap.add_argument("--exclude", nargs="*", default=[],
                     help='rules like "stage=nv_embed_encode,env=sciworld,time=2026-11-08"')
     ap.add_argument("--http-gpu", default="",
-                    help="GPU name to use for utility_scoring rows logged as cpu (vLLM over HTTP)")
+                    help="GPU name for utility_scoring / g_generation rows logged as cpu (vLLM over HTTP)")
     ap.add_argument("--shared-to", default="", help="assign arm 'shared' to this arm (e.g. D)")
     ap.add_argument("--dedupe", action="store_true",
                     help="drop older runs of identical logged configurations (only if the log records "
@@ -80,7 +84,7 @@ def main():
             r["_cat"], r["_why"] = "excluded", "pilot"
         elif any(matches(r, rule) for rule in rules):
             r["_cat"], r["_why"] = "excluded", "--exclude"
-        elif r.get("stage") == "probe":
+        elif r.get("stage") in FEATURE_STAGES:
             r["_cat"], r["_why"] = "feature", ""
         else:
             r["_cat"], r["_why"] = "arm", ""

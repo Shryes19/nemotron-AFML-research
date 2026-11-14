@@ -73,3 +73,26 @@ python scripts/compute_table.py      # -> results/compute/cost_table.csv
 
 Expected input formats for the optional files: CSV with columns `env, game, <value>` where value is
 `probe_fidelity`, `recall_at5` or `label`. A row with game `*` applies to every game of that env.
+
+## Phase 3 (RQ2, Feature 3, reproducibility)
+
+```bash
+# everything in this part, in order (CPU steps take seconds)
+bash scripts/rebuild_siddanth.sh
+RECALL=1 bash scripts/rebuild_siddanth.sh      # also Feature 3: GPU + encoder venv (.venv-enc), ~15 min
+```
+
+- `scripts/recall_feature.py`: Feature 3, G's Recall@5 on each game's own 32 training transitions
+  (leave-one-out, same draws as Features 2/4). Not `results/utility/g_recall_at5.csv`, which is measured
+  on the held-out evaluation states and would leak test data into an ex-ante feature.
+- `scripts/compute_crossover.py`: RQ2. Regret against GPU-hours per arm and environment
+  (`results/crossover/`: points, crossover table, figure). Cost = building + running the world model at
+  that budget; evaluation (utility_scoring) is left out. NV-Embed encoding (`nv_embed_encode`) counts
+  as D's cost (`--shared-to D`): G encodes its own index (`rag_index_build`).
+- `scripts/compute_table.py` also counts G's vLLM generation (`g_generation`) as GPU time.
+- `scripts/capability_regret.py`: RQ1 per capability. Each branched state takes the tags of its best
+  candidate transition; mean regret per arm with bootstrap CIs, plus paired G-F / F-D differences
+  (`results/capability_regret/`).
+- `scripts/router_bound.py`: RQ4 as a bound. Best single arm vs a leave-one-out capability router vs an
+  oracle per-state router (`results/router/`). Draft paper text for both:
+  `docs/paper/rq1_capability_rq4_router.md`.
