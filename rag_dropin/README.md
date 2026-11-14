@@ -31,11 +31,14 @@ GPU time is logged as stages `rag_index_build` and `g_generation` (`results/comp
   (keeps prompts inside vLLM's 8192 tokens; most texts are shorter).
 - Greedy decoding, at most 128 new tokens, one seed, as for the other arms.
 
-**Recall@5 (feature-matrix column):** `prepare_g_prompts.py` writes `recall_at5.csv`
-(copied to `results/utility/g_recall_at5.csv`): `env, game, budget, n_states, recall_at5` for every set
-and budget; the matrix uses `budget = 32`. Query = each branched state with its gold action; a hit is
-a retrieved example with the same normalized action template and object (model-free). Units are
-task ID (ALFWorld), task type (ScienceWorld), and game (ByteSized32).
+**Recall@5 on the evaluation states (descriptive, NOT a feature):** `prepare_g_prompts.py` writes
+`recall_at5.csv` (copied to `results/utility/g_recall_at5.csv`): `env, game, budget, n_states,
+recall_at5` for every set and budget. Query = each branched state with its gold action; a hit is a
+retrieved example with the same normalized action template and object (model-free). Units are task
+ID (ALFWorld), task type (ScienceWorld), and game (ByteSized32). Because it reads the held-out
+evaluation states, it must **not** be used as the ex-ante Feature 3; the feature matrix uses the
+leak-free `results/features/recall_at5.csv` (`scripts/recall_feature.py`: each game's own 32 training
+transitions, leave-one-out).
 `measure_recall.py` does the same for one budget and a custom query file.
 
 ## Team handoff
