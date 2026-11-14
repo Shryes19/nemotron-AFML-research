@@ -90,3 +90,9 @@ RECALL=1 bash scripts/rebuild_siddanth.sh      # also Feature 3: GPU + encoder v
   that budget; evaluation (utility_scoring) is left out. NV-Embed encoding (`nv_embed_encode`) counts
   as D's cost (`--shared-to D`): G encodes its own index (`rag_index_build`).
 - `scripts/compute_table.py` also counts G's vLLM generation (`g_generation`) as GPU time.
+- `scripts/capability_regret.py`: RQ1 per capability. Each branched state takes the tags of its best
+  candidate transition; mean regret per arm with bootstrap CIs, plus paired G-F / F-D differences
+  (`results/capability_regret/`).
+- `scripts/router_bound.py`: RQ4 as a bound. Best single arm vs a leave-one-out capability router vs an
+  oracle per-state router (`results/router/`). Draft paper text for both:
+  `docs/paper/rq1_capability_rq4_router.md`.

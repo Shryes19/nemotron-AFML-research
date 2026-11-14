@@ -27,6 +27,8 @@ $PY scripts/compute_table.py --log "$SHRYES_LOG" results/compute_saanvi_gpu.json
               "stage=jepa_decoder_train" "stage=jepa_decoder_predict" \
     --http-gpu "$GPU" --shared-to D --out results/compute/cost_table.csv
 echo "== compute crossover (RQ2)"; $PY scripts/compute_crossover.py --cost results/compute/cost_table.csv --summary results/utility/summary.csv --d-mode top1 --out-dir results/crossover > /dev/null
+echo "== RQ1 by capability";       $PY scripts/capability_regret.py --budget 256 --out-dir results/capability_regret > /dev/null
+echo "== RQ4 router bound";         $PY scripts/router_bound.py --out-dir results/router > /dev/null
 REC=""; [ -f results/features/recall_at5.csv ] && REC="--recall results/features/recall_at5.csv"
 echo "== feature matrix";         $PY scripts/build_feature_matrix.py --mix results/capability/capability_mix.csv --stats results/features/env_stats.csv --probe results/jepa_phase1/probe_scores.csv --labels results/utility/labels_Dtop1.csv $REC --out results/features/feature_matrix.csv
 echo "done: git status shows what changed"
