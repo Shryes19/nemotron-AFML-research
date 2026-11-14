@@ -178,6 +178,7 @@ def test_labels_pick_lowest_regret_and_break_ties():
     out = {r["game"]: r for r in lab.make_labels(rows, ["G", "F", "D"], 256)}
     assert out["g0"]["label"] == "F"
     assert out["g1"]["label"] == "D"           # tie on regret -> higher gold-hit
+    assert out["g0"]["tie"] == "" and out["g1"]["tie"] == "G+F+D"
     assert {"env", "game", "label"} <= set(out["g0"])
 
 

@@ -5,7 +5,8 @@
 
 Writes columns env, game, label (read by scripts/build_feature_matrix.py --labels), plus the
 per-arm mean regret and state count behind each label. Ties in mean regret go to the higher
-gold-hit rate, then to the order given in --arms.
+gold-hit rate, then to the order given in --arms; column `tie` lists the tied arms (e.g. "G+F"),
+empty when the winner's regret is strictly lowest. Count tied labels separately when reporting.
 
 --key game uses the branched states' game (ALFWorld task id, ScienceWorld task type);
 --key family groups ALFWorld by task type instead. Held-out ALFWorld games are not the 12
@@ -37,7 +38,10 @@ def make_labels(rows: List[Dict], arms: List[str], budget, key: str = "game", mo
             stats[arm] = (sum(r["regret"] for r in rs) / len(rs), sum(r["gold_hit"] for r in rs) / len(rs), len(rs))
         present = [a for a in arms if a in stats]
         winner = min(present, key=lambda a: (stats[a][0], -stats[a][1], arms.index(a)))
-        row = {"env": env, "game": game, "label": winner}
+        best = round(stats[winner][0], 4)
+        tied = [a for a in present if round(stats[a][0], 4) == best]
+        # tie: other arms share the winner's mean regret (the label then came from gold-hit / arm order)
+        row = {"env": env, "game": game, "label": winner, "tie": "+".join(tied) if len(tied) > 1 else ""}
         for a in arms:
             row["regret_%s" % a] = round(stats[a][0], 4) if a in stats else ""
             row["n_%s" % a] = stats[a][2] if a in stats else 0

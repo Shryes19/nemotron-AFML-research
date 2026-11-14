@@ -1,6 +1,6 @@
 feature,n_dwins,n_other,median_dwins,median_other
-rate_object_state,1,31,0.3125,0.2812
-rate_containment_location,1,31,0.4313,0.4
-rate_numeric_physical,1,31,0.0,0.0
-rate_partial_obs,1,31,0.1625,0.25
-rate_action_failure,1,31,0.0312,0.0938
+rate_object_state,0,32,,0.2938
+rate_containment_location,0,32,,0.4
+rate_numeric_physical,0,32,,0.0
+rate_partial_obs,0,32,,0.25
+rate_action_failure,0,32,,0.0938
