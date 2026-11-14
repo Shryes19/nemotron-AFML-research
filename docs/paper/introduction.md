@@ -1,8 +1,8 @@
 # 1 Introduction (draft, Siddanth)
 
 Status (14 Nov 2026): numbers from `docs/paper/results_discussion.md` (Saanvi, three arms),
-`results/crossover/crossover.md` and `results/compute/cost_table.csv`. One sentence depends on the
-RQ3 predictor rerun with three-arm labels and is marked **TBD**.
+`results/crossover/crossover.md`, `results/compute/cost_table.csv` and the final RQ3 predictor
+run (`results/rq3/README.md`, three-arm labels).
 
 ---
 
@@ -53,10 +53,11 @@ n = 256 it needs 0.08, 0.21 and 0.10 GPU-hours on ALFWorld, ScienceWorld and Byt
 0.33, 1.08 and 0.14 for G. G needs no training, but it pays for NV-Embed retrieval indexing and
 7B generation, and the generation part grows with every prediction (`results/crossover/crossover.md`).
 So in our setting the small fine-tuned model is as good as prompting a much larger model and cheaper
-to run, and the difference grows with the number of predictions. For RQ3, **TBD (three-arm predictor rerun):** with
-F and D alone the decision is trivial (F wins 31 of 32 labelled rows), and only the JEPA probe ranked
-the size of D's gap out of sample (Spearman 0.47, p = 0.01, with a sign that changes between D's
-decoding modes).
+to run, and the difference grows with the number of predictions. For RQ3, cheap features cannot
+predict which option wins, mostly because there is little to predict: G and F are tied and both beat
+D, so no learned predictor beats always choosing F. The one reliable ex-ante signal is that a short
+JEPA probe ranks *how far* the specialist falls behind fine-tuning (out-of-fold Spearman 0.29–0.47,
+p ≤ 0.045 in all three of D's decoding modes), while a more expensive fine-tuning probe does not.
 
 **Contributions.**
 1. A compute-priced comparison of three ways to obtain a text world model (prompting with retrieval,

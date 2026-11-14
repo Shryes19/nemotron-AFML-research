@@ -1,13 +1,14 @@
 # Results, discussion and limitations (draft, Saanvi)
 
-Status (14 Nov 2026): filled from the GPU scoring runs of 12 Nov (arms F and D) and 13–14 Nov
-(arm G), all four regimes, all six budgets (`results/utility/`, `results/figures/`); the RQ3
-predictor's first run (`results/rq3/README.md`, Shryes; F vs D labels); the JEPA ablations
-(`results/jepa_phase1/README.md`, last two sections) and the GPU-hour table
-(`results/compute/cost_table.csv`, Siddhant; G's hours from `results/compute_g_gpu.jsonl`).
-Still open, marked **TBD**: the predictor rerun on the three-arm labels (Shryes). G-vs-F
-significance below comes from paired bootstrap tests over states (same states, both arms).
-Every claim names its figure or table, as the plan asks.
+Status (14 Nov 2026, complete): filled from the GPU scoring runs of 12 Nov (arms F and D) and
+13–14 Nov (arm G), all four regimes, all six budgets (`results/utility/`, `results/figures/`);
+the final RQ3 predictor run on the three-arm labels and complete feature matrix
+(`results/rq3/README.md`, Shryes); regret by capability, the routing bound and the compute
+crossover (`results/capability_regret/`, `results/router/`, `results/crossover/`, Siddhant;
+5.4 and 5.8 adapted from his draft); the JEPA ablations (`results/jepa_phase1/README.md`) and
+the GPU-hour table (`results/compute/cost_table.csv`). Significance between arms comes from
+paired bootstrap tests over states (same states, both arms). No TBD left. Every claim names
+its figure or table, as the plan asks.
 
 ---
 
@@ -60,8 +61,9 @@ At n = 256, exact match of the top-1 predicted next state (`results/sft/README.m
 Table 2: fidelity at n = 256. F has the highest fidelity at every budget in every
 environment (+2 to +35 points over D). D's decoder can only return a state it has seen,
 which caps its exact match ("reach"); within that cap D reaches 87–97% of the ceiling, so
-the gap is the decoder and the buffer, not JEPA training. G was not run on these held-out
-sets; its exact match on the branched states' candidates (5.4) sits between F and D.
+the gap is not JEPA training: the frozen embedding and the nearest-state decoding are the
+limit (see "Where JEPA fails" in Section 6). G was not run on these held-out
+sets; its exact match on the branched states' candidates (5.5) sits between F and D.
 
 ### 5.3 Decision utility
 
@@ -111,7 +113,43 @@ CIs. Bold marks the lowest mean; at n = 256 no G-vs-F difference is significant.
 - **Oracle gold-hit:** the judge's best true outcome is the expert's action in 37% of ALFWorld
   states, and in 63% (ScienceWorld test), 52% (ScienceWorld seen) and 60% (ByteSized32).
 
-### 5.4 Fidelity is not utility
+### 5.4 Where the gaps are: regret by capability (RQ1)
+
+Each branched state is tagged with the capabilities of its best candidate transition, the
+outcome a world model must predict well for the agent to choose right (`fig_capability_regret`,
+`results/capability_regret/capability_regret.md`; n = 256, D top-1, paired differences on the
+same states). On the two main regimes pooled (ALFWorld + ScienceWorld, 698 states):
+
+| Capability of the best move | States | G | F | D top-1 | G − F | F − D |
+|---|---|---|---|---|---|---|
+| Object state | 219 | 0.09 | 0.15 | 0.30 | −0.06 | −0.15 |
+| Containment / location | 375 | 0.37 | 0.31 | 0.55 | +0.06 | **−0.24** |
+| Numeric / physical | 28 | 0.14 | 0.14 | 0.36 | 0.00 | −0.21 |
+| Partially observable | 296 | 0.40 | 0.36 | 0.54 | +0.04 | **−0.17** |
+| Action failure | 14 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| No visible change | 83 | 0.12 | 0.27 | 0.83 | −0.14 | **−0.57** |
+
+Table 4: mean regret by capability, main regimes pooled. Bold: 95% CI of the paired difference
+excludes 0. A state can carry several tags.
+
+- **D's deficit is broad, not tied to one capability.** F has significantly lower regret than
+  D on containment/location, partially observable and no-visible-change states. The largest gap
+  is where the best move changes nothing visible (−0.57), where D's nearest-state decoding
+  returns an outcome from a different context. On ByteSized32 the pattern is stronger: F − D is
+  −0.92 on containment and −2.05 on partially observable states.
+- **G and F are indistinguishable per capability** on the pooled main regimes: no paired
+  G − F difference is significant. On ScienceWorld test alone F is better on containment
+  (G − F +0.11) and partially observable states (+0.13).
+- **Partially observable and containment states are the hardest for every arm** (0.31–0.55
+  regret on the main regimes, against 0.09–0.30 for object-state changes): no world model can
+  predict contents it has never seen.
+- **Numeric/physical states are few** (28 main, 26 ByteSized32), so their intervals are wide. On
+  ByteSized32 all three arms are equally poor there (1.15–1.27), consistent with the tagger's
+  validation against ByteSized32's ground-truth state: 73% of its numeric state changes never
+  appear in the text the agent observes. Action failure (14 states) and numeric cells are reported, not interpreted;
+  with this many comparisons, single significant cells are suggestive.
+
+### 5.5 Fidelity is not utility
 
 Figure 2 (`fig2_fidelity_vs_utility`) plots exact match against regret, one point per
 (regime, arm, budget). `fidelity_utility_corr.csv` gives Spearman's ρ.
@@ -129,7 +167,7 @@ Figure 2 (`fig2_fidelity_vs_utility`) plots exact match against regret, one poin
   states); all 8 disagreements are between G and F, 5 of them on ALFWorld. G reaches the same
   decisions with text that is less often word-for-word right, which suggests its errors are
   mostly in details the judge does not need to rank the candidates (see the judge caveat in
-  5.5).
+  5.6).
 - So we reproduce a mild form of Lambert et al.'s fidelity–utility mismatch: fidelity
   separates good from bad models (both generalists vs D), but not two good ones. None of the
   8 disagreements is a significant regret difference, so the mismatch is "fidelity
@@ -141,7 +179,7 @@ Figure 2 (`fig2_fidelity_vs_utility`) plots exact match against regret, one poin
   than the held-out fidelity in Table 2 (D top-1 on ALFWorld: 21% vs 44%): outcomes of
   distractor actions are rarer in the training buffer than outcomes of expert actions.
 
-### 5.5 Is the judge trustworthy?
+### 5.6 Is the judge trustworthy?
 
 - **Oracle gold-hit: 37–63%** (5.3). Distractors can legitimately be as good as the expert's
   action (another route to the same object, an equally useful observation), so 100% is not
@@ -161,7 +199,7 @@ Figure 2 (`fig2_fidelity_vs_utility`) plots exact match against regret, one poin
   the observation does not contain (receptacle contents). We report the failure as
   pre-registered. It suggests that in-context generation adds little *exact match* over
   plain retrieval in this setting. Arm G is the same kind of model (with five retrieved
-  examples instead of three) and its exact match is indeed well below F's (5.4), yet its
+  examples instead of three) and its exact match is indeed well below F's (5.5), yet its
   decisions are as good as F's (5.3): exact match understates what retrieval-based
   prediction is worth for decisions.
 - **Self-preference caveat for G.** G's predictions are written by the same model that
@@ -170,7 +208,7 @@ Figure 2 (`fig2_fidelity_vs_utility`) plots exact match against regret, one poin
   G's choice comes from its ratings of G's own text, so such a preference could make G's
   choices look better than its predictions deserve. We cannot rule this out with one judge.
 
-### 5.6 RQ3: can cheap features predict the winner?
+### 5.7 RQ3: can cheap features predict the winner?
 
 Labels: the arm with the lowest mean regret at n = 256 per ALFWorld task family and
 ScienceWorld task type (`labels_Dtop1.csv`; D in top-1 mode, judged the same way as the text
@@ -206,57 +244,103 @@ Table 5: label counts at n = 256 (`labels_D{top1,topk,native}.csv`).
   tied 7. G − F is significant in one game (`metal-detector`, F better); G − D in 12 (10 in
   G's favour, 2 in D's).
 
-The predictor's first run (`results/rq3/README.md`) used the F-vs-D labels; it is evaluated
-on the 32 labelled rows of the feature matrix, which carry 26 independent labels (ALFWorld is
-labelled per family). Its rerun on the three-arm labels is **TBD** (Shryes); with no D win
-left, the yes/no "is the specialist worth it" question becomes a constant answer, and the
-open question becomes G vs F.
+**The predictor** (`results/rq3/README.md`) uses the complete feature matrix (all four
+features, each measured on 32 training transitions; `results/features/feature_matrix.csv`) and
+the three-arm labels. Main analysis: ALFWorld + ScienceWorld, 32 labelled rows = 26
+independent labels (ALFWorld is labelled per family); ByteSized32 separately (29 games).
+Ridge and gradient-boosted trees on regret differences, leave-one-(env, family)-out, permutation
+p values from 200 label shuffles with the whole CV rerun. The 8 main rows where G and F tie
+exactly are left out of balanced accuracy and kept for Spearman ρ (a tie is a real gap of 0).
 
-- **Yes/no "D beats F": not testable.** F wins 31 of 32 rows, so always answering "F" already
-  scores 97%. Every model scores exactly that (balanced accuracy 0.50; permutation p = 0.60).
-- **Ranking the size of D's gap to F** (regression on regret_F − regret_D, out-of-fold
-  Spearman ρ, leave-one-(env, family)-out). All features together: ρ = +0.10; features 2–4
-  without a probe: +0.07; with the SFT probe instead of the JEPA probe: +0.10.
-- **Feature-1 ablation.** The JEPA probe alone ranks the gap out of sample (ρ = +0.47,
-  permutation p = 0.01); the SFT probe alone does not (ρ = +0.03, p = 0.29). This is the
-  direction the plan hoped for, but we treat it as suggestive: it is one of several tests
-  (2 probes × 3 D modes × 2 CV schemes), it disappears when the other features are added,
-  and its sign flips with the D mode used for the labels (single-feature correlation +0.34
-  with top-1 labels, −0.46 with native labels).
-- **Transfer across environments fails.** Trained on ALFWorld and tested on ScienceWorld, or
-  the reverse, every feature set gives ρ between −0.13 and +0.11.
-- **ByteSized32** (separate analysis, 29 games, D wins 4): neither probe relates to the gap
-  (|ρ| ≤ 0.14); only the object-state rate does (ρ = +0.44, p = 0.02).
+| Question (D top-1 labels) | Best feature set | Score | Baseline / p |
+|---|---|---|---|
+| G vs F, yes/no | JEPA probe only | balanced acc 0.52 | p = 0.34 |
+| G vs F, size of gap | Features 2–4 + JEPA probe | OOF ρ −0.30 | p = 0.82 |
+| Winner G / F / D | JEPA probe only | accuracy 0.69 [0.51, 0.82] | always "F": 0.72 |
+| D vs F, size of gap | JEPA probe only | OOF ρ **+0.47** | p = 0.010 |
+
+Table 6: RQ3 predictor, main regimes (`results/rq3/final/`).
+
+- **G vs F: no signal.** Every feature set is at or below chance (balanced accuracy
+  0.21–0.54, all p ≥ 0.34; leave-one-environment-out 0.37–0.50). Negative ρ values are what
+  leave-one-out gives when there is nothing to learn. This is expected: G and F are
+  statistically tied (5.3), so there is no real winner for the features to predict.
+- **Winner: no model beats the constant guess "F"** (0.72; the best model, JEPA probe only,
+  reaches 0.69; a prediction counts as right if it names any arm in an exact tie).
+- **Is the specialist worth it? There is nothing to predict:** G has lower or equal regret
+  than D on every main row and F wins every scored D-vs-F row, so the yes/no question is a
+  constant "no".
+- **One positive result: the JEPA probe ranks how far D falls behind.** On regret_F − regret_D,
+  the JEPA probe alone gives out-of-fold ρ = +0.47 (p = 0.010) with top-1 labels, +0.34
+  (p = 0.045) with top-k and +0.29 (p = 0.040) with native labels; the SFT probe never does
+  (ρ +0.02 to +0.14, p 0.17–0.33). JEPA's own 0.02-GPU-hour probe tells you where JEPA falls
+  furthest behind fine-tuning. It is one family of tests among several and fades when the
+  other features are added (ρ ≈ +0.1), so we treat it as suggestive. (With F and D only, its
+  single-feature correlation changed sign between D modes; with the final matrix its
+  out-of-fold ρ is positive in all three.)
+- **ByteSized32** (29 games; F 16, G 10, D 3 with ties assigned by gold-hit): the JEPA probe
+  alone gives G vs F balanced accuracy 0.58 (p = 0.075) and ρ +0.24 (p = 0.085), and the
+  winner model 0.76 against 0.69 for always "F". Suggestive at best; nothing reaches p < 0.05.
 - **Cost of Feature 1.** The SFT probe costs 0.7–3.1 GPU-hours per environment against
-  0.02 h for the JEPA probe, more than F's whole pipeline (Table 4), so it fails the "cheap"
+  0.02 h for the JEPA probe, more than F's whole pipeline (Table 8), so it fails the "cheap"
   requirement before any result.
 - Figure 3 (`fig3_capability_vs_dwins`) shows the five capability-mix rates for rows where
   D wins against the rest. With the three-arm top-1 labels there is no D-win row among the 32
   labelled rows (with F and D only there was one, `chemistry-mix`), so the figure cannot show
   which capability profile favours the specialist; we report "no capability profile in our
   data makes D win". ALFWorld labels are per family, so its 12 rows carry 6 labels.
-- **Recall@5 of G's retriever** (feature-matrix column, `g_recall_at5.csv`): for each
-  branched state, whether one of the five retrieved examples has the gold action's template
-  and object. Weighted by states it rises with n in every regime, from 0.23–0.36 at n = 32 to
+- **Recall@5, two measurements.** The feature-matrix column (Feature 3) is G's retriever on
+  each game's *own* 32 training transitions, leave-one-out, so it uses nothing from the test
+  states (`results/features/recall_at5.csv`). Separately, `g_recall_at5.csv` measures the same
+  retriever on the branched states with their gold actions, as a description of G, not a
+  feature: weighted by states it rises with n in every regime, from 0.23–0.36 at n = 32 to
   0.56–0.83 at n = 1024 (ALFWorld 0.36 → 0.82, ScienceWorld test 0.31 → 0.74, seen
-  0.34 → 0.83, ByteSized32 0.23 → 0.56). It joins the feature matrix at n = 32.
+  0.34 → 0.83, ByteSized32 0.23 → 0.56).
+
+### 5.8 Could routing per decision help? (RQ4, upper bound)
+
+RQ4 asked whether choosing the world model per decision beats one choice for everything. We
+did not train a router; we bound what one could achieve on our states
+(`results/router/router.md`; same states for every arm, D top-1):
+
+| Main regimes, n = 256 (698 states) | Mean regret | Gain over best single arm [95% CI] |
+|---|---|---|
+| Best single arm (G) | 0.239 | — |
+| Capability router: per state, the arm best on other states with the same capability | 0.213 | +0.026 [−0.030, +0.082] |
+| Oracle router: the best arm on each state (needs all three arms) | 0.102 | +0.138 [+0.100, +0.183] |
+
+Table 7: per-decision routing bound.
+
+- **There is headroom in principle.** An oracle that knew the best arm for every state would
+  cut regret by more than half at every budget (gain +0.12 to +0.19).
+- **Capability does not capture it.** Routing by the best move's capability gains nothing
+  significant at any budget. The arms disagree on only 18–34% of states, and those
+  disagreements are not organised by capability.
+- **Part of the oracle's headroom is noise.** With one training seed per arm and an imperfect
+  judge (5.6), two arms can differ on a state by chance, and the oracle takes every lucky
+  draw, so the bound is optimistic. A real router would need other signals (per-state uncertainty, for example)
+  and would pay for running several arms; we leave it to future work.
+- Each decision is a single step at a fixed state, so this offline comparison is sound; it
+  would not be for multi-step rollouts, where a router's choices change the states that
+  follow.
 
 ---
 
 ## 6 Discussion
 
-**Does the predictor work? Not yet, and for the specialist it is not needed.** With F and D
-only, F had lower regret on 31 of 32 rows, so the yes/no decision was trivially "F" and no
-feature could improve on that (5.6). With G added, no feature-matrix row is a D win at all.
-The one positive signal, the JEPA probe ranking the size of D's gap to F within an
-environment (ρ = 0.47), is fragile: it vanishes with the other features, flips sign with the
-D mode, and does not transfer across environments. A likely reason is a floor effect: F's
-regret is 0 on 13 of 21 ScienceWorld task types, so "the gap" mostly measures how badly D
-does, which depends on how D's predictions are decoded. G adds the decision we hoped would
-have both outcomes present, G vs F, but it is mostly noise: 8 of 27 groups are exact ties and
-only one G − F difference is significant (5.6). **TBD**: the predictor rerun on the three-arm
-labels; we expect it to confirm that no cheap feature separates two arms whose regret is
-statistically the same. A real test needs arms that differ and more than two environments.
+**Does the predictor work? No, mainly because there is little to predict.** Cheap features
+measured on 32 transitions cannot predict which arm wins (5.7): no model beats always
+guessing "F", and G vs F is at chance. That is the expected outcome, not a failure of the
+features: G and F are statistically tied (only 1 of 27 G − F group differences is
+significant, 8 are exact ties), and both beat D on every main row, so "is the specialist
+worth it" has the constant answer "no". The one reliable ex-ante signal is narrower but
+useful: the JEPA probe, at 0.02 GPU-hours, ranks *how far* the specialist falls behind
+fine-tuning (ρ = 0.29–0.47, p ≤ 0.045 in all three D modes), while the SFT text probe, which
+costs more than training F, carries no signal. It fades when the other features are added,
+and with F and D only it did not transfer between environments. A likely reason for the
+weak picture is a floor effect: F's regret is 0 on 13 of 21 ScienceWorld task types, so
+"the gap" mostly measures how badly D does. A real test of the predictor needs arms that
+genuinely differ, and more than two environments.
 
 **Where JEPA fails, and why.** Most of the reasons are already visible in the data, before
 regret:
@@ -292,7 +376,7 @@ regret:
    prediction error (3–10 points). Training the encoder itself, as I-JEPA and V-JEPA do,
    is the natural next step.
 
-**Practical reading (with Siddhant's compute analysis).** In our data, the answer to "is the
+**Practical reading and cost (RQ2).** In our data, the answer to "is the
 specialist worth it?" is no: both generalists, a 1.5B fine-tuned LM (F) and a frozen 7B LM
 with retrieval (G), beat the JEPA specialist (D) on decisions in every regime from n = 32 to
 n = 1024, and D never crosses over. Between the two generalists there is no "retrieval below
@@ -305,14 +389,14 @@ improving, the one place where the two scale differently.
 |---|---|---|---|
 | D (JEPA): train + predict + judging | 0.36 | 1.10 | 0.39 |
 | F (SFT): train + predict + judging | 0.60 | 1.52 | 0.70 |
-| G (RAG): NV-Embed retrieval + generation + judging | 0.97 | 3.03 | 0.69 |
+| G (RAG): NV-Embed retrieval + generation + judging | 0.96 | 3.03 | 0.69 |
 | NV-Embed encoding for D | 0.11 | 0.42 | — |
 | SFT probe (Feature-1 ablation, not part of F) | 0.69 | 3.13 | 2.46 |
 
-Table 4: GPU-hours for all six budgets (`results/compute/cost_table.csv`; G from
-`results/compute_g_gpu.jsonl`: retrieval 0.21 / 0.71 / 0.04 h, generation 0.74 / 2.25 /
-0.61 h, judging 0.02 / 0.07 / 0.04 h). ScienceWorld sums the test and seen sets. Pilots, the
-InfoNCE and decoder ablations and fidelity-only runs are excluded and listed there.
+Table 8: GPU-hours for all six budgets (`results/compute/cost_table.csv`; G's stages:
+retrieval 0.21 / 0.71 / 0.04 h, generation 0.74 / 2.25 / 0.61 h, judging 0.02 / 0.07 /
+0.04 h). ScienceWorld sums the test and seen sets. Pilots, the InfoNCE and decoder ablations
+and fidelity-only runs are excluded and listed there.
 
 Cost does not rescue the specialist. D is cheaper than F (56–72% of F's GPU-hours, or
 78–100% on ALFWorld and ScienceWorld if NV-Embed encoding is charged to D alone), but the
@@ -324,6 +408,24 @@ Its cost grows with the number of predictions, F's with the training data, so fo
 model queried many times F is the cheaper of two equally good generalists. G's retrieval
 stage (0.04–0.71 h) encodes its own buffer and queries with NV-Embed; reusing D's buffer
 encodings would save only part of it.
+
+Per budget, counting only building and running each world model (no evaluation;
+`results/crossover/crossover.md`, `fig_regret_vs_gpu_hours`), the picture is the same. At
+n = 256, F needs 0.08 / 0.21 / 0.10 GPU-hours on ALFWorld / ScienceWorld / ByteSized32
+against G's 0.33 / 1.08 / 0.14. F reaches G's best regret at any budget already at 0.19 h
+(n = 32) on ScienceWorld and at 0.08 h (n = 128) on ByteSized32; on ALFWorld it never quite
+does (best 0.58 vs G's 0.53), but the intervals overlap. D never reaches G's best regret in
+any environment, at any cost.
+
+**Capabilities and routing (RQ1 by capability, RQ4).** The specialist's deficit is not tied
+to one kind of change (5.4): D trails F on containment, partially observable and
+no-visible-change states alike, the last because nearest-state decoding returns an outcome
+from another context. Partially observable states are the hardest for every arm, a limit no
+text-only world model can remove. Because G and F are tied within every capability, the
+capability of the move is also no basis for choosing between them per decision: a
+capability router gains nothing significant, although a per-state oracle shows that different
+arms do get different states right (5.8). Whatever separates those states is not the kind of
+change involved; per-state uncertainty is the natural next signal to try.
 
 **Fidelity vs utility.** Across arms, text fidelity was a good proxy for decision utility
 overall (pooled ρ = −0.79): it separates the two generalists from the specialist. It was not a
@@ -352,21 +454,26 @@ top-k vs top-1 at equal fidelity).
   excludes 0, and 8 groups are exact regret ties labelled by gold-hit. Two ScienceWorld
   types (paint-tertiary, power-component) have only 10 states, and two
   (identify-life-stages-1/2) have none, because no unused variations were left.
-- **Several tests on few rows.** The predictor results come from one of several analyses
-  (two probes, three D modes, two cross-validation schemes) on 26 independent labels, with
-  no correction for multiple comparisons; the one significant result (JEPA probe alone,
-  p = 0.01) should be read as suggestive.
+- **Several tests on few rows.** The predictor results come from several analyses (feature
+  sets, two probes, three D modes, two cross-validation schemes) on 26 independent labels,
+  with no correction for multiple comparisons; the one positive result (JEPA probe alone,
+  p = 0.010–0.045 across D modes) should be read as suggestive. The same holds for single
+  significant cells in the capability breakdown (5.4).
 - **A frozen LLM judge defines utility.** Regret is measured in the judge's ratings
   (Qwen2.5-7B-Instruct, 4-bit AWQ so it fits a 12 GB GPU, a deviation from the planned
   full-precision model). The oracle gold-hit rate and the ByteSized32 score check bound the
   judge's errors (agreement with recorded rewards 74–85%) but do not remove them. The
-  pre-registered data sanity check failed one of its three rules (5.5). Utility is one-step
+  pre-registered data sanity check failed one of its three rules (5.6). Utility is one-step
   lookahead over five candidates, not full episodes.
 - **G shares its model with the judge.** G's generator is the judge's model, so a judge
-  preference for its own wording could favour G (5.5); a second judge model would test this.
+  preference for its own wording could favour G (5.6); a second judge model would test this.
   G also deviates from the plan: the generator is 4-bit AWQ (the full-precision 7B does not
   fit the 12 GB GPU), retrieval uses NV-Embed-v2, and example texts in its prompt are cut at
   1,500 characters (the current state at 4,000) to fit vLLM's 8,192-token window.
+- **Model size is confounded with method.** G is a 7B model and F a 1.5B model, so "G ≈ F"
+  compares retrieval with a larger model against fine-tuning a smaller one. The planned size
+  controls (G with a small model, F with a larger one) were not run, so we cannot say whether
+  retrieval or fine-tuning would win at equal size.
 - **JEPA's decoder is a confound.** D's top-1 and top-k modes are judged on retrieved
   training text, so they test JEPA's embedding and its nearest-neighbour decoder together.
   Native mode removes the decoder but replaces the judge with JEPA's own goal similarity.
@@ -380,4 +487,8 @@ top-k vs top-1 at equal fidelity).
   already been trained when GPU time became available. Branched states exclude observe-only
   actions (`look`, `inventory`, `task`) as distractors and drop states whose expert action
   is one of them. About 2% of ScienceWorld replays are not deterministic (electrical
-  circuits, paint mixing); such states carry a `replay_consistent` flag.
+  circuits, paint mixing); such states carry a `replay_consistent` flag. WebShop, planned as
+  a fourth environment with partially observable search results, was dropped for time, so
+  every environment here is a household or science simulator with short, formulaic text.
+- **Routing is an offline bound.** RQ4 is answered with an in-sample upper bound (5.8), not a
+  trained router, and the best single arm is also chosen in-sample.
