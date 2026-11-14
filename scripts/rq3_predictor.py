@@ -96,6 +96,8 @@ def load_rows(args):
         r["sft_probe_exact"] = num(s.get("sft_probe_exact")) if s else None
         lab = lookup(labels, m["env"], m["game"])
         r["label"] = (lab or {}).get("label") or m.get("label") or None
+        tie = (lab or {}).get("tie") or m.get("label_tie") or ""
+        r["tie"] = set(tie.split("+")) if tie else set()
         for a in ARMS:
             r[f"regret_{a}"] = num((lab or {}).get(f"regret_{a}"))
             r[f"n_{a}"] = num((lab or {}).get(f"n_{a}")) or 0
@@ -151,15 +153,17 @@ def evaluate_binary(rows, feats, task, scheme, seed=0):
         pred[te] = fit_predict(X[tr], d[tr], w[tr], X[te], seed)
         base[te] = 1.0 if (d[tr] > 0).mean() >= 0.5 else -1.0          # majority of training fold
     ok = ~np.isnan(pred)
-    y = d[ok] > 0
-    acc = float(((pred[ok] > 0) == y).mean())
-    bal = balanced_acc(y, pred[ok] > 0)
+    cls = ok & (d != 0)                              # exact ties have no winner: not scored as yes/no
+    y = d[cls] > 0
+    acc = float(((pred[cls] > 0) == y).mean()) if cls.any() else float("nan")
+    bal = balanced_acc(y, pred[cls] > 0)
     from scipy.stats import spearmanr
     rho = float(spearmanr(pred[ok], d[ok]).statistic) if ok.sum() > 2 else float("nan")
-    return {"n": int(ok.sum()), "accuracy": acc, "balanced_acc": bal,
-            "majority_acc": float(((base[ok] > 0) == y).mean()),
-            "share_pos": float(y.mean()), "spearman": rho,
-            "wilson95": wilson(acc, int(ok.sum())),
+    return {"n": int(ok.sum()), "n_ties": int((ok & (d == 0)).sum()), "n_scored": int(cls.sum()),
+            "accuracy": acc, "balanced_acc": bal,
+            "majority_acc": float(((base[cls] > 0) == y).mean()) if cls.any() else float("nan"),
+            "share_pos": float(y.mean()) if cls.any() else float("nan"), "spearman": rho,
+            "wilson95": wilson(acc, int(cls.sum())),
             "oof": [{"env": r["env"], "game": r["game"], "true_diff": float(d[i]),
                      "pred_diff": float(pred[i])} for i, r in enumerate(data) if ok[i]]}
 
@@ -178,15 +182,17 @@ def evaluate_winner(rows, feats, scheme, seed=0):
             p[te] = fit_predict(X[tr], y[tr], w[tr], X[te], seed)
         preds[a] = p
     true = [r["label"] for r in data]
+    ok_sets = [(r["tie"] or {r["label"]}) for r in data]
     guess = [min(ARMS, key=lambda a: preds[a][i]) for i in range(len(data))]
     maj = []
     for tr, te in splits(data, scheme):
         m = Counter(true[i] for i in tr).most_common(1)[0][0]
         maj += [(i, m) for i in te]
     maj = dict(maj)
-    acc = float(np.mean([g == t for g, t in zip(guess, true)]))
+    acc = float(np.mean([g in ok for g, ok in zip(guess, ok_sets)]))
     return {"n": len(data), "accuracy": acc, "wilson95": wilson(acc, len(data)),
-            "majority_acc": float(np.mean([maj[i] == true[i] for i in range(len(data))])),
+            "majority_acc": float(np.mean([maj[i] in ok_sets[i] for i in range(len(data))])),
+            "n_ties": sum(1 for r in data if r["tie"]),
             "label_counts": dict(Counter(true))}
 
 
@@ -205,19 +211,21 @@ def wilson(p, n, z=1.96):
 
 
 def permutation_p(rows, feats, task, scheme, observed, n_perm, seed):
-    """Share of label shuffles (regret differences permuted across rows) that reach the
-    observed accuracy."""
+    """Label-shuffle test: regret pairs are permuted across rows, the whole CV is rerun,
+    and we count how often the shuffled run reaches the observed balanced accuracy and
+    the observed out-of-fold Spearman. Returns (p_balanced_acc, p_spearman)."""
     lo, hi = TASKS[task]
     rng = random.Random(seed)
     data = [r for r in rows if r[f"regret_{lo}"] is not None and r[f"regret_{hi}"] is not None]
     diffs = [(r[f"regret_{lo}"], r[f"regret_{hi}"]) for r in data]
-    hits = 0
+    hit_b = hit_r = 0
     for _ in range(n_perm):
         rng.shuffle(diffs)
         shuffled = [dict(r, **{f"regret_{lo}": a, f"regret_{hi}": b}) for r, (a, b) in zip(data, diffs)]
         res = evaluate_binary(shuffled, feats, task, scheme, seed)
-        hits += res["accuracy"] >= observed - 1e-12
-    return (hits + 1) / (n_perm + 1)
+        hit_b += res["balanced_acc"] >= observed["balanced_acc"] - 1e-12
+        hit_r += res["spearman"] >= observed["spearman"] - 1e-12
+    return (hit_b + 1) / (n_perm + 1), (hit_r + 1) / (n_perm + 1)
 
 
 def importances(rows, feats, task, seed=0):
@@ -264,7 +272,10 @@ def main():
     p.add_argument("--sft-probe", default=None)
     p.add_argument("--envs", default="alfworld,sciworld")
     p.add_argument("--min-states", type=int, default=0, help="drop rows with fewer scored states")
-    p.add_argument("--perm", type=int, default=100, help="permutation-test shuffles (main model)")
+    p.add_argument("--perm", type=int, default=100, help="permutation-test shuffles")
+    p.add_argument("--perm-tasks", default="F_vs_G", help="tasks to permutation-test (comma list)")
+    p.add_argument("--perm-sets", default="jepa_probe,jepa_probe_only,sft_probe_only",
+                   help="feature sets to permutation-test (comma list)")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--out", default="results/rq3")
     args = p.parse_args()
@@ -280,7 +291,7 @@ def main():
     res = {"rows": len(rows), "labelled": len(labelled), "envs": args.envs,
            "feature_sets": sets, "results": defaultdict(dict)}
 
-    lines = ["| task | CV | features | n | accuracy (95% CI) | balanced | majority | Spearman |",
+    lines = ["| task | CV | features | n (ties) | accuracy (95% CI) | balanced | majority | Spearman |",
              "|---|---|---|---|---|---|---|---|"]
     for scheme in ("group", "env"):
         if scheme == "env" and len({r["env"] for r in labelled}) < 2:
@@ -291,7 +302,7 @@ def main():
                 if r is None:
                     continue
                 res["results"][f"{task}|{scheme}"][name] = r
-                lines.append(f"| {task} | {scheme} | {name} | {r['n']} | {r['accuracy']:.2f} "
+                lines.append(f"| {task} | {scheme} | {name} | {r['n']} ({r['n_ties']}) | {r['accuracy']:.2f} "
                              f"({r['wilson95'][0]:.2f}-{r['wilson95'][1]:.2f}) | {r['balanced_acc']:.2f} | "
                              f"{r['majority_acc']:.2f} | {r['spearman']:+.2f} |")
         for name, feats in sets.items():
@@ -303,13 +314,15 @@ def main():
 
     perm_lines = []
     if args.perm:
-        for task in TASKS:
-            r = res["results"].get(f"{task}|group", {}).get("jepa_probe")
-            if r:
-                pv = permutation_p(rows, sets["jepa_probe"], task, "group", r["accuracy"], args.perm, args.seed)
-                r["perm_p"] = pv
-                perm_lines.append(f"- {task}: accuracy {r['accuracy']:.2f}, permutation p = {pv:.3f} "
-                                  f"({args.perm} shuffles)")
+        for task in args.perm_tasks.split(","):
+            for name in args.perm_sets.split(","):
+                r = res["results"].get(f"{task}|group", {}).get(name)
+                if not r or task not in TASKS:
+                    continue
+                pb, pr = permutation_p(rows, sets[name], task, "group", r, args.perm, args.seed)
+                r["perm_p_balanced"], r["perm_p_spearman"] = pb, pr
+                perm_lines.append(f"| {task} | {name} | {r['n_scored']} (+{r['n_ties']} ties) | "
+                                  f"{r['balanced_acc']:.2f} | {pb:.3f} | {r['spearman']:+.2f} | {pr:.3f} |")
     imp = {task: importances(rows, sets.get("both_probes", sets["jepa_probe"]), task, args.seed) for task in TASKS}
     res["importances"] = imp
 
@@ -319,7 +332,10 @@ def main():
           f"Rows: {len(rows)} ({args.envs}); with regrets: {len(labelled)}. "
           "CV `group` = leave-one-(env, family)-out; `env` = leave-one-environment-out.", ""] + lines
     if perm_lines:
-        md += ["", "**Permutation test** (main model, Features 2-4 + JEPA probe, group CV):"] + perm_lines
+        md += ["", f"**Permutation tests** (group CV, {args.perm} label shuffles; ties excluded from "
+               "balanced accuracy, kept for Spearman):", "",
+               "| task | features | rows scored | balanced acc | p | OOF Spearman | p |",
+               "|---|---|---|---|---|---|---|"] + perm_lines
     md += ["", "**Feature importance** (fit on all rows; GBT importance / standardised Ridge coefficient):", ""]
     for task, d in imp.items():
         if d:

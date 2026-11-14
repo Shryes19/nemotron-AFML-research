@@ -1,0 +1,3759 @@
+{
+  "rows": 30,
+  "labelled": 29,
+  "envs": "bytesized32",
+  "feature_sets": {
+    "jepa_probe": [
+      "rate_object_state",
+      "rate_containment_location",
+      "rate_numeric_physical",
+      "rate_partial_obs",
+      "rate_action_failure",
+      "obs_len_chars",
+      "action_vocab",
+      "zero_overlap_frac",
+      "mean_jaccard",
+      "target_repeat_frac",
+      "recall_at5",
+      "probe_fidelity"
+    ],
+    "no_probe": [
+      "rate_object_state",
+      "rate_containment_location",
+      "rate_numeric_physical",
+      "rate_partial_obs",
+      "rate_action_failure",
+      "obs_len_chars",
+      "action_vocab",
+      "zero_overlap_frac",
+      "mean_jaccard",
+      "target_repeat_frac",
+      "recall_at5"
+    ],
+    "sft_probe": [
+      "rate_object_state",
+      "rate_containment_location",
+      "rate_numeric_physical",
+      "rate_partial_obs",
+      "rate_action_failure",
+      "obs_len_chars",
+      "action_vocab",
+      "zero_overlap_frac",
+      "mean_jaccard",
+      "target_repeat_frac",
+      "recall_at5",
+      "sft_probe_f1"
+    ],
+    "both_probes": [
+      "rate_object_state",
+      "rate_containment_location",
+      "rate_numeric_physical",
+      "rate_partial_obs",
+      "rate_action_failure",
+      "obs_len_chars",
+      "action_vocab",
+      "zero_overlap_frac",
+      "mean_jaccard",
+      "target_repeat_frac",
+      "recall_at5",
+      "probe_fidelity",
+      "sft_probe_f1"
+    ],
+    "sft_probe_only": [
+      "sft_probe_f1"
+    ],
+    "jepa_probe_only": [
+      "probe_fidelity"
+    ]
+  },
+  "results": {
+    "F_vs_G|group": {
+      "jepa_probe": {
+        "n": 29,
+        "n_ties": 8,
+        "n_scored": 21,
+        "accuracy": 0.6190476190476191,
+        "balanced_acc": 0.5333333333333333,
+        "majority_acc": 0.7142857142857143,
+        "share_pos": 0.7142857142857143,
+        "spearman": 0.24267129685521524,
+        "wilson95": [
+          0.409,
+          0.792
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": 0.4546,
+            "pred_diff": 0.29105680916287385
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": 0.25,
+            "pred_diff": 0.11228312965252833
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 0.0,
+            "pred_diff": 0.5271429405638219
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": 0.0,
+            "pred_diff": 0.5677925656395724
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": 0.07139999999999991,
+            "pred_diff": 0.040961806841244675
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.2223,
+            "pred_diff": -0.18390113386053888
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.4286000000000001,
+            "pred_diff": -0.07271196007856094
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -0.031380199552498496
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": -0.15220439071829325
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.13880000000000003,
+            "pred_diff": -0.790860362224594
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": 0.0,
+            "pred_diff": 0.2068994594182456
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": 0.2222,
+            "pred_diff": 0.5999443667707163
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": 0.1667,
+            "pred_diff": 0.17437050333075693
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.5,
+            "pred_diff": 0.6029447763131351
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 3.3333,
+            "pred_diff": 0.3873286857290128
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": 0.0,
+            "pred_diff": 0.4513613610568643
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.07689999999999997,
+            "pred_diff": 0.10968375735372418
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.4443999999999999,
+            "pred_diff": 0.46150730976382326
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": 0.5,
+            "pred_diff": -0.01472038722900914
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": 0.8570999999999998,
+            "pred_diff": 0.2353276543675325
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": 0.8333,
+            "pred_diff": 0.13303396028271275
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -0.22220000000000006,
+            "pred_diff": 0.3119564845265984
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": 0.7143,
+            "pred_diff": 1.008473116802275
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": 0.0,
+            "pred_diff": -0.046598206704317455
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": 0.0,
+            "pred_diff": -0.08017831537773709
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -0.6,
+            "pred_diff": 0.6322061835232428
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": 0.0,
+            "pred_diff": -0.03969681650753237
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.7,
+            "pred_diff": 0.2041359434879958
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": 0.04440000000000002,
+            "pred_diff": -0.028799422779755626
+          }
+        ],
+        "perm_p_balanced": 0.27860696517412936,
+        "perm_p_spearman": 0.0945273631840796
+      },
+      "no_probe": {
+        "n": 29,
+        "n_ties": 8,
+        "n_scored": 21,
+        "accuracy": 0.6190476190476191,
+        "balanced_acc": 0.5333333333333333,
+        "majority_acc": 0.7142857142857143,
+        "share_pos": 0.7142857142857143,
+        "spearman": 0.16053639638114242,
+        "wilson95": [
+          0.409,
+          0.792
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": 0.4546,
+            "pred_diff": 0.29541674269090323
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": 0.25,
+            "pred_diff": 0.00836681643194532
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 0.0,
+            "pred_diff": 0.5136994183665441
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": 0.0,
+            "pred_diff": 0.6590475985108168
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": 0.07139999999999991,
+            "pred_diff": -0.01574210664709619
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.2223,
+            "pred_diff": -0.29884021557622864
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.4286000000000001,
+            "pred_diff": -0.007840229655801584
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -0.03272189749742374
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": -0.01802398595942048
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.13880000000000003,
+            "pred_diff": -0.9051338500121918
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": 0.0,
+            "pred_diff": -0.017726238298550745
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": 0.2222,
+            "pred_diff": 0.5506953749787633
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": 0.1667,
+            "pred_diff": 0.24619640739675352
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.5,
+            "pred_diff": 0.5413958813252293
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 3.3333,
+            "pred_diff": 0.4052127515928111
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": 0.0,
+            "pred_diff": 0.2221429641768298
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.07689999999999997,
+            "pred_diff": 0.19240095465602258
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.4443999999999999,
+            "pred_diff": 0.5101359395506257
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": 0.5,
+            "pred_diff": -0.13017599144241063
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": 0.8570999999999998,
+            "pred_diff": 0.17958482019138317
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": 0.8333,
+            "pred_diff": 0.2182922452207006
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -0.22220000000000006,
+            "pred_diff": 0.33581042308405035
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": 0.7143,
+            "pred_diff": 1.2529860941974005
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": 0.0,
+            "pred_diff": 0.01191003732703529
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": 0.0,
+            "pred_diff": -0.07015497858754623
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -0.6,
+            "pred_diff": 0.4597899519711791
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": 0.0,
+            "pred_diff": 0.010575517335551786
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.7,
+            "pred_diff": 0.27741167926966914
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": 0.04440000000000002,
+            "pred_diff": 0.05458618141610189
+          }
+        ]
+      },
+      "sft_probe": {
+        "n": 29,
+        "n_ties": 8,
+        "n_scored": 21,
+        "accuracy": 0.6190476190476191,
+        "balanced_acc": 0.5333333333333333,
+        "majority_acc": 0.7142857142857143,
+        "share_pos": 0.7142857142857143,
+        "spearman": 0.1744744400979548,
+        "wilson95": [
+          0.409,
+          0.792
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": 0.4546,
+            "pred_diff": 0.27511463841603206
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": 0.25,
+            "pred_diff": 0.024835490424207615
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 0.0,
+            "pred_diff": 0.5207761605382516
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": 0.0,
+            "pred_diff": 0.8245872684073955
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": 0.07139999999999991,
+            "pred_diff": -0.030752206239388805
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.2223,
+            "pred_diff": -0.3023388432731291
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.4286000000000001,
+            "pred_diff": -0.010528107962435723
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": 0.07587681646143439
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": -0.01834934770304071
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.13880000000000003,
+            "pred_diff": -0.9929769935722946
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": 0.0,
+            "pred_diff": 0.08388119662881631
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": 0.2222,
+            "pred_diff": 0.53982227819477
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": 0.1667,
+            "pred_diff": 0.15204419061361554
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.5,
+            "pred_diff": 0.5381338109056594
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 3.3333,
+            "pred_diff": 0.42487510391698
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": 0.0,
+            "pred_diff": 0.26237952349260235
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.07689999999999997,
+            "pred_diff": 0.12815425791174664
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.4443999999999999,
+            "pred_diff": 0.521784301338764
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": 0.5,
+            "pred_diff": -0.18305576254973788
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": 0.8570999999999998,
+            "pred_diff": 0.16998360390549522
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": 0.8333,
+            "pred_diff": 0.2282955901942481
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -0.22220000000000006,
+            "pred_diff": 0.31675842897160383
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": 0.7143,
+            "pred_diff": 1.1151310261900516
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": 0.0,
+            "pred_diff": 0.03754673406798111
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": 0.0,
+            "pred_diff": -0.06359130852367664
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -0.6,
+            "pred_diff": 0.592022068605066
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": 0.0,
+            "pred_diff": 0.03658672963218684
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.7,
+            "pred_diff": 0.10316329148850988
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": 0.04440000000000002,
+            "pred_diff": 0.0770188620156338
+          }
+        ]
+      },
+      "both_probes": {
+        "n": 29,
+        "n_ties": 8,
+        "n_scored": 21,
+        "accuracy": 0.6666666666666666,
+        "balanced_acc": 0.5666666666666667,
+        "majority_acc": 0.7142857142857143,
+        "share_pos": 0.7142857142857143,
+        "spearman": 0.18393239833436317,
+        "wilson95": [
+          0.454,
+          0.828
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": 0.4546,
+            "pred_diff": 0.29027793317093187
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": 0.25,
+            "pred_diff": 0.1009419022661554
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 0.0,
+            "pred_diff": 0.5202457384678318
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": 0.0,
+            "pred_diff": 0.6861578703486682
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": 0.07139999999999991,
+            "pred_diff": 0.011905109066897152
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.2223,
+            "pred_diff": -0.17195556329455103
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.4286000000000001,
+            "pred_diff": -0.09522534850871081
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": 0.02907707556223211
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": -0.08944377140187307
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.13880000000000003,
+            "pred_diff": -0.7830570871708485
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": 0.0,
+            "pred_diff": 0.15136606899912597
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": 0.2222,
+            "pred_diff": 0.6086114795214905
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": 0.1667,
+            "pred_diff": 0.10048242275897926
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.5,
+            "pred_diff": 0.613131211969144
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 3.3333,
+            "pred_diff": 0.3431464279205707
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": 0.0,
+            "pred_diff": 0.4410012885149769
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.07689999999999997,
+            "pred_diff": 0.06476608255239152
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.4443999999999999,
+            "pred_diff": 0.4308659150919476
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": 0.5,
+            "pred_diff": -0.05749332991985584
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": 0.8570999999999998,
+            "pred_diff": 0.23222256473057307
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": 0.8333,
+            "pred_diff": 0.10865748553055751
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -0.22220000000000006,
+            "pred_diff": 0.2989473313205513
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": 0.7143,
+            "pred_diff": 0.9900978240308773
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": 0.0,
+            "pred_diff": -0.0325709302029464
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": 0.0,
+            "pred_diff": -0.09442496977019646
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -0.6,
+            "pred_diff": 0.6633001477675964
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": 0.0,
+            "pred_diff": -0.03231313423624462
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.7,
+            "pred_diff": 0.24249753121511694
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": 0.04440000000000002,
+            "pred_diff": 0.0033511655929454355
+          }
+        ]
+      },
+      "sft_probe_only": {
+        "n": 29,
+        "n_ties": 8,
+        "n_scored": 21,
+        "accuracy": 0.6666666666666666,
+        "balanced_acc": 0.4666666666666667,
+        "majority_acc": 0.7142857142857143,
+        "share_pos": 0.7142857142857143,
+        "spearman": -0.22076865672879586,
+        "wilson95": [
+          0.454,
+          0.828
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": 0.4546,
+            "pred_diff": 0.17152094813534402
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": 0.25,
+            "pred_diff": 0.16771938547530932
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 0.0,
+            "pred_diff": 0.22180316336728362
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": 0.0,
+            "pred_diff": 0.07136132500146383
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": 0.07139999999999991,
+            "pred_diff": 0.2323306437303569
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.2223,
+            "pred_diff": 0.32790195756165613
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.4286000000000001,
+            "pred_diff": 0.8313729653044292
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": 0.23181173663492521
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": 0.3260608007465595
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.13880000000000003,
+            "pred_diff": 0.22534461681714774
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": 0.0,
+            "pred_diff": -0.019294896573244125
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": 0.2222,
+            "pred_diff": 0.17448689528353173
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": 0.1667,
+            "pred_diff": 0.1742559176522448
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.5,
+            "pred_diff": -0.1351835697237893
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 3.3333,
+            "pred_diff": 0.12976711249069628
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": 0.0,
+            "pred_diff": 0.21199038747346544
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.07689999999999997,
+            "pred_diff": 0.12017760272113981
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.4443999999999999,
+            "pred_diff": 0.6551643508422379
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": 0.5,
+            "pred_diff": 0.6109579249808652
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": 0.8570999999999998,
+            "pred_diff": 0.15588273679429293
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": 0.8333,
+            "pred_diff": 0.22976888540277832
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -0.22220000000000006,
+            "pred_diff": 0.24548566774196173
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": 0.7143,
+            "pred_diff": 0.10652906954361649
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": 0.0,
+            "pred_diff": 0.1896603638011954
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": 0.0,
+            "pred_diff": 0.1124749709436614
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -0.6,
+            "pred_diff": 0.7973975999812992
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": 0.0,
+            "pred_diff": 0.20722451711183587
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.7,
+            "pred_diff": 0.1381175803991851
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": 0.04440000000000002,
+            "pred_diff": 0.13986796198674425
+          }
+        ],
+        "perm_p_balanced": 0.6666666666666666,
+        "perm_p_spearman": 0.6467661691542289
+      },
+      "jepa_probe_only": {
+        "n": 29,
+        "n_ties": 8,
+        "n_scored": 21,
+        "accuracy": 0.7619047619047619,
+        "balanced_acc": 0.5833333333333334,
+        "majority_acc": 0.7142857142857143,
+        "share_pos": 0.7142857142857143,
+        "spearman": 0.23844010501261156,
+        "wilson95": [
+          0.549,
+          0.894
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": 0.4546,
+            "pred_diff": 0.6972522752771798
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": 0.25,
+            "pred_diff": 0.40275855970287744
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 0.0,
+            "pred_diff": 0.11873797321712569
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": 0.0,
+            "pred_diff": -0.007753002804193873
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": 0.07139999999999991,
+            "pred_diff": 0.17478391056158005
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.2223,
+            "pred_diff": 0.724193408872521
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.4286000000000001,
+            "pred_diff": 0.06090692311426724
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": 0.1199902809523001
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": -0.0014598850035005273
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.13880000000000003,
+            "pred_diff": 0.8379044586040344
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": 0.0,
+            "pred_diff": 0.6601960943952547
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": 0.2222,
+            "pred_diff": 0.05968601080284776
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": 0.1667,
+            "pred_diff": 0.09368479008084
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.5,
+            "pred_diff": 0.09047509991637834
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 3.3333,
+            "pred_diff": 0.24816990893942786
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": 0.0,
+            "pred_diff": 0.3003975901943229
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.07689999999999997,
+            "pred_diff": 0.020883832646325942
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.4443999999999999,
+            "pred_diff": 0.25060009428817837
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": 0.5,
+            "pred_diff": 0.34053791599517014
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": 0.8570999999999998,
+            "pred_diff": 0.4052618547552864
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": 0.8333,
+            "pred_diff": 0.1703050835392887
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -0.22220000000000006,
+            "pred_diff": 0.0426707500458149
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": 0.7143,
+            "pred_diff": 0.07878878081312424
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": 0.0,
+            "pred_diff": 0.12147347613189066
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": 0.0,
+            "pred_diff": 0.12402482074244545
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -0.6,
+            "pred_diff": 0.7895845039544336
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": 0.0,
+            "pred_diff": -0.008544380495269607
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.7,
+            "pred_diff": 0.4429954680541712
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": 0.04440000000000002,
+            "pred_diff": 0.25078871827669613
+          }
+        ],
+        "perm_p_balanced": 0.07462686567164178,
+        "perm_p_spearman": 0.0845771144278607
+      }
+    },
+    "D_vs_F|group": {
+      "jepa_probe": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.8518518518518519,
+        "balanced_acc": 0.6032608695652174,
+        "majority_acc": 0.8518518518518519,
+        "share_pos": 0.14814814814814814,
+        "spearman": -0.08721360205549092,
+        "wilson95": [
+          0.675,
+          0.941
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.5455,
+            "pred_diff": -0.8227445449279823
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.3125,
+            "pred_diff": -2.1595592895689113
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -1.108201922843954
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": -0.7418707792484038
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.4285999999999999,
+            "pred_diff": -0.6670546382779504
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": -0.2223,
+            "pred_diff": -2.0084240188879514
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.6429,
+            "pred_diff": -0.5108243692102762
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -2.6604568488130793
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": 0.0,
+            "pred_diff": -1.3944898291197039
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.25,
+            "pred_diff": 0.4252884905192347
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": -0.4249525356342132
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -1.0,
+            "pred_diff": -0.9667551217983418
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -1.0833,
+            "pred_diff": -0.6290829586360971
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": -0.09999999999999998,
+            "pred_diff": -1.3976626225171662
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": -0.6667,
+            "pred_diff": -0.7584724036515895
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": -0.2837150726505711
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.2308,
+            "pred_diff": -0.4573052273099522
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.33340000000000003,
+            "pred_diff": -1.4683986703458078
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -2.0,
+            "pred_diff": -1.3050347935864341
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -4.0,
+            "pred_diff": -0.9275641832892114
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -2.1667,
+            "pred_diff": -2.853157183839851
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.1111,
+            "pred_diff": -0.6337374907881448
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -2.4286,
+            "pred_diff": 0.09415641537170334
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -1.9319304252445586
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -1.0678850786465808
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.2,
+            "pred_diff": -2.0761800036596494
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -1.231071600741533
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": 0.19999999999999996,
+            "pred_diff": -1.0620269763938857
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9555,
+            "pred_diff": -0.9395789595380275
+          }
+        ]
+      },
+      "no_probe": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.8518518518518519,
+        "balanced_acc": 0.6032608695652174,
+        "majority_acc": 0.8518518518518519,
+        "share_pos": 0.14814814814814814,
+        "spearman": -0.04607046210275933,
+        "wilson95": [
+          0.675,
+          0.941
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.5455,
+            "pred_diff": -0.7251679066483185
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.3125,
+            "pred_diff": -2.120139132004268
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -1.138981425842106
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": -0.795258268033431
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.4285999999999999,
+            "pred_diff": -0.5799403073560088
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": -0.2223,
+            "pred_diff": -1.925597435852275
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.6429,
+            "pred_diff": -0.7117755571539479
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -2.5374048014117054
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": 0.0,
+            "pred_diff": -1.3243661377026776
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.25,
+            "pred_diff": 0.4694788451221364
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": -0.46461665975905264
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -1.0,
+            "pred_diff": -1.0769932198494812
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -1.0833,
+            "pred_diff": -0.62491311817288
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": -0.09999999999999998,
+            "pred_diff": -1.253586558909102
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": -0.6667,
+            "pred_diff": -0.7232718500773749
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": -0.28451806518863937
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.2308,
+            "pred_diff": -0.44737600033826264
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.33340000000000003,
+            "pred_diff": -1.4436382601254607
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -2.0,
+            "pred_diff": -1.3304878985722628
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -4.0,
+            "pred_diff": -0.8753483139460637
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -2.1667,
+            "pred_diff": -2.8071810357771385
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.1111,
+            "pred_diff": -0.5790071426401219
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -2.4286,
+            "pred_diff": 0.1826548019873532
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -2.131973867848174
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -1.0067198686843275
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.2,
+            "pred_diff": -2.2849126036695253
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -1.2926316159171627
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": 0.19999999999999996,
+            "pred_diff": -0.9440102503929707
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9555,
+            "pred_diff": -0.8526840195473329
+          }
+        ]
+      },
+      "sft_probe": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.8518518518518519,
+        "balanced_acc": 0.6032608695652174,
+        "majority_acc": 0.8518518518518519,
+        "share_pos": 0.14814814814814814,
+        "spearman": -0.0559251064028148,
+        "wilson95": [
+          0.675,
+          0.941
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.5455,
+            "pred_diff": -0.8315672592327594
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.3125,
+            "pred_diff": -2.189695788189559
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -1.1457441652205205
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": -0.758837815099155
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.4285999999999999,
+            "pred_diff": -0.6181844139250661
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": -0.2223,
+            "pred_diff": -1.883885329057767
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.6429,
+            "pred_diff": -0.9822092562385244
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -2.7021521687091705
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": 0.0,
+            "pred_diff": -1.3286304986449295
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.25,
+            "pred_diff": 0.4377385004037178
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": -0.4038943741188723
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -1.0,
+            "pred_diff": -1.212874052494168
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -1.0833,
+            "pred_diff": -0.5837503284999981
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": -0.09999999999999998,
+            "pred_diff": -1.7212062786078377
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": -0.6667,
+            "pred_diff": -0.5523289926886561
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": -0.2412309924061102
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.2308,
+            "pred_diff": -0.43889567801531715
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.33340000000000003,
+            "pred_diff": -1.4345134261966934
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -2.0,
+            "pred_diff": -1.3202523177708518
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -4.0,
+            "pred_diff": -1.0120422929503783
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -2.1667,
+            "pred_diff": -2.743675440659686
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.1111,
+            "pred_diff": -0.5871779341792012
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -2.4286,
+            "pred_diff": 0.0229084408966186
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -2.0905632424147895
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -0.9921544040150807
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.2,
+            "pred_diff": -2.2961513604857045
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -1.2867321402940952
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": 0.19999999999999996,
+            "pred_diff": -0.9960243217771898
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9555,
+            "pred_diff": -0.7394152072114053
+          }
+        ]
+      },
+      "both_probes": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.8888888888888888,
+        "balanced_acc": 0.625,
+        "majority_acc": 0.8518518518518519,
+        "share_pos": 0.14814814814814814,
+        "spearman": -0.0985464430005547,
+        "wilson95": [
+          0.719,
+          0.961
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.5455,
+            "pred_diff": -0.8079238057433022
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.3125,
+            "pred_diff": -2.3056715430660635
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -1.1069392578316986
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": -0.7303983564218028
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.4285999999999999,
+            "pred_diff": -0.7282990189417173
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": -0.2223,
+            "pred_diff": -1.8633338889501245
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.6429,
+            "pred_diff": -0.832403314132613
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -2.652564534857695
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": 0.0,
+            "pred_diff": -1.43925763071426
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.25,
+            "pred_diff": 0.3690029803525011
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": -0.4990542175234454
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -1.0,
+            "pred_diff": -1.0127282359389451
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -1.0833,
+            "pred_diff": -0.5516915605437425
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": -0.09999999999999998,
+            "pred_diff": -1.7360165860221115
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": -0.6667,
+            "pred_diff": -0.6823916016931516
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": -0.2395550365362727
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.2308,
+            "pred_diff": -0.38685393863603934
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.33340000000000003,
+            "pred_diff": -1.5270234500568982
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -2.0,
+            "pred_diff": -1.311966841446438
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -4.0,
+            "pred_diff": -0.8999186423908979
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -2.1667,
+            "pred_diff": -2.836254656036016
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.1111,
+            "pred_diff": -0.6268625804464184
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -2.4286,
+            "pred_diff": -0.14202933201367293
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -2.0148071122030466
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -0.9736494423775501
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.2,
+            "pred_diff": -2.185282377303168
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -1.2316866959256878
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": 0.19999999999999996,
+            "pred_diff": -1.0066886817947327
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9555,
+            "pred_diff": -1.0141380475678161
+          }
+        ]
+      },
+      "sft_probe_only": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.8518518518518519,
+        "balanced_acc": 0.5,
+        "majority_acc": 0.8518518518518519,
+        "share_pos": 0.14814814814814814,
+        "spearman": -0.3964030669697313,
+        "wilson95": [
+          0.675,
+          0.941
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.5455,
+            "pred_diff": -0.3956562554261652
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.3125,
+            "pred_diff": -1.5493777058404339
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -0.9529640458041234
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": -0.6906857716530054
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.4285999999999999,
+            "pred_diff": -1.1293910704501877
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": -0.2223,
+            "pred_diff": -1.3375306870632917
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.6429,
+            "pred_diff": -0.7751514934707175
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -1.066831465842041
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": 0.0,
+            "pred_diff": -1.8386347491275836
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.25,
+            "pred_diff": -2.0237650715513524
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": -0.531657571804674
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -1.0,
+            "pred_diff": -1.2505140852561158
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -1.0833,
+            "pred_diff": -0.8794826712769448
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": -0.09999999999999998,
+            "pred_diff": -1.0891721669685854
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": -0.6667,
+            "pred_diff": -0.34925305304701737
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": -1.113151391174728
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.2308,
+            "pred_diff": -1.2273204966970261
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.33340000000000003,
+            "pred_diff": -0.7390570703900277
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -2.0,
+            "pred_diff": -0.7788853234626134
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -4.0,
+            "pred_diff": -0.6452282164317902
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -2.1667,
+            "pred_diff": -1.042279986679266
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.1111,
+            "pred_diff": -0.9070048380548708
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -2.4286,
+            "pred_diff": -0.9524872123709163
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -0.6738966262350536
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -0.7986762096447462
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.2,
+            "pred_diff": -0.6673117517953884
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -2.089607757422695
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": 0.19999999999999996,
+            "pred_diff": -0.87156598280457
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9555,
+            "pred_diff": -0.9939969558660668
+          }
+        ]
+      },
+      "jepa_probe_only": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.8518518518518519,
+        "balanced_acc": 0.5,
+        "majority_acc": 0.8518518518518519,
+        "share_pos": 0.14814814814814814,
+        "spearman": -0.013796502020077662,
+        "wilson95": [
+          0.675,
+          0.941
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.5455,
+            "pred_diff": -0.6504501195500544
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.3125,
+            "pred_diff": -1.5469305751738658
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -0.8731888246511578
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": -0.7630771322584786
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.4285999999999999,
+            "pred_diff": -1.2272661949594235
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": -0.2223,
+            "pred_diff": -1.8744629880037271
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -0.6429,
+            "pred_diff": -0.3813997856949166
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -0.9087408965812723
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": 0.0,
+            "pred_diff": -0.7090306552131249
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.25,
+            "pred_diff": -0.7097704323936038
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": -0.559205680988661
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -1.0,
+            "pred_diff": -0.23855916650584286
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -1.0833,
+            "pred_diff": -2.3963840048942258
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": -0.09999999999999998,
+            "pred_diff": -0.3266516402918469
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": -0.6667,
+            "pred_diff": -0.9526252737393479
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": -0.24669451179847907
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.2308,
+            "pred_diff": -0.8838585201787443
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.33340000000000003,
+            "pred_diff": -1.3538805830172387
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -2.0,
+            "pred_diff": -1.2663088381374705
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -4.0,
+            "pred_diff": -0.6840293099842306
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -2.1667,
+            "pred_diff": -0.6852244811834431
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.1111,
+            "pred_diff": -1.0346232980725598
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -2.4286,
+            "pred_diff": -1.1315809855033923
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -1.2770870024515437
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -1.774664210626408
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.2,
+            "pred_diff": -0.3169691189011774
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -1.0033341668754603
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": 0.19999999999999996,
+            "pred_diff": -1.1220324078003003
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9555,
+            "pred_diff": -1.5428095222367324
+          }
+        ]
+      }
+    },
+    "D_vs_G|group": {
+      "jepa_probe": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.7037037037037037,
+        "balanced_acc": 0.4318181818181818,
+        "majority_acc": 0.8148148148148148,
+        "share_pos": 0.18518518518518517,
+        "spearman": -0.05764256725580198,
+        "wilson95": [
+          0.515,
+          0.841
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.0909,
+            "pred_diff": -0.7049091461250353
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.0625,
+            "pred_diff": -1.84473868336476
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -0.6842848541545266
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": 6.849233218955697e-05
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.3572,
+            "pred_diff": -0.7355685367727817
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -1.9871212481517277
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -1.0715000000000001,
+            "pred_diff": -0.2438360801379703
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -2.7488224639670458
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": -1.381796430702905
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.38880000000000003,
+            "pred_diff": -0.37188353438144234
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": -0.0929598767838272
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -0.7777999999999999,
+            "pred_diff": -0.2975515884756887
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -0.9166,
+            "pred_diff": -0.5635726893656368
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.4000000000000001,
+            "pred_diff": -0.8014531874471137
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 2.6666,
+            "pred_diff": -0.3022075751662624
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": 0.3840745458145167
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.3077,
+            "pred_diff": -0.35559158097417753
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.7777999999999999,
+            "pred_diff": -1.0139428904597108
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -1.5,
+            "pred_diff": -1.1431403355757779
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -3.1429000000000005,
+            "pred_diff": -0.6193533568574773
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -1.3334000000000001,
+            "pred_diff": -2.074632435568006
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.3333,
+            "pred_diff": -0.4788262371919474
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -1.7142999999999997,
+            "pred_diff": 1.1062724335723406
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -1.7517277701120944
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -1.1633872488691828
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.8000000000000003,
+            "pred_diff": -1.47251311260929
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -1.3575823155399767
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.5,
+            "pred_diff": -0.8045063599665432
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9111,
+            "pred_diff": -1.1482562484696839
+          }
+        ]
+      },
+      "no_probe": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.7037037037037037,
+        "balanced_acc": 0.4318181818181818,
+        "majority_acc": 0.8148148148148148,
+        "share_pos": 0.18518518518518517,
+        "spearman": 0.004434043635061691,
+        "wilson95": [
+          0.515,
+          0.841
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.0909,
+            "pred_diff": -0.6810519017545733
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.0625,
+            "pred_diff": -1.7765076457716975
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -0.5149101317852569
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": 0.04145292022122629
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.3572,
+            "pred_diff": -0.761303252156865
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -1.8566307319395106
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -1.0715000000000001,
+            "pred_diff": -0.539300289197518
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -2.698336270826024
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": -1.343604185546273
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.38880000000000003,
+            "pred_diff": -0.7545302759220396
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": -0.4891792823965885
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -0.7777999999999999,
+            "pred_diff": -0.37527139335129145
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -0.9166,
+            "pred_diff": -0.5114208531181019
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.4000000000000001,
+            "pred_diff": -0.5749256427553792
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 2.6666,
+            "pred_diff": -0.22118682195676323
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": 0.012864372727689144
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.3077,
+            "pred_diff": -0.34980741387472425
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.7777999999999999,
+            "pred_diff": -0.9484579061741307
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -1.5,
+            "pred_diff": -1.1276630669161412
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -3.1429000000000005,
+            "pred_diff": -0.6251716334570442
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -1.3334000000000001,
+            "pred_diff": -1.9217672079219679
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.3333,
+            "pred_diff": -0.5104391443275569
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -1.7142999999999997,
+            "pred_diff": 1.052833784980961
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -1.6548195429544945
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -1.0515133615655374
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.8000000000000003,
+            "pred_diff": -1.8025548261506759
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -1.3503761880081382
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.5,
+            "pred_diff": -0.7473228582780567
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9111,
+            "pred_diff": -0.9814578740780101
+          }
+        ]
+      },
+      "sft_probe": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.7037037037037037,
+        "balanced_acc": 0.4318181818181818,
+        "majority_acc": 0.8148148148148148,
+        "share_pos": 0.18518518518518517,
+        "spearman": -0.06281561816337396,
+        "wilson95": [
+          0.515,
+          0.841
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.0909,
+            "pred_diff": -0.6123469553485368
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.0625,
+            "pred_diff": -2.1214983602710618
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -0.5184550609641767
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": 0.16857613006475536
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.3572,
+            "pred_diff": -0.9092868758941313
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -1.7758211593492714
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -1.0715000000000001,
+            "pred_diff": -0.7136079558177477
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -2.7075306154035985
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": -1.3645438275630606
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.38880000000000003,
+            "pred_diff": -0.7130253176516026
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": -0.3214158433356879
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -0.7777999999999999,
+            "pred_diff": -0.5211626299005718
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -0.9166,
+            "pred_diff": -0.6629079171999093
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.4000000000000001,
+            "pred_diff": -1.1957352747453278
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 2.6666,
+            "pred_diff": -0.29317762562183336
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": 0.227569676817233
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.3077,
+            "pred_diff": -0.29021544328198123
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.7777999999999999,
+            "pred_diff": -1.0311584425848705
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -1.5,
+            "pred_diff": -1.1535106363362928
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -3.1429000000000005,
+            "pred_diff": -0.5933348972482215
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -1.3334000000000001,
+            "pred_diff": -1.995305080471495
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.3333,
+            "pred_diff": -0.5474224125434723
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -1.7142999999999997,
+            "pred_diff": 1.121076723007286
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -1.617913782620283
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -1.016237234450943
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.8000000000000003,
+            "pred_diff": -1.6825985038449875
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -1.3560140247600971
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.5,
+            "pred_diff": -0.7315150486214935
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9111,
+            "pred_diff": -0.8481298698697846
+          }
+        ]
+      },
+      "both_probes": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.7037037037037037,
+        "balanced_acc": 0.4318181818181818,
+        "majority_acc": 0.8148148148148148,
+        "share_pos": 0.18518518518518517,
+        "spearman": -0.044094100593113486,
+        "wilson95": [
+          0.515,
+          0.841
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.0909,
+            "pred_diff": -0.6979968264073801
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.0625,
+            "pred_diff": -2.101286090511011
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -0.517063023825612
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": 0.13481540991444785
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.3572,
+            "pred_diff": -0.8625677868621564
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -1.9127666118273372
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -1.0715000000000001,
+            "pred_diff": -0.7951660181016353
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -2.704689701690741
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": -1.450591943607792
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.38880000000000003,
+            "pred_diff": -0.5420389110933121
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": -0.20448068034394595
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -0.7777999999999999,
+            "pred_diff": -0.3404199056705329
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -0.9166,
+            "pred_diff": -0.6322983908258034
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.4000000000000001,
+            "pred_diff": -1.1878477042943323
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 2.6666,
+            "pred_diff": -0.10696237765281656
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": 0.3456202402172985
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.3077,
+            "pred_diff": -0.378167741633905
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.7777999999999999,
+            "pred_diff": -0.9963195389684327
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -1.5,
+            "pred_diff": -1.2121270166044356
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -3.1429000000000005,
+            "pred_diff": -0.5257397732335964
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -1.3334000000000001,
+            "pred_diff": -2.1677211526520743
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.3333,
+            "pred_diff": -0.49579900885578104
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -1.7142999999999997,
+            "pred_diff": 1.1313417668300385
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -1.7284022047848757
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -0.9385893850944963
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.8000000000000003,
+            "pred_diff": -1.5001978239025444
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -1.3562958349983933
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.5,
+            "pred_diff": -0.7375648851727789
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9111,
+            "pred_diff": -0.6734746139633915
+          }
+        ]
+      },
+      "sft_probe_only": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.7407407407407407,
+        "balanced_acc": 0.45454545454545453,
+        "majority_acc": 0.8148148148148148,
+        "share_pos": 0.18518518518518517,
+        "spearman": -0.3818204241303123,
+        "wilson95": [
+          0.553,
+          0.868
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.0909,
+            "pred_diff": -0.28150274412848025
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.0625,
+            "pred_diff": -1.379897933497531
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -0.8289525244537586
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": -0.5777088603383895
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.3572,
+            "pred_diff": -0.870005817774312
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -1.043931791907219
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -1.0715000000000001,
+            "pred_diff": 0.1510555052790083
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -0.855734441039347
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": -1.2231713319219408
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.38880000000000003,
+            "pred_diff": -1.5988847484501894
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": -0.6398071061632593
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -0.7777999999999999,
+            "pred_diff": -1.018800186875397
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -0.9166,
+            "pred_diff": -0.7953621779530076
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.4000000000000001,
+            "pred_diff": -1.2258444526029613
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 2.6666,
+            "pred_diff": -0.2600333797378988
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": -0.9020375767657272
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.3077,
+            "pred_diff": -1.0683677448565776
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.7777999999999999,
+            "pred_diff": -0.056390030686044645
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -1.5,
+            "pred_diff": -0.10949778782719657
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -3.1429000000000005,
+            "pred_diff": -0.6499877591159661
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -1.3334000000000001,
+            "pred_diff": -0.6847626322558034
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.3333,
+            "pred_diff": -0.7256395355021426
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -1.7142999999999997,
+            "pred_diff": -0.8360313812342604
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -0.507110063657622
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -0.6455216574274147
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.8000000000000003,
+            "pred_diff": 0.1649330130337446
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -1.8574752041420681
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.5,
+            "pred_diff": -0.7039713002142627
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9111,
+            "pred_diff": -0.6755892886203072
+          }
+        ]
+      },
+      "jepa_probe_only": {
+        "n": 29,
+        "n_ties": 2,
+        "n_scored": 27,
+        "accuracy": 0.7407407407407407,
+        "balanced_acc": 0.5318181818181819,
+        "majority_acc": 0.8148148148148148,
+        "share_pos": 0.18518518518518517,
+        "spearman": 0.022416553932811882,
+        "wilson95": [
+          0.553,
+          0.868
+        ],
+        "oof": [
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-heaviest",
+            "true_diff": -1.0909,
+            "pred_diff": -0.19892493326866834
+          },
+          {
+            "env": "bytesized32",
+            "game": "balance-scale-weigh",
+            "true_diff": -1.0625,
+            "pred_diff": -1.1640888583354727
+          },
+          {
+            "env": "bytesized32",
+            "game": "bath-tub-water-temperature",
+            "true_diff": 1.3333,
+            "pred_diff": -0.80293657841855
+          },
+          {
+            "env": "bytesized32",
+            "game": "blood-type",
+            "true_diff": -3.3333000000000004,
+            "pred_diff": -0.7731779122425189
+          },
+          {
+            "env": "bytesized32",
+            "game": "boil-water",
+            "true_diff": -1.3572,
+            "pred_diff": -1.025099450253508
+          },
+          {
+            "env": "bytesized32",
+            "game": "conductivity",
+            "true_diff": 0.0,
+            "pred_diff": -1.2244464269401087
+          },
+          {
+            "env": "bytesized32",
+            "game": "cooking",
+            "true_diff": -1.0715000000000001,
+            "pred_diff": -0.4243050871850707
+          },
+          {
+            "env": "bytesized32",
+            "game": "forge-key",
+            "true_diff": 0.0,
+            "pred_diff": -0.662442071541928
+          },
+          {
+            "env": "bytesized32",
+            "game": "hang-painting",
+            "true_diff": -0.6667,
+            "pred_diff": -0.7396715033153438
+          },
+          {
+            "env": "bytesized32",
+            "game": "inclined-plane",
+            "true_diff": 0.38880000000000003,
+            "pred_diff": 0.14946380478258509
+          },
+          {
+            "env": "bytesized32",
+            "game": "lit-lightbulb",
+            "true_diff": -1.0,
+            "pred_diff": 0.04670524534298498
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-campfire",
+            "true_diff": -0.7777999999999999,
+            "pred_diff": -0.3311368814668616
+          },
+          {
+            "env": "bytesized32",
+            "game": "make-ice-cubes",
+            "true_diff": -0.9166,
+            "pred_diff": -2.181367599352251
+          },
+          {
+            "env": "bytesized32",
+            "game": "metal-detector",
+            "true_diff": 1.4000000000000001,
+            "pred_diff": -0.22850817201459478
+          },
+          {
+            "env": "bytesized32",
+            "game": "mix-paint",
+            "true_diff": 2.6666,
+            "pred_diff": -0.7645302797614182
+          },
+          {
+            "env": "bytesized32",
+            "game": "multimeter",
+            "true_diff": -2.5,
+            "pred_diff": 0.09405565929556933
+          },
+          {
+            "env": "bytesized32",
+            "game": "plant-tree",
+            "true_diff": -0.3077,
+            "pred_diff": -0.8069167890694806
+          },
+          {
+            "env": "bytesized32",
+            "game": "refrigerate-food",
+            "true_diff": 0.7777999999999999,
+            "pred_diff": -1.0646768195835747
+          },
+          {
+            "env": "bytesized32",
+            "game": "scale-weigh",
+            "true_diff": -1.5,
+            "pred_diff": -0.9482547776581354
+          },
+          {
+            "env": "bytesized32",
+            "game": "space-walk",
+            "true_diff": -3.1429000000000005,
+            "pred_diff": -0.28285460024159126
+          },
+          {
+            "env": "bytesized32",
+            "game": "sunburn",
+            "true_diff": -1.3334000000000001,
+            "pred_diff": -0.5548231345178508
+          },
+          {
+            "env": "bytesized32",
+            "game": "sweep-floor",
+            "true_diff": -1.3333,
+            "pred_diff": -0.8426496672049835
+          },
+          {
+            "env": "bytesized32",
+            "game": "take-photo",
+            "true_diff": -1.7142999999999997,
+            "pred_diff": -1.0225465748632419
+          },
+          {
+            "env": "bytesized32",
+            "game": "thermometer",
+            "true_diff": -6.0,
+            "pred_diff": -0.9335587589598696
+          },
+          {
+            "env": "bytesized32",
+            "game": "use-bandage",
+            "true_diff": -3.5,
+            "pred_diff": -1.4324153295143078
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume",
+            "true_diff": -2.8000000000000003,
+            "pred_diff": 0.3605601724120063
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-container",
+            "true_diff": -0.625,
+            "pred_diff": -0.9398320507635589
+          },
+          {
+            "env": "bytesized32",
+            "game": "volume-stone",
+            "true_diff": -0.5,
+            "pred_diff": -0.8319818104959574
+          },
+          {
+            "env": "bytesized32",
+            "game": "wash-clothes",
+            "true_diff": -0.9111,
+            "pred_diff": -1.2802947984919912
+          }
+        ]
+      }
+    },
+    "winner|group": {
+      "jepa_probe": {
+        "n": 29,
+        "accuracy": 0.6206896551724138,
+        "wilson95": [
+          0.44,
+          0.773
+        ],
+        "majority_acc": 0.6896551724137931,
+        "n_ties": 7,
+        "label_counts": {
+          "F": 16,
+          "D": 3,
+          "G": 10
+        }
+      },
+      "no_probe": {
+        "n": 29,
+        "accuracy": 0.5517241379310345,
+        "wilson95": [
+          0.375,
+          0.716
+        ],
+        "majority_acc": 0.6896551724137931,
+        "n_ties": 7,
+        "label_counts": {
+          "F": 16,
+          "D": 3,
+          "G": 10
+        }
+      },
+      "sft_probe": {
+        "n": 29,
+        "accuracy": 0.5172413793103449,
+        "wilson95": [
+          0.344,
+          0.686
+        ],
+        "majority_acc": 0.6896551724137931,
+        "n_ties": 7,
+        "label_counts": {
+          "F": 16,
+          "D": 3,
+          "G": 10
+        }
+      },
+      "both_probes": {
+        "n": 29,
+        "accuracy": 0.6551724137931034,
+        "wilson95": [
+          0.473,
+          0.801
+        ],
+        "majority_acc": 0.6896551724137931,
+        "n_ties": 7,
+        "label_counts": {
+          "F": 16,
+          "D": 3,
+          "G": 10
+        }
+      },
+      "sft_probe_only": {
+        "n": 29,
+        "accuracy": 0.6551724137931034,
+        "wilson95": [
+          0.473,
+          0.801
+        ],
+        "majority_acc": 0.6896551724137931,
+        "n_ties": 7,
+        "label_counts": {
+          "F": 16,
+          "D": 3,
+          "G": 10
+        }
+      },
+      "jepa_probe_only": {
+        "n": 29,
+        "accuracy": 0.7586206896551724,
+        "wilson95": [
+          0.579,
+          0.878
+        ],
+        "majority_acc": 0.6896551724137931,
+        "n_ties": 7,
+        "label_counts": {
+          "F": 16,
+          "D": 3,
+          "G": 10
+        }
+      }
+    }
+  },
+  "importances": {
+    "F_vs_G": {
+      "rate_object_state": {
+        "gbt": 0.1071,
+        "ridge_coef": -0.1009
+      },
+      "rate_containment_location": {
+        "gbt": 0.0211,
+        "ridge_coef": 0.0051
+      },
+      "rate_numeric_physical": {
+        "gbt": 0.0119,
+        "ridge_coef": -0.0789
+      },
+      "rate_partial_obs": {
+        "gbt": 0.0736,
+        "ridge_coef": 0.0202
+      },
+      "rate_action_failure": {
+        "gbt": 0.0093,
+        "ridge_coef": 0.0908
+      },
+      "obs_len_chars": {
+        "gbt": 0.079,
+        "ridge_coef": 0.1366
+      },
+      "action_vocab": {
+        "gbt": 0.0988,
+        "ridge_coef": -0.2372
+      },
+      "zero_overlap_frac": {
+        "gbt": 0.1231,
+        "ridge_coef": 0.2921
+      },
+      "mean_jaccard": {
+        "gbt": 0.0607,
+        "ridge_coef": -0.1464
+      },
+      "target_repeat_frac": {
+        "gbt": 0.2788,
+        "ridge_coef": 0.0104
+      },
+      "recall_at5": {
+        "gbt": 0.0246,
+        "ridge_coef": 0.1392
+      },
+      "probe_fidelity": {
+        "gbt": 0.0876,
+        "ridge_coef": -0.0442
+      },
+      "sft_probe_f1": {
+        "gbt": 0.0245,
+        "ridge_coef": 0.0835
+      }
+    },
+    "D_vs_F": {
+      "rate_object_state": {
+        "gbt": 0.1214,
+        "ridge_coef": 0.6721
+      },
+      "rate_containment_location": {
+        "gbt": 0.0093,
+        "ridge_coef": 0.394
+      },
+      "rate_numeric_physical": {
+        "gbt": 0.0388,
+        "ridge_coef": 0.0691
+      },
+      "rate_partial_obs": {
+        "gbt": 0.2931,
+        "ridge_coef": -0.7183
+      },
+      "rate_action_failure": {
+        "gbt": 0.0992,
+        "ridge_coef": -0.0777
+      },
+      "obs_len_chars": {
+        "gbt": 0.085,
+        "ridge_coef": -0.4239
+      },
+      "action_vocab": {
+        "gbt": 0.1082,
+        "ridge_coef": -0.2148
+      },
+      "zero_overlap_frac": {
+        "gbt": 0.0111,
+        "ridge_coef": 0.2365
+      },
+      "mean_jaccard": {
+        "gbt": 0.1073,
+        "ridge_coef": -0.0099
+      },
+      "target_repeat_frac": {
+        "gbt": 0.0185,
+        "ridge_coef": 0.1313
+      },
+      "recall_at5": {
+        "gbt": 0.0223,
+        "ridge_coef": -0.2657
+      },
+      "probe_fidelity": {
+        "gbt": 0.0567,
+        "ridge_coef": -0.079
+      },
+      "sft_probe_f1": {
+        "gbt": 0.0292,
+        "ridge_coef": 0.0485
+      }
+    },
+    "D_vs_G": {
+      "rate_object_state": {
+        "gbt": 0.0613,
+        "ridge_coef": 0.5712
+      },
+      "rate_containment_location": {
+        "gbt": 0.0312,
+        "ridge_coef": 0.3991
+      },
+      "rate_numeric_physical": {
+        "gbt": 0.0041,
+        "ridge_coef": -0.0098
+      },
+      "rate_partial_obs": {
+        "gbt": 0.1741,
+        "ridge_coef": -0.6981
+      },
+      "rate_action_failure": {
+        "gbt": 0.0698,
+        "ridge_coef": 0.0131
+      },
+      "obs_len_chars": {
+        "gbt": 0.0832,
+        "ridge_coef": -0.2873
+      },
+      "action_vocab": {
+        "gbt": 0.069,
+        "ridge_coef": -0.452
+      },
+      "zero_overlap_frac": {
+        "gbt": 0.0459,
+        "ridge_coef": 0.5287
+      },
+      "mean_jaccard": {
+        "gbt": 0.1144,
+        "ridge_coef": -0.1563
+      },
+      "target_repeat_frac": {
+        "gbt": 0.1574,
+        "ridge_coef": 0.1417
+      },
+      "recall_at5": {
+        "gbt": 0.0521,
+        "ridge_coef": -0.1265
+      },
+      "probe_fidelity": {
+        "gbt": 0.0974,
+        "ridge_coef": -0.1232
+      },
+      "sft_probe_f1": {
+        "gbt": 0.0401,
+        "ridge_coef": 0.132
+      }
+    }
+  }
+}

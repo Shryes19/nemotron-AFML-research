@@ -1,69 +1,91 @@
-# RQ3 predictor: first results (12 Nov 2026, D + F only, G pending)
+# RQ3 predictor: final results (14 Nov 2026, G + F + D)
 
-Run with Saanvi's labels (`results/utility/labels_Dtop1.csv` on `saanvi/utility-results`,
-n = 256, D judged top-1):
+Data: `results/features/feature_matrix.csv` (PR #15, all 4 features incl. Recall@5) and
+`results/utility/labels_D{top1,topk,native}.csv` (PR #14, with the new `tie` column), plus
+the SFT probe (`results/sft/sft_probe_scores.csv`) for the Feature 1 ablation.
 
-    python scripts/rq3_predictor.py --labels results/utility/labels_Dtop1.csv \
-        --sft-probe results/sft/sft_probe_scores.csv --out results/rq3
+    python scripts/rq3_predictor.py --matrix results/features/feature_matrix.csv \
+        --labels results/utility/labels_Dtop1.csv --sft-probe results/sft/sft_probe_scores.csv \
+        --out results/rq3 --perm 200
 
-Main rows: ALFWorld + ScienceWorld. That is 32 matrix rows with labels, but only **26
-independent labels**, because ALFWorld is labelled per task family (6) and the 2
-identify-life-stages types have no states. ByteSized32 is analysed separately (team
-decision).
+**Rows.** Main analysis: ALFWorld + ScienceWorld, 32 labelled matrix rows = **26 independent
+labels** (ALFWorld is labelled per task family). ByteSized32 is analysed separately (29
+games, "known state, new action"). **Ties:** 8 of 32 main rows (and 8 of 29 ByteSized32
+rows) have exactly equal G and F regret. They are left out of the yes/no scores
+(balanced accuracy) and kept in the regression (Spearman), since a tie is a real "gap = 0".
 
-## 1. The yes/no task can't be tested yet
+**Models.** Ridge + gradient-boosted trees on the regret *difference*. CV is
+leave-one-(env, family)-out. Out-of-fold Spearman ρ = rank agreement between predicted and
+true gap. Permutation p values come from 200 label shuffles with the whole CV rerun.
 
-With G missing, the only decision is "does D beat F?", and **F wins 31 of 32 rows**. The
-only D win is ScienceWorld `chemistry-mix`, and it is not significant. So "always say F"
-already scores 97%. Every model also scores 97% (balanced accuracy 0.50), and the
-permutation p = 0.60. Accuracy here carries no information. It becomes meaningful only
-when G is added.
+## 1. G vs F, the main question now (main regimes, D top-1 labels)
 
-## 2. Ranking the size of D's gap to F (regression on regret_F − regret_D)
+| Features | Rows scored (+ ties) | Balanced acc | p | OOF ρ | p |
+|---|---|---|---|---|---|
+| Features 2–4 + JEPA probe | 24 (+8) | 0.46 | 0.58 | −0.30 | 0.82 |
+| JEPA probe only | 24 (+8) | 0.52 | 0.34 | −0.39 | 0.84 |
+| SFT probe only | 24 (+8) | 0.21 | 0.96 | −0.46 | 0.93 |
+| Features 2–4 only | 24 (+8) | 0.34 | — | −0.54 | — |
 
-Out-of-fold Spearman between predicted and true gap. CV is leave-one-(env, family)-out:
+**There's no signal.** Every feature set is at or below chance (balanced accuracy
+0.21–0.54, all permutation p ≥ 0.34). The negative ρ values are what leave-one-out gives
+when there is nothing to learn: removing a row pushes the training mean the other way.
+This matches Saanvi's finding that G and F are statistically tied (only 1 of 27 G − F
+differences is significant). There is no real winner for the features to predict.
+Leave-one-environment-out gives the same picture (balanced accuracy 0.37–0.50).
 
-| Features | Spearman | Permutation p (200 shuffles) |
+## 2. Which arm wins overall (G / F / D)
+
+Accuracy counts a prediction as right if it names the winner or any arm in an exact tie.
+
+| Features | Accuracy (95% CI) |
+|---|---|
+| Features 2–4 + JEPA probe | 0.62 (0.45–0.77) |
+| JEPA probe only | 0.69 (0.51–0.82) |
+| SFT probe only | 0.44 (0.28–0.61) |
+| **Always guess F (constant)** | **0.72** |
+| Always guess G | 0.53 |
+
+No model beats simply guessing "F". (The leave-one-out "majority of the training fold"
+baseline is unfairly low here, at 0.25, because removing a row tips the majority to the
+other class. So the constant guess is the fair comparison.)
+
+## 3. Is the specialist worth it? D vs the generalists
+
+- **D vs G:** G has lower regret on every main row, so there is nothing to predict.
+- **D vs F:** F wins every scored row, so the yes/no task can't be tested (balanced
+  accuracy 0.50, p ≥ 0.77). But the **size** of D's gap to F *can* be ranked, and
+  **only the JEPA probe ranks it, in all three D modes**:
+
+| D mode | JEPA probe only: OOF ρ (p) | SFT probe only: OOF ρ (p) |
 |---|---|---|
-| Features 2–4 + JEPA probe | +0.10 | — |
-| Features 2–4 only | +0.07 | — |
-| Features 2–4 + SFT probe | +0.10 | — |
-| **JEPA probe only** | **+0.47** | **0.010** |
-| SFT probe only | +0.03 | 0.289 |
+| top-1 (main) | **+0.47 (0.010)** | +0.02 (0.33) |
+| top-k | **+0.34 (0.045)** | +0.05 (0.26) |
+| native | **+0.29 (0.040)** | +0.14 (0.17) |
 
-Leave-one-environment-out (train on ALFWorld, test on ScienceWorld, and the reverse):
-every feature set gives a Spearman between −0.13 and +0.11.
+  This is the one positive RQ3 result. JEPA's own cheap probe (0.02 GPU-h) tells you on
+  which games JEPA falls furthest behind fine-tuning. The SFT probe, which costs more GPU
+  time than F's own training, does not. Caveats: it is one family of tests among several
+  (multiple comparisons), and it fades when the other features are added
+  (Features 2–4 + JEPA probe: ρ ≈ +0.1).
 
-## 3. Single-feature correlations with the gap (26 independent units, no model)
+## 4. ByteSized32, reported separately
 
-| Feature | D top-1 labels | D top-k | D native |
-|---|---|---|---|
-| JEPA probe (distance) | +0.34 (p 0.09) | −0.28 (p 0.17) | **−0.46 (p 0.02)** |
-| SFT probe (F1) | −0.32 (p 0.11) | +0.25 (p 0.21) | +0.33 (p 0.10) |
-| obs length | +0.35 (p 0.08) | +0.04 | −0.06 |
-| zero-overlap fraction | −0.35 (p 0.08) | +0.14 | +0.02 |
-| containment/location rate | +0.10 | **+0.44 (p 0.03)** | +0.37 (p 0.06) |
+29 games: F 16, G 10, D 3. G vs F: JEPA probe only gives balanced accuracy 0.58 (p 0.075),
+ρ +0.24 (p 0.085). Features 2–4 + JEPA probe gives balanced accuracy 0.53 (p 0.28). SFT
+probe only gives 0.47 (p 0.67). The winner model with the JEPA probe alone reaches 0.76
+against 0.69 for always guessing F. These are suggestive at best, and nothing reaches
+p < 0.05.
 
-ByteSized32 on its own (29 games, D wins 4): neither probe relates to the gap (|ρ| ≤ 0.14).
-Only the object-state rate does (ρ = +0.44, p = 0.02).
+## Answer to RQ3, in one paragraph
 
-## Honest reading
+On our regimes, the cheap ex-ante features **cannot predict which arm wins**, mainly
+because there is little to predict. The two generalists (G and F) are statistically tied,
+and both beat the specialist (D) everywhere. A constant "pick F" is as good as any learned
+predictor. The specialist is never worth it here. The only reliable ex-ante signal is
+that **the JEPA embedding probe ranks how far the specialist falls behind** (ρ = 0.29–0.47,
+p ≤ 0.045 in all three D modes), while the more expensive SFT text probe carries no signal.
+With ~26 independent labels and one seed, these are small-sample results.
 
-- **For D vs F, the answer to "is the specialist worth it?" is simply no.** F has lower
-  regret on 31 of 32 rows at n = 256, and at every budget in Saanvi's table. No feature is
-  needed to predict that.
-- The one positive signal is that the **JEPA probe alone ranks the D–F gap out of sample**
-  (ρ = 0.47, p = 0.01), while the SFT probe does not. That is the direction the plan
-  hoped for. But it should be reported as *suggestive*, not as a finding:
-  - it is one of several tests (2 probes × 3 D modes × 2 CV schemes), so there is a
-    multiple-comparisons risk
-  - **its sign flips between D modes** (+0.34 for top-1, −0.46 for native)
-  - it disappears when the other features are added, and in the leave-one-env-out test
-- A likely reason for the sign flip is a floor effect. F's regret is 0 on 13 of 20
-  ScienceWorld types, so "the gap" mostly measures how badly D does, and that depends on
-  the decoding mode.
-- **Feature 1 cost** (Siddhant's GPU log): the SFT probe costs 0.7–3.1 GPU-h per
-  environment against 0.02 h for the JEPA probe, which is more than F's own training. So
-  even before the results, the SFT probe fails the "cheap" requirement.
-- G may change all of this. With three arms, the yes/no tasks get both classes. Rerun the
-  same command once `labels.csv` includes G.
+Previous D+F-only run (12 Nov): `git log -- results/rq3/README.md`. JSON for every run:
+`results/rq3/final/`.
