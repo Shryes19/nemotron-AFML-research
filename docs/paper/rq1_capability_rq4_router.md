@@ -23,7 +23,7 @@ two main regimes pooled (698 states):
   is significant. ScienceWorld test is the exception: F is better on containment (+0.11 for G − F)
   and on partially observable states (+0.13).
 - **Partially observable and containment states are the hardest for every arm** (main regimes:
-  0.36–0.55 regret, against 0.09–0.30 for object-state changes). No world model can predict contents
+  0.31–0.55 regret, against 0.09–0.30 for object-state changes). No world model can predict contents
   it has never seen.
 - **Numeric/physical states are few** (28 main, 26 ByteSized32), so their intervals are wide. On
   ByteSized32 all three arms are equally poor there (1.15–1.27). This fits our finding that 73% of
