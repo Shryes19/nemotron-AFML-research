@@ -72,6 +72,7 @@ def main():
         row["probe_fidelity"] = lookup(extra.get("probe", {}), env, game, "probe_fidelity")
         row["recall_at5"] = lookup(extra.get("recall", {}), env, game, "recall_at5")
         row["label"] = lookup(extra.get("labels", {}), env, game, "label")
+        row["label_tie"] = lookup(extra.get("labels", {}), env, game, "tie")   # arms tied with the winner
         for c in ("probe_fidelity", "recall_at5", "label"):
             if row[c] == "":
                 missing[c] = missing.get(c, 0) + 1
