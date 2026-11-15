@@ -30,10 +30,16 @@ ENV/
 checkpoints/
 models/
 
-# Data (raw buffers may be large — commit only small mock samples)
+# Data: raw collection logs stay out; the training buffers every arm used are committed
 data/raw/
-data/buffers/
+data/buffers/*
 !data/buffers/mock_*.jsonl
+!data/buffers/alfworld_games.jsonl
+!data/buffers/alfworld_games.tagged.jsonl
+!data/buffers/sciworld_games.jsonl
+!data/buffers/sciworld_games.tagged.jsonl
+!data/buffers/sciworld_train.jsonl.gz
+!data/buffers/bytesized32_games.jsonl
 
 # Experiment outputs
 outputs/
