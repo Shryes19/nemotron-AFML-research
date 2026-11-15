@@ -21,6 +21,14 @@ We compare three world model arms across four text environments:
 - **WebShop** — e-commerce product search (high partial observability)
 - **ByteSized32-SP** — 31 hand-crafted text games with ground-truth JSON states
 
+## Demo
+
+```bash
+python scripts/demo.py          # one decision, three world models (CPU, no models needed)
+```
+
+See [`demo/README.md`](demo/README.md).
+
 ## Repo Structure
 
 ```
