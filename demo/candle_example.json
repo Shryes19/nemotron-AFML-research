@@ -1,0 +1,22 @@
+{
+  "id": "alfworld/alfworld_2588/alfworld-heldout-e000015-s003",
+  "budget": 256,
+  "source": "Predicted next-state texts as reported in the paper (Table VI, worked example). G's raw outputs were not kept for other states; F and D texts were transcribed from the same run.",
+  "predictions": {
+    "G": ["You arrive at toilet 1. On the toilet 1, you see a soapbottle 3, and a spraybottle 1.",
+          "You pick up the candle 1 from the countertop 1.",
+          "You go to cabinet 1.",
+          "You take the handtowel 1 from the countertop 1. On the countertop 1, you see a candle 1, and a soapbar 1.",
+          "On the countertop 1, you see a candle 1, a handtowel 1, and a soapbar 1."],
+    "F": ["You arrive at toilet 1. On the toilet 1, you see a spraybottle 1.",
+          "You pick up the candle 1 from the countertop 1.",
+          "You arrive at cabinet 1. The cabinet 1 is closed.",
+          "You pick up the handtowel 1 from the countertop 1.",
+          "On the countertop 1, you see a candle 1, a handtowel 1, and a soapbar 1."],
+    "D": ["You arrive at toilet 1. On the toilet 1, you see a spraybottle 1.",
+          "Nothing happens.",
+          "You arrive at cabinet 10. The cabinet 10 is closed.",
+          "Nothing happens.",
+          "On the countertop 1, you see a candle 2, a cloth 2, a spraybottle 2, a spraybottle 1, a tissuebox 1, and a toiletpaper 1."]
+  }
+}

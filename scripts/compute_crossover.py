@@ -169,7 +169,7 @@ def main():
     import matplotlib.pyplot as plt
     import matplotlib.ticker
     envs = [e for e in SPLITS if any(p["env"] == e for p in points)]
-    fig, axes = plt.subplots(1, len(envs), figsize=(4.2 * len(envs), 3.6), dpi=200, squeeze=False)
+    fig, axes = plt.subplots(1, len(envs), figsize=(4.2 * len(envs), 3.9), dpi=200, squeeze=False)
     for ax, env in zip(axes[0], envs):
         for a in ARMS:
             pts = sorted((p for p in points if p["env"] == env and p["arm"] == a), key=lambda p: p["n"])  # line follows n
@@ -182,20 +182,20 @@ def main():
                         label=ARM_NAME[a])
             for p in (pts[0], pts[-1]):
                 ax.annotate(f"n={p['n']}", (p["gpu_hours"], p["regret"]), textcoords="offset points",
-                            xytext=(4, 4), fontsize=6.5, color="#3a3a38")
+                            xytext=(4, 4), fontsize=8.5, color="#3a3a38")
         ax.set_xscale("log")
         ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:g}"))
         ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-        ax.set_title(ENV_NAME[env], fontsize=9)
-        ax.set_xlabel("GPU-hours (RTX 5070, log scale)", fontsize=8)
+        ax.set_title(ENV_NAME[env], fontsize=11)
+        ax.set_xlabel("GPU-hours (RTX 5070, log scale)", fontsize=10)
         ax.grid(color="#e1e0d9", lw=0.6)
         ax.set_axisbelow(True)
         ax.spines[["top", "right"]].set_visible(False)
-        ax.tick_params(labelsize=7)
-    axes[0][0].set_ylabel("decision regret (lower is better)", fontsize=8)
+        ax.tick_params(labelsize=9)
+    axes[0][0].set_ylabel("decision regret (lower is better)", fontsize=10)
     handles, labels = axes[0][0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False, fontsize=8, bbox_to_anchor=(0.5, -0.02))
-    fig.tight_layout(rect=(0, 0.08, 1, 1))
+    fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False, fontsize=10, bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(rect=(0, 0.1, 1, 1))
     for ext in ("png", "pdf"):
         fig.savefig(os.path.join(args.out_dir, f"fig_regret_vs_gpu_hours.{ext}"))
     print("\n".join(md[:8 + len(rows)]))

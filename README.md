@@ -37,6 +37,16 @@ G and F are statistically tied in 19 of 24 (regime, budget) cells and F is bette
 both beat D at every budget; F is the cheapest good option; cheap features cannot predict the winner,
 but a 0.02-GPU-hour JEPA probe ranks how far D falls behind F.
 
+## Demo
+
+```bash
+python scripts/demo.py          # one decision, three world models (CPU, no models needed)
+```
+
+Replays one held-out decision from the saved results: the five candidate actions, what G, F and D
+each predict, which action each picks, and the regret of that choice. See
+[`demo/README.md`](demo/README.md) for more options.
+
 ## Repository map
 
 | Path | What it holds | Owner |
@@ -54,6 +64,7 @@ but a 0.02-GPU-hour JEPA probe ranks how far D falls behind F.
 | `data/budgets/`, `splits/` | budget id lists and train / held-out splits | Saanvi |
 | `results/` | every result in the paper (see "Where each paper result comes from") | all |
 | `docs/` | detailed docs per component; `docs/paper/` holds the paper and its section drafts | all |
+| `demo/`, `scripts/demo.py` | worked example: one decision, three world models (CPU, standard library only) | Siddanth |
 | `sanity/` | pre-registered 3-shot pipeline sanity check | Saanvi |
 | `tests/` | unit tests (CPU, no GPU or LLM needed) | all |
 | `rag/`, `evaluation/`, `rq3/` | empty package stubs from the first layout; the code lives in `rag_dropin/`, `wm/utility/` and `scripts/rq3_predictor.py` | — |
