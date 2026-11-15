@@ -226,7 +226,8 @@ def spearman(x, y):
 
 def fig_fidelity_vs_utility(pool, out_dir):
     markers = ["o", "s", "^", "D"]
-    fig, ax = plt.subplots(figsize=(5.2, 3.6))
+    short = ["ALFWorld", "ScienceWorld test", "ScienceWorld seen", "ByteSized32"]
+    fig, ax = plt.subplots(figsize=(4.4, 4.3))  # sized for one paper column, legends below
     corr, all_x, all_y = [], [], []
     for (env, split, title), mk in zip(REGIMES, markers):
         xs, ys = [], []
@@ -245,20 +246,20 @@ def fig_fidelity_vs_utility(pool, out_dir):
             all_x += xs
             all_y += ys
     corr.append({"env": "*", "split": "*", "n_points": len(all_x), "spearman_em_vs_regret": spearman(all_x, all_y)})
-    ax.set_xlabel("text fidelity: exact match of the predicted next state")
-    ax.set_ylabel("mean decision regret (lower is better)")
+    ax.set_xlabel("exact match of the predicted next state", fontsize=10)
+    ax.set_ylabel("mean decision regret (lower is better)", fontsize=10)
+    ax.tick_params(labelsize=9)
     ax.set_ylim(bottom=0)
     from matplotlib.lines import Line2D
     arm_h = [Line2D([], [], color=c, linestyle="", marker="s", markersize=7, label=l)
-             for l, c in (("G (RAG)", SERIES[0][3]), ("F (SFT)", SERIES[1][3]), ("D (JEPA) top-1 / top-k", SERIES[2][3]))]
-    reg_h = [Line2D([], [], color=MUTED, linestyle="", marker=mk, label=t.replace("\n", ": "))
-             for (_, _, t), mk in zip(REGIMES, markers)]
-    leg = ax.legend(handles=arm_h, loc="upper left", bbox_to_anchor=(1.01, 1.0), frameon=False, title="arm")
+             for l, c in (("G (RAG)", SERIES[0][3]), ("F (SFT)", SERIES[1][3]), ("D (JEPA) top-1/top-k", SERIES[2][3]))]
+    reg_h = [Line2D([], [], color=MUTED, linestyle="", marker=mk, label=s)
+             for s, mk in zip(short, markers)]
+    leg = ax.legend(handles=arm_h, loc="upper left", bbox_to_anchor=(-0.02, -0.16), frameon=False,
+                    fontsize=9, handletextpad=0.2)
     ax.add_artist(leg)
-    ax.legend(handles=reg_h, loc="lower left", bbox_to_anchor=(1.01, 0.0), frameon=False, title="regime")
-    ax.text(0.0, -0.22, "One point per (regime, arm, budget); larger marker = larger n. "
-            "If fidelity tracked utility, points would fall left-to-right.", transform=ax.transAxes,
-            color=MUTED, fontsize=7)
+    ax.legend(handles=reg_h, loc="upper left", bbox_to_anchor=(0.5, -0.16), frameon=False,
+              fontsize=9, handletextpad=0.2)
     save(fig, out_dir, "fig2_fidelity_vs_utility")
     return corr
 
