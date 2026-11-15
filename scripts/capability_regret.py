@@ -149,7 +149,7 @@ def main():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     panels = ["main", "bytesized32"]
-    fig, axes = plt.subplots(1, 2, figsize=(9.6, 3.6), dpi=200)
+    fig, axes = plt.subplots(1, 2, figsize=(10.4, 4.0), dpi=200)
     for ax, g in zip(axes, panels):
         cs = [c for c in cats if any(r["group"] == g and r["capability"] == c for r in out)]
         x = range(len(cs))
@@ -162,17 +162,17 @@ def main():
                    yerr=[[r["mean_regret"] - r["ci_lo"] for r in rs], [r["ci_hi"] - r["mean_regret"] for r in rs]],
                    error_kw={"elinewidth": 0.7, "capsize": 2, "ecolor": "#3a3a38"})
         n = {c: next(r["n_states"] for r in out if r["group"] == g and r["capability"] == c) for c in cs}
-        short = lambda c: TAG_NAME[c].replace(" / ", "/\n").replace("Partially ", "Partially\n").replace("Action ", "Action\n")
-        ax.set_xticks(list(x), [f"{short(c)}\n(n={n[c]})" for c in cs], fontsize=6.5)
-        ax.set_title(names[g], fontsize=9)
+        short = lambda c: TAG_NAME[c].replace(" / ", "/\n").replace("Partially ", "Partially\n").replace("Action ", "Action\n").replace("Object ", "Object\n").replace("No ", "No\n")
+        ax.set_xticks(list(x), [f"{short(c)}\n(n={n[c]})" for c in cs], fontsize=8.5)
+        ax.set_title(names[g], fontsize=11)
         ax.grid(axis="y", color="#e1e0d9", lw=0.6)
         ax.set_axisbelow(True)
         ax.spines[["top", "right"]].set_visible(False)
-        ax.tick_params(axis="y", labelsize=7)
-    axes[0].set_ylabel(f"decision regret at n = {args.budget}", fontsize=8)
+        ax.tick_params(axis="y", labelsize=9)
+    axes[0].set_ylabel(f"decision regret at n = {args.budget}", fontsize=10.5)
     h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc="lower center", ncol=3, frameon=False, fontsize=8)
-    fig.tight_layout(rect=(0, 0.07, 1, 1))
+    fig.legend(h, l, loc="lower center", ncol=3, frameon=False, fontsize=10)
+    fig.tight_layout(rect=(0, 0.09, 1, 1))
     for ext in ("png", "pdf"):
         fig.savefig(os.path.join(args.out_dir, f"fig_capability_regret.{ext}"))
     print("\n".join(md))
